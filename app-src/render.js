@@ -283,19 +283,12 @@ async function meteorRain(red, green, blue, meteorSize, meteorTrailDecay, meteor
 
 
 function createExampleStripe(params) {
-  let l = [];
-  for (let index = 0; index < neopixelCount; index++) {
-    if (index % 3 === 0) {
-      l[index] = "00FF00";
-    }
-    if (index % 3 === 1) {
-      l[index] = "FF00FF";
-    }
-    if (index % 3 === 2) {
-      l[index] = "0000FF";
-    }
+  let stripe = setAll(175, 0, 105);
+
+  for (let index = 0; index < neopixelCount / 2; index++) {
+    setPixel(index, stripe, 255, 187, 0);
   }
-  return l;
+  showStrip(stripe);
 }
 
 //showStrip(setAll(255, 222, 55));
