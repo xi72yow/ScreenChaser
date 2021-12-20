@@ -6,6 +6,7 @@ const server = dgram.createSocket('udp4');
 const MIN_DELAY = 90;
 const neopixelCount = 120;
 const DEBUG = false;
+const IPADDR = "192.168.2.100";
 let intervals = [];
 
 function clearIntervals() {
@@ -107,7 +108,7 @@ function showNeoStrip(pixelArray) {
   //send Data to ESP esp rx max size is 256
   const sendingFrames = chunkArray(pixelUDPframe, 252); //252/6=42LED
   sendingFrames.forEach((frames, i) => {
-    server.send(i.toString(16) + frames, 4210, "192.168.2.106");
+    server.send(i.toString(16) + frames, 4210, IPADDR);
   });
   return hexColorStrip;
 }
