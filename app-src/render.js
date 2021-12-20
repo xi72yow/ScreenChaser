@@ -22,7 +22,7 @@ server.on('error', (err) => {
 });
 server.on('message', (msg, senderInfo) => {
   if (DEBUG) {
-    console.log('Messages received ' + msg)
+    console.log(`Messages received ${msg}`)
   }
   /*server.send(msg,senderInfo.port,senderInfo.address,()=>{
   console.log(`Message sent to ${senderInfo.address}:${senderInfo.port}`)
@@ -42,11 +42,10 @@ server.on('listening', () => {
  * @return {Array} contains all chunks
  */
 function chunkArray(myArray, chunk_size) {
-  var index = 0;
-  var arrayLength = myArray.length;
-  var tempArray = [];
+  let index = 0;
+  let tempArray = [];
 
-  for (index = 0; index < arrayLength; index += chunk_size) {
+  for (index = 0; index < myArray.length; index += chunk_size) {
     myChunk = myArray.slice(index, index + chunk_size);
     // Do something if you want with the group
     tempArray.push(myChunk);
@@ -64,7 +63,7 @@ function chunkArray(myArray, chunk_size) {
 function rgbToHex(rgb) {
   let hex = Number(rgb).toString(16);
   if (hex.length < 2) {
-    hex = "0" + hex;
+    hex = `0${hex}`;
   }
   return hex;
 };
@@ -101,13 +100,13 @@ function showNeoStrip(pixelArray) {
   let pixelUDPframe = "";
   for (let i = 0; i < pixelArray.length; i++) {
     let rgb = pixelArray[i];
-    pixelUDPframe = pixelUDPframe + rgb;
+    pixelUDPframe += rgb;
     hexColorStrip[i] = rgb;
   }
   //send Data to ESP esp rx max size is 256
   const sendingFrames = chunkArray(pixelUDPframe, 252); //252/6=42LED
   sendingFrames.forEach((frames, i) => {
-    server.send(i.toString(16) + frames, 4210, "192.168.2.106");
+    server.send(i.toString(16) + frames, 4210, "192.168.2.100");
   });
   return hexColorStrip;
 }
@@ -121,7 +120,7 @@ function renderPreview(htmlStrip) {
   let spanLeds = document.getElementsByClassName("leds");
   for (let i = 0; i < spanLeds.length; i++) {
     let led = spanLeds[i];
-    led.style.backgroundColor = "#" + htmlStrip[i];
+    led.style.backgroundColor = `#${htmlStrip[i]}`;
   }
 }
 
@@ -169,7 +168,7 @@ function setPixel(pixel, stripe, r, g, b) {
  */
 async function fadeIn(red, green, blue) {
   let r, g, b;
-  for (let k = 0; k < 256; k = k + 5) {
+  for (let k = 0; k < 256; k += 5) {
     r = (k / 256) * red | 0;
     g = (k / 256) * green | 0;
     b = (k / 256) * blue | 0;
@@ -188,7 +187,7 @@ async function fadeIn(red, green, blue) {
  */
 async function fadeOut(red, green, blue) {
   let r, g, b;
-  for (let k = 255; k >= 0; k = k - 5) {
+  for (let k = 255; k >= 0; k -= 5) {
     r = (k / 256) * red | 0;
     g = (k / 256) * green | 0;
     b = (k / 256) * blue | 0;
@@ -336,7 +335,7 @@ meteorRainBtn.onclick = function () {
   clearIntervals();
   let meteorRainInterval = setInterval(() => {
     meteorRain(155, 25, 200, 5, 20, true, 100);
-  }, 40000);
+  }, 40_000);
   intervals.push(meteorRainInterval);
 };
 
@@ -361,7 +360,7 @@ function processCtxData() {
   // for the top of the screen
   //for (let i = 0; i < importentTestPixel / 4; i++) 
   // for the bottom of the screen
-  for (let i = frame.data.length / 4 - importentTestPixel; i < frame.data.length / 4; i = i + 15) {
+  for (let i = frame.data.length / 4 - importentTestPixel; i < frame.data.length / 4; i += 15) {
     let currentNeoPix = ((i % video.videoWidth) / averagePixelWidth) | 0;
 
     let r = frame.data[i * 4 + 0];
@@ -397,12 +396,10 @@ async function getVideoSources() {
   });
 
   const videoOptionsMenu = Menu.buildFromTemplate(
-    inputSources.map(source => {
-      return {
-        label: source.name,
-        click: () => selectSource(source)
-      };
-    })
+    inputSources.map(source => ({
+      label: source.name,
+      click: () => selectSource(source)
+    }))
   );
   videoOptionsMenu.popup();
 }
