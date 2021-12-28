@@ -118,7 +118,6 @@ function showNeoStrip(pixelArray) {
     if (DEBUG) {
       sendedPacks++;
     }
-    server.send(i.toString(16) + frames, 4210, IPADDR);
   });
   lastChunk = sendingFrames;
   return hexColorStrip;
