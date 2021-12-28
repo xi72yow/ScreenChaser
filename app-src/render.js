@@ -5,8 +5,11 @@ const dgram = require('dgram');
 const server = dgram.createSocket('udp4');
 const MIN_DELAY = 90;
 const neopixelCount = 120;
-const DEBUG = false;
+const DEBUG = true;
 let intervals = [];
+let lastChunk = [];
+let sendedPacks = 0;
+let recivedPacks = 0;
 
 function clearIntervals() {
   if (intervals.length != 0) {
@@ -22,7 +25,10 @@ server.on('error', (err) => {
 });
 server.on('message', (msg, senderInfo) => {
   if (DEBUG) {
-    console.log(`Messages received ${msg}`)
+    if (recivedPacks == 0) {
+      console.log(`Messages received ${msg}`);
+    }
+    recivedPacks++;
   }
   /*server.send(msg,senderInfo.port,senderInfo.address,()=>{
   console.log(`Message sent to ${senderInfo.address}:${senderInfo.port}`)
@@ -50,7 +56,6 @@ function chunkArray(myArray, chunk_size) {
     // Do something if you want with the group
     tempArray.push(myChunk);
   }
-
   return tempArray;
 }
 
@@ -106,8 +111,15 @@ function showNeoStrip(pixelArray) {
   //send Data to ESP esp rx max size is 256
   const sendingFrames = chunkArray(pixelUDPframe, 252); //252/6=42LED
   sendingFrames.forEach((frames, i) => {
+    if (lastChunk[i] === frames) {
+      return;
+    }
+    if (DEBUG) {
+      sendedPacks++;
+    }
     server.send(i.toString(16) + frames, 4210, "192.168.2.100");
   });
+  lastChunk = sendingFrames;
   return hexColorStrip;
 }
 
@@ -157,6 +169,30 @@ function setPixel(pixel, stripe, r, g, b) {
   let hexValue = rgbToHex(r) + rgbToHex(g) + rgbToHex(b);
   stripe[pixel] = hexValue
   return stripe;
+}
+
+/**
+ * js analogous to microcontroller millis
+ *
+ * @return {Interger} millis
+ */
+function millis() {
+  return Date.now();
+}
+
+let bouncingBallsSave = {
+  gravity: 9.1,
+  startHeight: 1,
+
+}
+
+async function bouncingBalls() {
+  let stripe = setAll(0, 0, 0);
+  for (let i = 0; i < neopixelCount; i++) {
+    stripe = setPixel(i, stripe, 255, 0, 0);
+    await delay(50)
+    showStrip(stripe);
+  }
 }
 
 /**
@@ -298,12 +334,19 @@ function createExampleStripe(params) {
 //fadeIn(255, 255, 0, 100)
 //fadeOut(255, 255, 0, 100)
 //showStrip(setPixel(0, createExampleStripe(), 255, 255, 255))
-
+//let bouncingBallsInterval = setInterval(() => {
+//  bouncingBalls(255, 0, 0, 3)
+//}, 200);
+//intervals.push(bouncingBallsInterval);
+setTimeout(() => {
+  bouncingBalls()
+}, 1000);
 // buttons
 const videoElement = document.querySelector('#video');
 const frostyPikeBtn = document.querySelector('#frostyPikeBtn');
 const twinkleRandomBtn = document.querySelector('#twinkleRandomBtn');
 const meteorRainBtn = document.querySelector('#meteorRainBtn');
+const packagelossBtn = document.querySelector('#packageloss');
 const canvas = document.querySelector('#canvas');
 
 videoElement.onclick = function () {
@@ -312,6 +355,12 @@ videoElement.onclick = function () {
     processCtxData();
   }, 100);
   intervals.push(ambiInterval);
+};
+
+packagelossBtn.onclick = function () {
+  console.log(`sendedPacks: ${sendedPacks}`);
+  console.log(`recivedPacks: ${recivedPacks}`);
+  console.log(`packageloss: ${recivedPacks / sendedPacks * 100}%`);
 };
 
 frostyPikeBtn.onclick = function () {
