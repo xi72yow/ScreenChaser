@@ -6,6 +6,7 @@ const server = dgram.createSocket('udp4');
 const MIN_DELAY = 90;
 const neopixelCount = 120;
 const DEBUG = true;
+const IPADDR = "192.168.2.100";
 let intervals = [];
 let lastChunk = [];
 let sendedPacks = 0;
@@ -117,7 +118,7 @@ function showNeoStrip(pixelArray) {
     if (DEBUG) {
       sendedPacks++;
     }
-    server.send(i.toString(16) + frames, 4210, "192.168.2.100");
+    server.send(i.toString(16) + frames, 4210, IPADDR);
   });
   lastChunk = sendingFrames;
   return hexColorStrip;
