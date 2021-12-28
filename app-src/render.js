@@ -360,7 +360,7 @@ videoElement.onclick = function () {
 packagelossBtn.onclick = function () {
   console.log(`sendedPacks: ${sendedPacks}`);
   console.log(`recivedPacks: ${recivedPacks}`);
-  console.log(`packageloss: ${recivedPacks / sendedPacks * 100}%`);
+  console.log(`packageloss: ${(recivedPacks / sendedPacks * 100) - 100}%`);
 };
 
 frostyPikeBtn.onclick = function () {
