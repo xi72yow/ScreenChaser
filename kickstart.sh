@@ -1,8 +1,9 @@
 #!/bin/bash
+#make it executabele and add the programm to startup applications
 CHUNK1="0ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00"
 CHUNK2="1ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00ffbb00af0069af0069af0069af0069af0069af0069af0069af0069af0069af0069af0069af0069af0069af0069af0069af0069af0069af0069af0069af0069af0069af0069af0069af0069"
 CHUNK3="2af0069af0069af0069af0069af0069af0069af0069af0069af0069af0069af0069af0069af0069af0069af0069af0069af0069af0069af0069af0069af0069af0069af0069af0069af0069af0069af0069af0069af0069af0069af0069af0069af0069af0069af0069af0069"
 
-echo "$CHUNK1"  > /dev/udp/192.168.2.106/4210
-echo "$CHUNK2"  > /dev/udp/192.168.2.106/4210
-echo "$CHUNK3"  > /dev/udp/192.168.2.106/4210
+echo "$CHUNK1"  > /dev/udp/192.168.2.100/4210
+echo "$CHUNK2"  > /dev/udp/192.168.2.100/4210
+echo "$CHUNK3"  > /dev/udp/192.168.2.100/4210
