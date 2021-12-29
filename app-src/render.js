@@ -6,7 +6,7 @@ const server = dgram.createSocket('udp4');
 const MIN_DELAY = 90;
 const neopixelCount = 120;
 const DEBUG = true;
-const IPADDR = "192.168.2.100";
+const IPADDR = "192.168.2.113";
 let intervals = [];
 let lastChunk = [];
 let sendedPacks = 0;
@@ -181,11 +181,90 @@ function millis() {
   return Date.now();
 }
 
-let bouncingBallsSave = {
-  gravity: 9.1,
-  startHeight: 1,
+class BauncingBalls {
+  constructor(red, green, blue, BallCount) {
+    this.stripe = setAll(0, 0, 0);
+    this.gravity = -9.81;
+    this.startHeight = 1;
+    this.impactVelocityStart = Math.sqrt(-2 * this.gravity * this.startHeight);
+    this.height = new Array(BallCount);
+    this.impactVelocity = new Array(BallCount);
+    this.timeSinceLastBounce = new Array(BallCount);
+    this.clockTimeSinceLastBounce = new Array(BallCount);
+    this.dampening = new Array(BallCount);
+    this.position = new Array(BallCount);
 
+    for (let i = 0; i < BallCount; i++) {
+      this.clockTimeSinceLastBounce[i] = millis();
+      this.height[i] = this.StartHeight;
+      this.position[i] = 0;
+      this.impactVelocity[i] = this.ImpactVelocityStart;
+      this.timeSinceLastBounce[i] = 0;
+      this.dampening[i] = 0.90 - i / BallCount ** 2;
+    }
+  }
+
+  render
+
+  getStripe() {
+    return this.stripe;
+  }
+  getGravity() {
+    return this.gravity;
+  }
+  getStartHeight() {
+    return this.startHeight;
+  }
+  getImpactVelocityStart() {
+    return this.impactVelocityStart;
+  }
 }
+/*void BouncingBalls(byte red, byte green, byte blue, int BallCount) {
+  float Gravity = -9.81;
+  int StartHeight = 1;
+ 
+  float Height[BallCount];
+  float ImpactVelocityStart = sqrt( -2 * Gravity * StartHeight );
+  float ImpactVelocity[BallCount];
+  float TimeSinceLastBounce[BallCount];
+  int   Position[BallCount];
+  long  ClockTimeSinceLastBounce[BallCount];
+  float Dampening[BallCount];
+ 
+  for (int i = 0 ; i < BallCount ; i++) {  
+    ClockTimeSinceLastBounce[i] = millis();
+    Height[i] = StartHeight;
+    Position[i] = 0;
+    ImpactVelocity[i] = ImpactVelocityStart;
+    TimeSinceLastBounce[i] = 0;
+    Dampening[i] = 0.90 - float(i)/pow(BallCount,2);
+  }
+
+  while (true) {
+    for (int i = 0 ; i < BallCount ; i++) {
+      TimeSinceLastBounce[i] =  millis() - ClockTimeSinceLastBounce[i];
+      Height[i] = 0.5 * Gravity * pow( TimeSinceLastBounce[i]/1000 , 2.0 ) + ImpactVelocity[i] * TimeSinceLastBounce[i]/1000;
+ 
+      if ( Height[i] < 0 ) {                      
+        Height[i] = 0;
+        ImpactVelocity[i] = Dampening[i] * ImpactVelocity[i];
+        ClockTimeSinceLastBounce[i] = millis();
+ 
+        if ( ImpactVelocity[i] < 0.01 ) {
+          ImpactVelocity[i] = ImpactVelocityStart;
+        }
+      }
+      Position[i] = round( Height[i] * (NUM_LEDS - 1) / StartHeight);
+    }
+ 
+    for (int i = 0 ; i < BallCount ; i++) {
+      setPixel(Position[i],red,green,blue);
+    }
+   
+    showStrip();
+    setAll(0,0,0);
+  }
+} */
 
 async function bouncingBalls() {
   let stripe = setAll(0, 0, 0);
@@ -340,6 +419,8 @@ function createExampleStripe(params) {
 //}, 200);
 //intervals.push(bouncingBallsInterval);
 setTimeout(() => {
+  let obj = new BauncingBalls(255, 0, 0, 3);
+  console.log(obj)
   bouncingBalls()
 }, 1000);
 // buttons
