@@ -178,11 +178,12 @@ function setPixel(pixel, stripe, r, g, b) {
  * @return {Interger} millis
  */
 function millis() {
-  return Date.now();
+  return Date.now()/3;
 }
 
 class BauncingBalls {
   constructor(red, green, blue, BallCount) {
+    this.ballCount = BallCount;
     this.stripe = setAll(0, 0, 0);
     this.gravity = -9.81;
     this.startHeight = 1;
@@ -198,13 +199,36 @@ class BauncingBalls {
       this.clockTimeSinceLastBounce[i] = millis();
       this.height[i] = this.StartHeight;
       this.position[i] = 0;
-      this.impactVelocity[i] = this.ImpactVelocityStart;
+      this.impactVelocity[i] = this.impactVelocityStart;
       this.timeSinceLastBounce[i] = 0;
       this.dampening[i] = 0.90 - i / BallCount ** 2;
     }
   }
 
-  render
+  render() {
+    for (let i = 0; i < this.ballCount; i++) {
+      this.timeSinceLastBounce[i] = millis() - this.clockTimeSinceLastBounce[i];
+      this.height[i] = 0.5 * this.gravity * Math.pow(this.timeSinceLastBounce[i] / 1000, 2.0) + this.impactVelocity[i] * this.timeSinceLastBounce[i] / 1000;
+
+      if (this.height[i] < 0) {
+        this.height[i] = 0;
+        this.impactVelocity[i] = this.dampening[i] * this.impactVelocity[i];
+        this.clockTimeSinceLastBounce[i] = millis();
+
+        if (this.impactVelocity[i] < 0.01) {
+          this.impactVelocity[i] = this.impactVelocityStart;
+        }
+      }
+      this.position[i] = Math.round(this.height[i] * (neopixelCount - 1) / this.startHeight);
+    }
+
+    for (let i = 0; i < this.ballCount; i++) {
+      this.stripe = setPixel(this.position[i], this.stripe, random(255), random(255), random(255));
+    }
+
+    showStrip(this.stripe);
+    this.stripe = setAll(0, 0, 0);
+  }
 
   getStripe() {
     return this.stripe;
@@ -421,7 +445,13 @@ function createExampleStripe(params) {
 setTimeout(() => {
   let obj = new BauncingBalls(255, 0, 0, 3);
   console.log(obj)
-  bouncingBalls()
+  obj.render();
+  let bounceInterval = setInterval(() => {
+    obj.render();
+
+  }, 100);
+  intervals.push(bounceInterval);
+  //bouncingBalls()
 }, 1000);
 // buttons
 const videoElement = document.querySelector('#video');
