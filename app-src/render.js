@@ -178,11 +178,12 @@ function setPixel(pixel, stripe, r, g, b) {
  * @return {Interger} millis
  */
 function millis() {
-  return Date.now() / 3;
+  return Date.now();
 }
 
 class BauncingBalls {
   constructor(ballMode, mirrored, tail, BallCount) {
+    this.speed = 3; //slows down the animation
     this.ballCount = BallCount;
     this.stripe = setAll(0, 0, 0);
     this.gravity = -9.81;
@@ -209,8 +210,8 @@ class BauncingBalls {
 
   render() {
     for (let i = 0; i < this.ballCount; i++) {
-      this.timeSinceLastBounce[i] = millis() - this.clockTimeSinceLastBounce[i];
-      this.height[i] = 0.5 * this.gravity * Math.pow(this.timeSinceLastBounce[i] / 1000, 2.0) + this.impactVelocity[i] * this.timeSinceLastBounce[i] / 1000;
+      this.timeSinceLastBounce[i] = (millis() - this.clockTimeSinceLastBounce[i]) / this.speed;
+      this.height[i] = 0.5 * this.gravity * (this.timeSinceLastBounce[i] / 1000) ** 2.0 + this.impactVelocity[i] * this.timeSinceLastBounce[i] / 1000;
 
       if (this.height[i] < 0) {
         this.height[i] = 0;
@@ -235,15 +236,7 @@ class BauncingBalls {
   getStripe() {
     return this.stripe;
   }
-  getGravity() {
-    return this.gravity;
-  }
-  getStartHeight() {
-    return this.startHeight;
-  }
-  getImpactVelocityStart() {
-    return this.impactVelocityStart;
-  }
+
 }
 
 async function bouncingBalls() {
@@ -342,40 +335,6 @@ async function twinkleRandom(stripe) {
   showStrip(stripe);
 }
 
-function fadeToBlack(pixel, stripe, fadeValue) {
-  oldColor = stripe[pixel];
-  let r = parseInt(oldColor.slice(0, 2), 16);
-  let g = parseInt(oldColor.slice(2, 4), 16);
-  let b = parseInt(oldColor.slice(4, 6), 16);
-  r = (r <= 10) ? 0 : (r - fadeValue);
-  g = (g <= 10) ? 0 : (g - fadeValue);
-  b = (b <= 10) ? 0 : (b - fadeValue);
-  stripe = setPixel(pixel, stripe, r, g, b);
-  return stripe;
-}
-
-async function meteorRain(red, green, blue, meteorSize, meteorTrailDecay, meteorRandomDecay, speedDelay) {
-  speedDelay = speedDelay < MIN_DELAY ? MIN_DELAY : speedDelay;
-  let stripe = setAll(0, 0, 0);
-  for (let i = 0; i < neopixelCount * 2; i++) {
-    // fade brightness all LEDs one step
-    for (let j = 0; j < neopixelCount; j++) {
-      if ((!meteorRandomDecay) || (random(10) > 5)) {
-        stripe = fadeToBlack(j, stripe, meteorTrailDecay);
-      }
-    }
-    // draw meteor
-    for (let j = 0; j < meteorSize; j++) {
-      if ((i - j < neopixelCount) && (i - j >= 0)) {
-        stripe = setPixel(i - j, stripe, red, green, blue);
-      }
-    }
-    showStrip(stripe);
-    await delay(speedDelay);
-  }
-  return 1;
-}
-
 class MeteorRain {
   constructor(red, green, blue, meteorSize, meteorTrailDecay, meteorRandomDecay) {
     this.stripe = setAll(0, 0, 0);
@@ -389,7 +348,7 @@ class MeteorRain {
   }
 
   fadeToBlack(pixel, stripe, fadeValue) {
-    oldColor = stripe[pixel];
+    let oldColor = stripe[pixel];
     let r = parseInt(oldColor.slice(0, 2), 16);
     let g = parseInt(oldColor.slice(2, 4), 16);
     let b = parseInt(oldColor.slice(4, 6), 16);
@@ -400,17 +359,12 @@ class MeteorRain {
     return stripe;
   }
 
-  async run() {
-    return await meteorRain(this.red, this.green, this.blue, this.meteorSize, this.meteorTrailDecay, this.meteorRandomDecay, this.speedDelay);
-  }
-
-
   render() {
     this.count++;
     // fade brightness all LEDs one step
     for (let j = 0; j < neopixelCount; j++) {
       if ((!this.meteorRandomDecay) || (random(10) > 5)) {
-        this.stripe = fadeToBlack(j, this.stripe, this.meteorTrailDecay);
+        this.stripe = this.fadeToBlack(j, this.stripe, this.meteorTrailDecay);
       }
     }
     // draw meteor
@@ -420,7 +374,7 @@ class MeteorRain {
       }
     }
     showStrip(this.stripe);
-    
+
     //reset animation
     if (this.count > neopixelCount * 2) {
       this.stripe = setAll(0, 0, 0);
@@ -428,7 +382,6 @@ class MeteorRain {
     }
   }
 }
-
 
 function createExampleStripe(params) {
   let stripe = setAll(175, 0, 105);
