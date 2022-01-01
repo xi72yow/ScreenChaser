@@ -178,17 +178,18 @@ function setPixel(pixel, stripe, r, g, b) {
  * @return {Interger} millis
  */
 function millis() {
-  return Date.now()/3;
+  return Date.now() / 3;
 }
 
 class BauncingBalls {
-  constructor(red, green, blue, BallCount) {
+  constructor(ballMode, mirrored, tail, BallCount) {
     this.ballCount = BallCount;
     this.stripe = setAll(0, 0, 0);
     this.gravity = -9.81;
     this.startHeight = 1;
     this.impactVelocityStart = Math.sqrt(-2 * this.gravity * this.startHeight);
     this.height = new Array(BallCount);
+    this.ballColors = new Array(BallCount);
     this.impactVelocity = new Array(BallCount);
     this.timeSinceLastBounce = new Array(BallCount);
     this.clockTimeSinceLastBounce = new Array(BallCount);
@@ -201,6 +202,7 @@ class BauncingBalls {
       this.position[i] = 0;
       this.impactVelocity[i] = this.impactVelocityStart;
       this.timeSinceLastBounce[i] = 0;
+      this.ballColors[i] = { r: random(255), g: random(255), b: random(255) };
       this.dampening[i] = 0.90 - i / BallCount ** 2;
     }
   }
@@ -223,7 +225,7 @@ class BauncingBalls {
     }
 
     for (let i = 0; i < this.ballCount; i++) {
-      this.stripe = setPixel(this.position[i], this.stripe, random(255), random(255), random(255));
+      this.stripe = setPixel(this.position[i], this.stripe, this.ballColors[i].r, this.ballColors[i].b, this.ballColors[i].g);
     }
 
     showStrip(this.stripe);
@@ -243,52 +245,6 @@ class BauncingBalls {
     return this.impactVelocityStart;
   }
 }
-/*void BouncingBalls(byte red, byte green, byte blue, int BallCount) {
-  float Gravity = -9.81;
-  int StartHeight = 1;
- 
-  float Height[BallCount];
-  float ImpactVelocityStart = sqrt( -2 * Gravity * StartHeight );
-  float ImpactVelocity[BallCount];
-  float TimeSinceLastBounce[BallCount];
-  int   Position[BallCount];
-  long  ClockTimeSinceLastBounce[BallCount];
-  float Dampening[BallCount];
- 
-  for (int i = 0 ; i < BallCount ; i++) {  
-    ClockTimeSinceLastBounce[i] = millis();
-    Height[i] = StartHeight;
-    Position[i] = 0;
-    ImpactVelocity[i] = ImpactVelocityStart;
-    TimeSinceLastBounce[i] = 0;
-    Dampening[i] = 0.90 - float(i)/pow(BallCount,2);
-  }
-
-  while (true) {
-    for (int i = 0 ; i < BallCount ; i++) {
-      TimeSinceLastBounce[i] =  millis() - ClockTimeSinceLastBounce[i];
-      Height[i] = 0.5 * Gravity * pow( TimeSinceLastBounce[i]/1000 , 2.0 ) + ImpactVelocity[i] * TimeSinceLastBounce[i]/1000;
- 
-      if ( Height[i] < 0 ) {                      
-        Height[i] = 0;
-        ImpactVelocity[i] = Dampening[i] * ImpactVelocity[i];
-        ClockTimeSinceLastBounce[i] = millis();
- 
-        if ( ImpactVelocity[i] < 0.01 ) {
-          ImpactVelocity[i] = ImpactVelocityStart;
-        }
-      }
-      Position[i] = round( Height[i] * (NUM_LEDS - 1) / StartHeight);
-    }
- 
-    for (int i = 0 ; i < BallCount ; i++) {
-      setPixel(Position[i],red,green,blue);
-    }
-   
-    showStrip();
-    setAll(0,0,0);
-  }
-} */
 
 async function bouncingBalls() {
   let stripe = setAll(0, 0, 0);
@@ -420,6 +376,59 @@ async function meteorRain(red, green, blue, meteorSize, meteorTrailDecay, meteor
   return 1;
 }
 
+class MeteorRain {
+  constructor(red, green, blue, meteorSize, meteorTrailDecay, meteorRandomDecay) {
+    this.stripe = setAll(0, 0, 0);
+    this.red = red;
+    this.green = green;
+    this.blue = blue;
+    this.meteorSize = meteorSize;
+    this.meteorTrailDecay = meteorTrailDecay;
+    this.meteorRandomDecay = meteorRandomDecay;
+    this.count = 0;
+  }
+
+  fadeToBlack(pixel, stripe, fadeValue) {
+    oldColor = stripe[pixel];
+    let r = parseInt(oldColor.slice(0, 2), 16);
+    let g = parseInt(oldColor.slice(2, 4), 16);
+    let b = parseInt(oldColor.slice(4, 6), 16);
+    r = (r <= 10) ? 0 : (r - fadeValue);
+    g = (g <= 10) ? 0 : (g - fadeValue);
+    b = (b <= 10) ? 0 : (b - fadeValue);
+    stripe = setPixel(pixel, stripe, r, g, b);
+    return stripe;
+  }
+
+  async run() {
+    return await meteorRain(this.red, this.green, this.blue, this.meteorSize, this.meteorTrailDecay, this.meteorRandomDecay, this.speedDelay);
+  }
+
+
+  render() {
+    this.count++;
+    // fade brightness all LEDs one step
+    for (let j = 0; j < neopixelCount; j++) {
+      if ((!this.meteorRandomDecay) || (random(10) > 5)) {
+        this.stripe = fadeToBlack(j, this.stripe, this.meteorTrailDecay);
+      }
+    }
+    // draw meteor
+    for (let k = 0; k < this.meteorSize; k++) {
+      if ((this.count - k < neopixelCount) && (this.count - k >= 0)) {
+        this.stripe = setPixel(this.count - k, this.stripe, this.red, this.green, this.blue);
+      }
+    }
+    showStrip(this.stripe);
+    
+    //reset animation
+    if (this.count > neopixelCount * 2) {
+      this.stripe = setAll(0, 0, 0);
+      this.count = 0;
+    }
+  }
+}
+
 
 function createExampleStripe(params) {
   let stripe = setAll(175, 0, 105);
@@ -438,26 +447,25 @@ function createExampleStripe(params) {
 //fadeIn(255, 255, 0, 100)
 //fadeOut(255, 255, 0, 100)
 //showStrip(setPixel(0, createExampleStripe(), 255, 255, 255))
-//let bouncingBallsInterval = setInterval(() => {
-//  bouncingBalls(255, 0, 0, 3)
-//}, 200);
-//intervals.push(bouncingBallsInterval);
-setTimeout(() => {
-  let obj = new BauncingBalls(255, 0, 0, 3);
+
+/*setTimeout(() => {
+  let obj = new MeteorRain(155, 25, 200, 5, 20, true, 100);
   console.log(obj)
   obj.render();
-  let bounceInterval = setInterval(() => {
+  let meteorInterval = setInterval(() => {
     obj.render();
 
   }, 100);
-  intervals.push(bounceInterval);
+  intervals.push(meteorInterval);
   //bouncingBalls()
-}, 1000);
+}, 1000);*/
+
 // buttons
 const videoElement = document.querySelector('#video');
 const frostyPikeBtn = document.querySelector('#frostyPikeBtn');
 const twinkleRandomBtn = document.querySelector('#twinkleRandomBtn');
 const meteorRainBtn = document.querySelector('#meteorRainBtn');
+const bouncingBallsBtn = document.querySelector('#bouncingBallsBtn');
 const packagelossBtn = document.querySelector('#packageloss');
 const canvas = document.querySelector('#canvas');
 
@@ -494,10 +502,20 @@ twinkleRandomBtn.onclick = function () {
 
 meteorRainBtn.onclick = function () {
   clearIntervals();
+  let obj = new MeteorRain(155, 25, 200, 5, 20, true, 100);
   let meteorRainInterval = setInterval(() => {
-    meteorRain(155, 25, 200, 5, 20, true, 100);
-  }, 40_000);
+    obj.render();
+  }, 100);
   intervals.push(meteorRainInterval);
+};
+
+bouncingBallsBtn.onclick = function () {
+  clearIntervals();
+  let obj = new BauncingBalls(255, 0, 0, 3);
+  let bounceInterval = setInterval(() => {
+    obj.render();
+  }, 100);
+  intervals.push(bounceInterval);
 };
 
 function processCtxData() {
