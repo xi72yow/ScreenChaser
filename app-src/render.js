@@ -12,6 +12,11 @@ let lastChunk = [];
 let sendedPacks = 0;
 let recivedPacks = 0;
 
+function getCurrentIp() {
+  return Object.values(require('os').networkInterfaces()).reduce((r, list) => r.concat(list.reduce((rr, i) => rr.concat(i.family === 'IPv4' && !i.internal && i.address || []), [])), [])
+}
+const ip = getCurrentIp();
+
 function clearIntervals() {
   if (intervals.length != 0) {
     //console.log(intervals)
@@ -532,6 +537,7 @@ packagelossBtn.onclick = function () {
   console.log(`sendedPacks: ${sendedPacks}`);
   console.log(`recivedPacks: ${recivedPacks}`);
   console.log(`packageloss: ${(recivedPacks / sendedPacks * 100) - 100}%`);
+  console.log(ip);
 };
 
 frostyPikeBtn.onclick = function () {
