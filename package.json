@@ -43,6 +43,7 @@
   },
   "dependencies": {
     "dgram": "^1.0.1",
+    "electron-reload": "^2.0.0-alpha.1",
     "electron-squirrel-startup": "^1.0.0",
     "ws": "^7.5.1"
   },
