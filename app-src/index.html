@@ -15,13 +15,21 @@
   <body class="content">
     <h1>ScreenChaser</h1>
 
-    <video id="video" width="100%"></video>
+    <div class="monitor-wrapper">
+      <div class="stand">
+        <div class="monitor">
+          <video id="video" width="100%"></video>
+        </div>
+      </div>
+    </div>
+
     <div
       id="ledStripeRef"
       style="display: flex; justify-content: space-between; width: 100%"
     >
       <span class="led"></span>
     </div>
+
     <div id="test"></div>
 
     <button id="videoSelectBtn">Choose a Video Source</button>
@@ -31,7 +39,6 @@
     <button id="bouncingBallsBtn">bouncingBalls</button>
     <button id="fireFlameBtn">fireFlame</button>
     <button id="colorWheelBtn">colorWheel</button>
-
 
     <button id="packageloss">showPackageLoss</button>
 
