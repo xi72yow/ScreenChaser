@@ -1,8 +1,8 @@
-const { desktopCapturer, remote } = require('electron');
-const { writeFile } = require('fs');
+const { desktopCapturer, remote } = require("electron");
+const { writeFile } = require("fs");
 const { dialog, Menu } = remote;
-const dgram = require('dgram');
-const server = dgram.createSocket('udp4');
+const dgram = require("dgram");
+const server = dgram.createSocket("udp4");
 const MIN_DELAY = 90;
 const neopixelCount = 120;
 const DEBUG = true;
@@ -20,11 +20,11 @@ function clearIntervals() {
   }
 }
 
-server.on('error', (err) => {
+server.on("error", (err) => {
   console.log(`server error:\n${err.stack}`);
   server.close();
 });
-server.on('message', (msg, senderInfo) => {
+server.on("message", (msg, senderInfo) => {
   if (DEBUG) {
     if (recivedPacks == 0) {
       console.log(`Messages received ${msg}`);
@@ -35,11 +35,10 @@ server.on('message', (msg, senderInfo) => {
   console.log(`Message sent to ${senderInfo.address}:${senderInfo.port}`)
   })*/
 });
-server.on('listening', () => {
+server.on("listening", () => {
   const address = server.address();
   console.log(`server listening on ${address.address}:${address.port}`);
 });
-
 
 /**
  * returns an array with arrays of the given size
@@ -61,7 +60,7 @@ function chunkArray(myArray, chunk_size) {
 }
 
 /**
- * returns an 2 digit hex 
+ * returns an 2 digit hex
  *
  * @param rgb {Byte} 8Bit color number
  * @return {String} converted Hex String
@@ -72,7 +71,7 @@ function rgbToHex(rgb) {
     hex = `0${hex}`;
   }
   return hex;
-};
+}
 
 /**
  * js analogous to microcontroller delay
@@ -80,9 +79,7 @@ function rgbToHex(rgb) {
  * @param ms {Integer} time to wait
  */
 function delay(ms) {
-  return new Promise(
-    resolve => setTimeout(resolve, ms)
-  );
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /**
@@ -92,7 +89,7 @@ function delay(ms) {
  * @return {Interger} num between 0 and max
  */
 function random(max) {
-  return Math.random() * max | 0;
+  return (Math.random() * max) | 0;
 }
 
 /**
@@ -157,7 +154,7 @@ function setAll(r, g, b) {
 }
 
 /**
- * set one neopixel of the stripe 
+ * set one neopixel of the stripe
  *
  * @param r {Byte} 8Bit color
  * @param g {Byte} 8Bit color
@@ -168,7 +165,7 @@ function setAll(r, g, b) {
  */
 function setPixel(pixel, stripe, r, g, b) {
   let hexValue = rgbToHex(r) + rgbToHex(g) + rgbToHex(b);
-  stripe[pixel] = hexValue
+  stripe[pixel] = hexValue;
   return stripe;
 }
 
@@ -205,7 +202,7 @@ class ColorWheel {
     this.count = this.speed + this.count;
     if (this.count < 256 * 5) {
       for (let i = 0; i < neopixelCount; i++) {
-        let color = this.Wheel(((i * 256 / neopixelCount) + this.count) & 255);
+        let color = this.Wheel(((i * 256) / neopixelCount + this.count) & 255);
         this.stripe = setPixel(i, this.stripe, color.r, color.g, color.b);
       }
       showStrip(this.stripe);
@@ -227,15 +224,18 @@ class FireFlame {
     let t192 = ((temperature / 255.0) * 191) | 0;
 
     // calculate ramp up from
-    let heatramp = t192 & 0x3F; // 0..63
+    let heatramp = t192 & 0x3f; // 0..63
     heatramp <<= 2; // scale up to 0..252
 
     // figure out which third of the spectrum we're in:
-    if (t192 > 0x80) {                     // hottest
+    if (t192 > 0x80) {
+      // hottest
       this.stripe = setPixel(pixel, this.stripe, 255, 255, heatramp);
-    } else if (t192 > 0x40) {             // middle
+    } else if (t192 > 0x40) {
+      // middle
       this.stripe = setPixel(pixel, this.stripe, 255, heatramp, 0);
-    } else {                               // coolest
+    } else {
+      // coolest
       this.stripe = setPixel(pixel, this.stripe, heatramp, 0, 0);
     }
   }
@@ -244,7 +244,7 @@ class FireFlame {
     let cooldown;
     // Step 1.  Cool down every cell a little
     for (let i = 0; i < neopixelCount; i++) {
-      cooldown = random(((this.cooling * 10) / neopixelCount));
+      cooldown = random((this.cooling * 10) / neopixelCount);
 
       if (cooldown > this.heat[i]) {
         this.heat[i] = 0;
@@ -255,7 +255,8 @@ class FireFlame {
 
     // Step 2.  Heat from each cell drifts 'up' and diffuses a little
     for (let k = neopixelCount - 1; k >= 2; k--) {
-      this.heat[k] = (this.heat[k - 1] + this.heat[k - 2] + this.heat[k - 2]) / 3;
+      this.heat[k] =
+        (this.heat[k - 1] + this.heat[k - 2] + this.heat[k - 2]) / 3;
     }
 
     // Step 3.  Randomly ignite new 'sparks' near the bottom
@@ -299,14 +300,17 @@ class BauncingBalls {
       this.impactVelocity[i] = this.impactVelocityStart;
       this.timeSinceLastBounce[i] = 0;
       this.ballColors[i] = { r: random(255), g: random(255), b: random(255) };
-      this.dampening[i] = 0.90 - i / BallCount ** 2;
+      this.dampening[i] = 0.9 - i / BallCount ** 2;
     }
   }
 
   render() {
     for (let i = 0; i < this.ballCount; i++) {
-      this.timeSinceLastBounce[i] = (millis() - this.clockTimeSinceLastBounce[i]) / this.speed;
-      this.height[i] = 0.5 * this.gravity * (this.timeSinceLastBounce[i] / 1000) ** 2.0 + this.impactVelocity[i] * this.timeSinceLastBounce[i] / 1000;
+      this.timeSinceLastBounce[i] =
+        (millis() - this.clockTimeSinceLastBounce[i]) / this.speed;
+      this.height[i] =
+        0.5 * this.gravity * (this.timeSinceLastBounce[i] / 1000) ** 2.0 +
+        (this.impactVelocity[i] * this.timeSinceLastBounce[i]) / 1000;
 
       if (this.height[i] < 0) {
         this.height[i] = 0;
@@ -317,13 +321,27 @@ class BauncingBalls {
           this.impactVelocity[i] = this.impactVelocityStart;
         }
       }
-      this.position[i] = Math.round(this.height[i] * (neopixelCount - 1) / this.startHeight);
+      this.position[i] = Math.round(
+        (this.height[i] * (neopixelCount - 1)) / this.startHeight
+      );
     }
 
     for (let i = 0; i < this.ballCount; i++) {
-      this.stripe = setPixel(this.position[i], this.stripe, this.ballColors[i].r, this.ballColors[i].b, this.ballColors[i].g);
+      this.stripe = setPixel(
+        this.position[i],
+        this.stripe,
+        this.ballColors[i].r,
+        this.ballColors[i].b,
+        this.ballColors[i].g
+      );
       if (this.mirrored) {
-        this.stripe = setPixel(neopixelCount - this.position[i], this.stripe, this.ballColors[i].r, this.ballColors[i].b, this.ballColors[i].g);
+        this.stripe = setPixel(
+          neopixelCount - this.position[i],
+          this.stripe,
+          this.ballColors[i].r,
+          this.ballColors[i].b,
+          this.ballColors[i].g
+        );
       }
     }
 
@@ -334,14 +352,13 @@ class BauncingBalls {
   getStripe() {
     return this.stripe;
   }
-
 }
 
 async function bouncingBalls() {
   let stripe = setAll(0, 0, 0);
   for (let i = 0; i < neopixelCount; i++) {
     stripe = setPixel(i, stripe, 255, 0, 0);
-    await delay(50)
+    await delay(50);
     showStrip(stripe);
   }
 }
@@ -356,9 +373,9 @@ async function bouncingBalls() {
 async function fadeIn(red, green, blue) {
   let r, g, b;
   for (let k = 0; k < 256; k += 5) {
-    r = (k / 256) * red | 0;
-    g = (k / 256) * green | 0;
-    b = (k / 256) * blue | 0;
+    r = ((k / 256) * red) | 0;
+    g = ((k / 256) * green) | 0;
+    b = ((k / 256) * blue) | 0;
     await delay(MIN_DELAY);
     let stripe = setAll(r, g, b);
     showStrip(stripe);
@@ -375,9 +392,9 @@ async function fadeIn(red, green, blue) {
 async function fadeOut(red, green, blue) {
   let r, g, b;
   for (let k = 255; k >= 0; k -= 5) {
-    r = (k / 256) * red | 0;
-    g = (k / 256) * green | 0;
-    b = (k / 256) * blue | 0;
+    r = ((k / 256) * red) | 0;
+    g = ((k / 256) * green) | 0;
+    b = ((k / 256) * blue) | 0;
     await delay(MIN_DELAY);
     let stripe = setAll(r, g, b);
     showStrip(stripe);
@@ -429,12 +446,25 @@ async function frostyPike(red, green, blue, sparkleDelay) {
  * @param speedDelay {Integer} time between blinkings
  */
 async function twinkleRandom(stripe) {
-  stripe = setPixel(random(neopixelCount), stripe, random(255), random(255), random(255));
+  stripe = setPixel(
+    random(neopixelCount),
+    stripe,
+    random(255),
+    random(255),
+    random(255)
+  );
   showStrip(stripe);
 }
 
 class MeteorRain {
-  constructor(red, green, blue, meteorSize, meteorTrailDecay, meteorRandomDecay) {
+  constructor(
+    red,
+    green,
+    blue,
+    meteorSize,
+    meteorTrailDecay,
+    meteorRandomDecay
+  ) {
     this.stripe = setAll(0, 0, 0);
     this.red = red;
     this.green = green;
@@ -450,9 +480,9 @@ class MeteorRain {
     let r = parseInt(oldColor.slice(0, 2), 16);
     let g = parseInt(oldColor.slice(2, 4), 16);
     let b = parseInt(oldColor.slice(4, 6), 16);
-    r = (r <= 10) ? 0 : (r - fadeValue);
-    g = (g <= 10) ? 0 : (g - fadeValue);
-    b = (b <= 10) ? 0 : (b - fadeValue);
+    r = r <= 10 ? 0 : r - fadeValue;
+    g = g <= 10 ? 0 : g - fadeValue;
+    b = b <= 10 ? 0 : b - fadeValue;
     stripe = setPixel(pixel, stripe, r, g, b);
     return stripe;
   }
@@ -461,14 +491,20 @@ class MeteorRain {
     this.count++;
     // fade brightness all LEDs one step
     for (let j = 0; j < neopixelCount; j++) {
-      if ((!this.meteorRandomDecay) || (random(10) > 5)) {
+      if (!this.meteorRandomDecay || random(10) > 5) {
         this.stripe = this.fadeToBlack(j, this.stripe, this.meteorTrailDecay);
       }
     }
     // draw meteor
     for (let k = 0; k < this.meteorSize; k++) {
-      if ((this.count - k < neopixelCount) && (this.count - k >= 0)) {
-        this.stripe = setPixel(this.count - k, this.stripe, this.red, this.green, this.blue);
+      if (this.count - k < neopixelCount && this.count - k >= 0) {
+        this.stripe = setPixel(
+          this.count - k,
+          this.stripe,
+          this.red,
+          this.green,
+          this.blue
+        );
       }
     }
     showStrip(this.stripe);
@@ -510,18 +546,18 @@ function createExampleStripe(params) {
 }, 1000);*/
 
 // buttons fireFlameBtn
-const videoElement = document.querySelector('#video');
-const frostyPikeBtn = document.querySelector('#frostyPikeBtn');
-const twinkleRandomBtn = document.querySelector('#twinkleRandomBtn');
-const meteorRainBtn = document.querySelector('#meteorRainBtn');
-const bouncingBallsBtn = document.querySelector('#bouncingBallsBtn');
-const fireFlameBtn = document.querySelector('#fireFlameBtn');
-const colorWheelBtn = document.querySelector('#colorWheelBtn');
-const packagelossBtn = document.querySelector('#packageloss');
-const canvas = document.querySelector('#canvas');
+const videoElement = document.querySelector("#video");
+const frostyPikeBtn = document.querySelector("#frostyPikeBtn");
+const twinkleRandomBtn = document.querySelector("#twinkleRandomBtn");
+const meteorRainBtn = document.querySelector("#meteorRainBtn");
+const bouncingBallsBtn = document.querySelector("#bouncingBallsBtn");
+const fireFlameBtn = document.querySelector("#fireFlameBtn");
+const colorWheelBtn = document.querySelector("#colorWheelBtn");
+const packagelossBtn = document.querySelector("#packageloss");
+const canvas = document.querySelector("#canvas");
 
 videoElement.onclick = function () {
-  clearIntervals()
+  clearIntervals();
   let ambiInterval = setInterval(() => {
     processCtxData();
   }, 100);
@@ -531,7 +567,7 @@ videoElement.onclick = function () {
 packagelossBtn.onclick = function () {
   console.log(`sendedPacks: ${sendedPacks}`);
   console.log(`recivedPacks: ${recivedPacks}`);
-  console.log(`packageloss: ${(recivedPacks / sendedPacks * 100) - 100}%`);
+  console.log(`packageloss: ${(recivedPacks / sendedPacks) * 100 - 100}%`);
 };
 
 frostyPikeBtn.onclick = function () {
@@ -546,7 +582,7 @@ twinkleRandomBtn.onclick = function () {
   let stripe = setAll(0, 0, 0);
   clearIntervals();
   let twinkleRandomInterval = setInterval(() => {
-    twinkleRandom(stripe)
+    twinkleRandom(stripe);
   }, 100);
   intervals.push(twinkleRandomInterval);
 };
@@ -588,16 +624,16 @@ colorWheelBtn.onclick = function () {
 };
 
 function processCtxData() {
-  // set the canvas to the dimensions of the video feed 
+  // set the canvas to the dimensions of the video feed
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
   // make the snapshot
-  let ctx = canvas.getContext('2d');
+  let ctx = canvas.getContext("2d");
   ctx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
   let frame = ctx.getImageData(0, 0, video.videoWidth, video.videoHeight);
   //interresting pixels at the top and bottom
 
-  const averagePixelHeight = (0.20 * video.videoHeight) | 0;
+  const averagePixelHeight = (0.2 * video.videoHeight) | 0;
   const averagePixelWidth = video.videoWidth / neopixelCount;
   const importentTestPixel = averagePixelHeight * video.videoWidth;
 
@@ -606,9 +642,13 @@ function processCtxData() {
 
   const neopixels = new Array(neopixelCount * 4).fill(0);
   // for the top of the screen
-  //for (let i = 0; i < importentTestPixel / 4; i++) 
+  //for (let i = 0; i < importentTestPixel / 4; i++)
   // for the bottom of the screen
-  for (let i = frame.data.length / 4 - importentTestPixel; i < frame.data.length / 4; i += 15) {
+  for (
+    let i = frame.data.length / 4 - importentTestPixel;
+    i < frame.data.length / 4;
+    i += 15
+  ) {
     let currentNeoPix = ((i % video.videoWidth) / averagePixelWidth) | 0;
 
     let r = frame.data[i * 4 + 0];
@@ -628,25 +668,28 @@ function processCtxData() {
 
   for (let i = 0; i < neopixelCount; i++) {
     let count = neopixels[i * 4 + 3];
-    stripe[i] = rgbToHex(neopixels[i * 4 + 0] / count | 0) + rgbToHex(neopixels[i * 4 + 1] / count | 0) + rgbToHex(neopixels[i * 4 + 2] / count | 0);
+    stripe[i] =
+      rgbToHex((neopixels[i * 4 + 0] / count) | 0) +
+      rgbToHex((neopixels[i * 4 + 1] / count) | 0) +
+      rgbToHex((neopixels[i * 4 + 2] / count) | 0);
   }
   showStrip(stripe);
 }
 
-const videoSelectBtn = document.getElementById('videoSelectBtn');
+const videoSelectBtn = document.getElementById("videoSelectBtn");
 videoSelectBtn.onclick = getVideoSources;
 
 // get the available video sources
 async function getVideoSources() {
-  clearIntervals()
+  clearIntervals();
   const inputSources = await desktopCapturer.getSources({
-    types: ['window', 'screen']
+    types: ["window", "screen"],
   });
 
   const videoOptionsMenu = Menu.buildFromTemplate(
-    inputSources.map(source => ({
+    inputSources.map((source) => ({
       label: source.name,
-      click: () => selectSource(source)
+      click: () => selectSource(source),
     }))
   );
   videoOptionsMenu.popup();
@@ -660,14 +703,13 @@ async function selectSource(source) {
     audio: false,
     video: {
       mandatory: {
-        chromeMediaSource: 'desktop',
-        chromeMediaSourceId: source.id
-      }
-    }
+        chromeMediaSource: "desktop",
+        chromeMediaSourceId: source.id,
+      },
+    },
   };
 
-  const stream = await navigator.mediaDevices
-    .getUserMedia(constraints);
+  const stream = await navigator.mediaDevices.getUserMedia(constraints);
 
   // preview
   videoElement.srcObject = stream;

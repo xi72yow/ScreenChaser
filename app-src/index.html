@@ -5,6 +5,8 @@
     <title>ScreenChaser</title>
     <link rel="stylesheet" href="index.css" />
     <script defer src="render.js"></script>
+    <script type="module" defer src="3dpreview.js"></script>
+
     <style>
       .leds {
         width: 10px;
@@ -13,7 +15,7 @@
     </style>
   </head>
   <body class="content">
-    <h1>ScreenChaser</h1>
+    <canvas id="renderCanvas"></canvas>
 
     <div class="monitor-wrapper">
       <div class="stand">
