@@ -73,6 +73,21 @@ function rgbToHex(rgb) {
   return hex;
 }
 
+function hexToRgb(hex) {
+  var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result
+    ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16),
+      }
+    : {
+        r: 0,
+        g: 0,
+        b: 0,
+      };
+}
+
 /**
  * js analogous to microcontroller delay
  *
@@ -129,6 +144,13 @@ function showNeoStrip(pixelArray) {
 function renderPreview(htmlStrip) {
   let spanLeds = document.getElementsByClassName("leds");
   for (let i = 0; i < spanLeds.length; i++) {
+    let rgb = hexToRgb(htmlStrip[i]);
+
+    stripe3D[i].material.emissiveColor = new BABYLON.Color3(
+      rgb.r / 255,
+      rgb.g / 255,
+      rgb.b / 255
+    );
     let led = spanLeds[i];
     led.style.backgroundColor = `#${htmlStrip[i]}`;
   }

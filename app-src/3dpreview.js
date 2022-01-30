@@ -1,5 +1,7 @@
 const BABYLON = require("babylonjs");
 
+let stripe3D = new Array(120);
+
 // Get the canvas DOM element
 var canvas3D = document.getElementById("renderCanvas");
 // Load the 3D engine
@@ -11,6 +13,29 @@ var engine = new BABYLON.Engine(canvas3D, true, {
 var createScene = function () {
   // This creates a basic Babylon Scene object (non-mesh)
   var scene = new BABYLON.Scene(engine);
+
+  var ledGlow = new BABYLON.GlowLayer("ledGlow", scene, {
+    mainTextureFixedSize: 256,
+    blurKernelSize: 64,
+  });
+
+  for (let i = 0; i < 120; i++) {
+    let led = new BABYLON.MeshBuilder.CreateBox(
+      "stripe-led",
+      { height: 0.25, width: 0.5, depth: 0.5 },
+      scene
+    );
+
+    let ledMat = new BABYLON.StandardMaterial("ledMat" + i);
+    ledMat.emissiveColor = new BABYLON.Color3(0, 0, 0);
+    led.material = ledMat;
+    led.position.x = -30 + 0.6 * i;
+    led.position.y = -5;
+
+    ledGlow.addIncludedOnlyMesh(led);
+
+    stripe3D[i] = led;
+  }
 
   // This creates and positions a free camera (non-mesh)
   var camera = new BABYLON.ArcRotateCamera(
@@ -25,22 +50,19 @@ var createScene = function () {
   // This attaches the camera to the canvas
   camera.attachControl(canvas, true);
 
-  var light = new BABYLON.HemisphericLight(
-    "light1",
-    new BABYLON.Vector3(0, 1, 0),
-    scene
-  );
-
-  light.diffuse = new BABYLON.Color3(0.5, 0, 0);
-
-  var ground = BABYLON.Mesh.CreateGround("ground1", 6, 6, 2, scene, false);
-
-  var planeOpts = {
+  /*   var ground = BABYLON.Mesh.CreateGround("ground1", 6, 6, 2, scene, false);
+   */
+  var screen = {
     height: 9,
     width: 16,
     sideOrientation: BABYLON.Mesh.DOUBLESIDE,
   };
-  var ANote0Video = BABYLON.MeshBuilder.CreatePlane("plane", planeOpts, scene);
+
+  var ANote0Video = BABYLON.MeshBuilder.CreatePlane(
+    "display_plane",
+    screen,
+    scene
+  );
   var vidPos = new BABYLON.Vector3(0, 0, 0.1);
   ANote0Video.position = vidPos;
   var ANote0VideoMat = new BABYLON.StandardMaterial("m", scene);
