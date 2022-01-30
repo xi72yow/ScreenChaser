@@ -1,4 +1,5 @@
 const BABYLON = require("babylonjs");
+require("babylonjs-loaders");
 
 let stripe3D = new Array(120);
 
@@ -22,18 +23,18 @@ var createScene = function () {
   for (let i = 0; i < 120; i++) {
     let led = new BABYLON.MeshBuilder.CreateBox(
       "stripe-led",
-      { height: 0.25, width: 0.5, depth: 0.5 },
+      { height: 0.025, width: 0.05, depth: 0.05 },
       scene
     );
 
     let ledMat = new BABYLON.StandardMaterial("ledMat" + i);
     ledMat.emissiveColor = new BABYLON.Color3(0, 0, 0);
+    ledMat.str;
     led.material = ledMat;
-    led.position.x = -30 + 0.6 * i;
-    led.position.y = -5;
+    led.position.x = 0 + 0.06 * i;
+    led.position.y = 1.5;
 
     ledGlow.addIncludedOnlyMesh(led);
-
     stripe3D[i] = led;
   }
 
@@ -84,6 +85,13 @@ var createScene = function () {
     }
   }, BABYLON.PointerEventTypes.POINTERPICK);
 
+  BABYLON.SceneLoader.ImportMeshAsync(null, "./", "isometricRoom.gltf");
+
+  /*   var light = new BABYLON.HemisphericLight(
+    "HemiLight",
+    new BABYLON.Vector3(0, 1, 0),
+    scene
+  ); */
   //scene.fogMode = BABYLON.Scene.FOGMODE_EXP;
   //console.log(ANote0Video);
   return scene;
