@@ -1,6 +1,5 @@
 {
   "name": "screenchaser",
-  "type": "module",
   "productName": "ScreenChaser",
   "version": "1.0.0",
   "description": "My Electron application description",

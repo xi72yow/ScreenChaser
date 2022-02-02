@@ -21,11 +21,16 @@ function createExampleStripe(neopixelCount) {
 
 let MeteorRainEffect = new MeteorRain(155, 25, 200, 5, 20, 100, 120);
 let FireFlameEffect = new FireFlame(150, 30, 120);
-let DataEmitterForIP = new DataEmitter("192.168.2.113");
 let BouncingBallsEffect = new BouncingBalls(255, false, 10, 3, 120);
 let ColorWheelEffect = new ColorWheel(2, 120);
 let FrostyPikeEffect = new FrostyPike(createExampleStripe(120), 5, 120);
 
-setInterval(() => {
-  DataEmitterForIP.emit(FrostyPikeEffect.render());
-}, 100);
+async function main() {
+  let DataEmitterForIP = new DataEmitter();
+  await DataEmitterForIP.init();
+  setInterval(() => {
+    DataEmitterForIP.emit(FrostyPikeEffect.render());
+  }, 100);
+}
+
+main();
