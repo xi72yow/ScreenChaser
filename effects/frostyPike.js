@@ -1,10 +1,11 @@
 const setPixel = require("./basics/setPixel");
 const random = require("./basics/random");
+const setAll = require("./basics/setAll");
 
 class FrostyPike {
   constructor(baseStripe, delay, neopixelCount) {
     this.count = 0;
-    this.baseStripe = baseStripe;
+    this.baseStripe = baseStripe ? baseStripe : setAll(0, 0, 0, neopixelCount);
     this.stripe = baseStripe;
     this.neopixelCount = neopixelCount;
     this.delay = delay;

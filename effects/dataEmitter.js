@@ -46,10 +46,10 @@ class DataEmitter {
    */
   chunkArray(myArray, chunk_size) {
     let index = 0;
-    let tempArray = [];
+    const tempArray = [];
 
     for (index = 0; index < myArray.length; index += chunk_size) {
-      let myChunk = myArray.slice(index, index + chunk_size);
+      const myChunk = myArray.slice(index, index + chunk_size);
       // Do something if you want with the group
       tempArray.push(myChunk);
     }
@@ -65,10 +65,10 @@ class DataEmitter {
   }
 
   combinations(n) {
-    var r = [];
-    for (var i = 0; i < 1 << n; i++) {
-      var c = [];
-      for (var j = 0; j < n; j++) {
+    const r = [];
+    for (let i = 0; i < 1 << n; i++) {
+      const c = [];
+      for (let j = 0; j < n; j++) {
         c.push(i & (1 << j) ? "1" : "0");
       }
       r.push(c.join(""));
@@ -86,7 +86,7 @@ class DataEmitter {
     return ip
       .split(".")
       .map((value) => {
-        let convert = this.dec2bin(parseInt(value));
+        const convert = this.dec2bin(parseInt(value));
         return "0".repeat(8 - convert.length) + convert;
       })
       .join("");
@@ -106,10 +106,10 @@ class DataEmitter {
       return;
     }
 
-    let hexColorStrip = [];
+    const hexColorStrip = [];
     let pixelUDPframe = "";
     for (let i = 0; i < pixelArray.length; i++) {
-      let rgb = pixelArray[i];
+      const rgb = pixelArray[i];
       pixelUDPframe += rgb;
       hexColorStrip[i] = rgb;
     }
@@ -140,14 +140,13 @@ class DataEmitter {
     return new Promise(async (resolve, reject) => {
       if (this.ipaddr === "") {
         this.SCAN_NETWORK = true;
-        let scanning = await this.scanNetwork();
+        const scanning = await this.scanNetwork();
         this.ipaddr = scanning[0].address;
         console.log(`ipaddr is set to: ${this.ipaddr}`);
-        resolve();
       } else {
         console.log(`ipaddr is alredy set to: ${this.ipaddr}`);
-        resolve();
       }
+      resolve();
       this.SCAN_NETWORK = false;
     });
   }
@@ -157,30 +156,30 @@ class DataEmitter {
     return new Promise(async (resolve, reject) => {
       console.log("Scanning network...");
       let scanningCount = 0;
-      let interfaces = Object.keys(os.networkInterfaces()).filter(
+      const interfaces = Object.keys(os.networkInterfaces()).filter(
         (value) => value !== "lo"
       );
 
-      let importantInterface = os.networkInterfaces()[interfaces[0]][0];
-      let netmaskBin = this.ipToBin(importantInterface.netmask);
-      let addressBin = this.ipToBin(importantInterface.address);
-      let netmaskCount = netmaskBin.indexOf("0");
-      let reverseMask =
+      const importantInterface = os.networkInterfaces()[interfaces[0]][0];
+      const netmaskBin = this.ipToBin(importantInterface.netmask);
+      const addressBin = this.ipToBin(importantInterface.address);
+      const netmaskCount = netmaskBin.indexOf("0");
+      const reverseMask =
         "0".repeat(netmaskCount) + "1".repeat(32 - netmaskCount);
-      let baseAddressBin = addressBin.slice(0, netmaskCount);
-      let minAddrBin = `${baseAddressBin + "0".repeat(31 - netmaskCount)}1`;
-      let maxAddrBin = `${baseAddressBin + "1".repeat(31 - netmaskCount)}0`;
-      let broadcastAddr = this.dec2bin(
+      const baseAddressBin = addressBin.slice(0, netmaskCount);
+      const minAddrBin = `${baseAddressBin + "0".repeat(31 - netmaskCount)}1`;
+      const maxAddrBin = `${baseAddressBin + "1".repeat(31 - netmaskCount)}0`;
+      const broadcastAddr = this.dec2bin(
         parseInt(reverseMask, 2) |
           parseInt(addressBin + "0".repeat(32 - addressBin.length), 2)
       );
-      let myIp = this.binToIp(addressBin);
-      let broadcast = this.binToIp(broadcastAddr);
-      let maxAddr = this.binToIp(maxAddrBin);
-      let gateWay = this.binToIp(minAddrBin);
-      let addressesCount = 2 ** (32 - netmaskCount) - 2;
+      const myIp = this.binToIp(addressBin);
+      const broadcast = this.binToIp(broadcastAddr);
+      const maxAddr = this.binToIp(maxAddrBin);
+      const gateWay = this.binToIp(minAddrBin);
+      const addressesCount = 2 ** (32 - netmaskCount) - 2;
 
-      let trys = this.combinations(32 - netmaskCount);
+      const trys = this.combinations(32 - netmaskCount);
       
       while (this.xSlaves.length === 0) {
         scanningCount++;

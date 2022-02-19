@@ -49,7 +49,7 @@ server.on("listening", () => {
  */
 function chunkArray(myArray, chunk_size) {
   let index = 0;
-  let tempArray = [];
+  const tempArray = [];
 
   for (index = 0; index < myArray.length; index += chunk_size) {
     myChunk = myArray.slice(index, index + chunk_size);
@@ -66,15 +66,15 @@ function chunkArray(myArray, chunk_size) {
  * @return {String} converted Hex String
  */
 function rgbToHex(rgb) {
-  let hex = Number(rgb).toString(16);
+  const hex = Number(rgb).toString(16);
   if (hex.length < 2) {
-    hex = `0${hex}`;
+    return `0${hex}`;
   }
   return hex;
 }
 
 function hexToRgb(hex) {
-  var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result
     ? {
         r: parseInt(result[1], 16),
@@ -114,10 +114,10 @@ function random(max) {
  * @return {Array} light colors (hex-color formatted)
  */
 function showNeoStrip(pixelArray) {
-  let hexColorStrip = [];
+  const hexColorStrip = [];
   let pixelUDPframe = "";
   for (let i = 0; i < pixelArray.length; i++) {
-    let rgb = pixelArray[i];
+    const rgb = pixelArray[i];
     pixelUDPframe += rgb;
     hexColorStrip[i] = rgb;
   }
@@ -142,16 +142,16 @@ function showNeoStrip(pixelArray) {
  * @param htmlStrip {Array} represents the light colors (hex-color formatted)
  */
 function renderPreview(htmlStrip) {
-  let spanLeds = document.getElementsByClassName("leds");
+  const spanLeds = document.getElementsByClassName("leds");
   for (let i = 0; i < spanLeds.length; i++) {
-    let rgb = hexToRgb(htmlStrip[i]);
+    const rgb = hexToRgb(htmlStrip[i]);
 
     stripe3D[i].material.emissiveColor = new BABYLON.Color3(
       rgb.r / 255,
       rgb.g / 255,
       rgb.b / 255
     );
-    let led = spanLeds[i];
+    const led = spanLeds[i];
     led.style.backgroundColor = `#${htmlStrip[i]}`;
   }
 }
@@ -162,7 +162,7 @@ function renderPreview(htmlStrip) {
  * @param stripe {Array} represents the light colors (rgb-color formatted)
  */
 function showStrip(stripe) {
-  let htmlStrip = showNeoStrip(stripe);
+  const htmlStrip = showNeoStrip(stripe);
   stripeReferenz = htmlStrip;
   renderPreview(htmlStrip);
 }
@@ -186,7 +186,7 @@ function setAll(r, g, b) {
  * @return {Array} modified stripe
  */
 function setPixel(pixel, stripe, r, g, b) {
-  let hexValue = rgbToHex(r) + rgbToHex(g) + rgbToHex(b);
+  const hexValue = rgbToHex(r) + rgbToHex(g) + rgbToHex(b);
   stripe[pixel] = hexValue;
   return stripe;
 }
@@ -224,7 +224,7 @@ class ColorWheel {
     this.count = this.speed + this.count;
     if (this.count < 256 * 5) {
       for (let i = 0; i < neopixelCount; i++) {
-        let color = this.Wheel(((i * 256) / neopixelCount + this.count) & 255);
+        const color = this.Wheel(((i * 256) / neopixelCount + this.count) & 255);
         this.stripe = setPixel(i, this.stripe, color.r, color.g, color.b);
       }
       showStrip(this.stripe);
@@ -243,7 +243,7 @@ class FireFlame {
 
   setPixelHeatColor(pixel, temperature) {
     // Scale 'heat' down from 0-255 to 0-191
-    let t192 = ((temperature / 255.0) * 191) | 0;
+    const t192 = ((temperature / 255.0) * 191) | 0;
 
     // calculate ramp up from
     let heatramp = t192 & 0x3f; // 0..63
@@ -268,11 +268,7 @@ class FireFlame {
     for (let i = 0; i < neopixelCount; i++) {
       cooldown = random((this.cooling * 10) / neopixelCount);
 
-      if (cooldown > this.heat[i]) {
-        this.heat[i] = 0;
-      } else {
-        this.heat[i] = this.heat[i] - cooldown;
-      }
+      this.heat[i] = cooldown > this.heat[i] ? 0 : this.heat[i] - cooldown;
     }
 
     // Step 2.  Heat from each cell drifts 'up' and diffuses a little
@@ -283,7 +279,7 @@ class FireFlame {
 
     // Step 3.  Randomly ignite new 'sparks' near the bottom
     if (random(255) < this.sparking) {
-      let y = random(7);
+      const y = random(7);
       this.heat[y] = this.heat[y] + random(95) + 160;
       //heat[y] = random(160,255);
     }
@@ -393,13 +389,15 @@ async function bouncingBalls() {
  * @param blue {Byte} 8Bit color
  */
 async function fadeIn(red, green, blue) {
-  let r, g, b;
+  let r;
+  let g;
+  let b;
   for (let k = 0; k < 256; k += 5) {
     r = ((k / 256) * red) | 0;
     g = ((k / 256) * green) | 0;
     b = ((k / 256) * blue) | 0;
     await delay(MIN_DELAY);
-    let stripe = setAll(r, g, b);
+    const stripe = setAll(r, g, b);
     showStrip(stripe);
   }
 }
@@ -412,13 +410,15 @@ async function fadeIn(red, green, blue) {
  * @param blue {Byte} 8Bit color
  */
 async function fadeOut(red, green, blue) {
-  let r, g, b;
+  let r;
+  let g;
+  let b;
   for (let k = 255; k >= 0; k -= 5) {
     r = ((k / 256) * red) | 0;
     g = ((k / 256) * green) | 0;
     b = ((k / 256) * blue) | 0;
     await delay(MIN_DELAY);
-    let stripe = setAll(r, g, b);
+    const stripe = setAll(r, g, b);
     showStrip(stripe);
   }
 }
@@ -453,7 +453,7 @@ async function colorWipe(red, green, blue, speedDelay) {
 async function frostyPike(red, green, blue, sparkleDelay) {
   sparkleDelay = sparkleDelay < MIN_DELAY ? MIN_DELAY : sparkleDelay;
   let stripe = setAll(red, green, blue);
-  let pixel = random(neopixelCount);
+  const pixel = random(neopixelCount);
   stripe = setPixel(pixel, stripe, 255, 255, 255);
   showStrip(stripe);
   await delay(sparkleDelay);
@@ -498,15 +498,14 @@ class MeteorRain {
   }
 
   fadeToBlack(pixel, stripe, fadeValue) {
-    let oldColor = stripe[pixel];
+    const oldColor = stripe[pixel];
     let r = parseInt(oldColor.slice(0, 2), 16);
     let g = parseInt(oldColor.slice(2, 4), 16);
     let b = parseInt(oldColor.slice(4, 6), 16);
     r = r <= 10 ? 0 : r - fadeValue;
     g = g <= 10 ? 0 : g - fadeValue;
     b = b <= 10 ? 0 : b - fadeValue;
-    stripe = setPixel(pixel, stripe, r, g, b);
-    return stripe;
+    return setPixel(pixel, stripe, r, g, b);
   }
 
   render() {
@@ -540,7 +539,7 @@ class MeteorRain {
 }
 
 function createExampleStripe(params) {
-  let stripe = setAll(175, 0, 105);
+  const stripe = setAll(175, 0, 105);
 
   for (let index = 0; index < neopixelCount / 2; index++) {
     setPixel(index, stripe, 255, 187, 0);
@@ -580,7 +579,7 @@ const canvas = document.querySelector("#canvas");
 
 videoElement.onclick = function () {
   clearIntervals();
-  let ambiInterval = setInterval(() => {
+  const ambiInterval = setInterval(() => {
     processCtxData();
   }, 100);
   intervals.push(ambiInterval);
@@ -594,16 +593,16 @@ packagelossBtn.onclick = function () {
 
 frostyPikeBtn.onclick = function () {
   clearIntervals();
-  let frostyPikeInterval = setInterval(() => {
+  const frostyPikeInterval = setInterval(() => {
     frostyPike(10, 10, 10, 100);
   }, 100);
   intervals.push(frostyPikeInterval);
 };
 
 twinkleRandomBtn.onclick = function () {
-  let stripe = setAll(0, 0, 0);
+  const stripe = setAll(0, 0, 0);
   clearIntervals();
-  let twinkleRandomInterval = setInterval(() => {
+  const twinkleRandomInterval = setInterval(() => {
     twinkleRandom(stripe);
   }, 100);
   intervals.push(twinkleRandomInterval);
@@ -611,8 +610,8 @@ twinkleRandomBtn.onclick = function () {
 
 meteorRainBtn.onclick = function () {
   clearIntervals();
-  let obj = new MeteorRain(155, 25, 200, 5, 20, true, 100);
-  let meteorRainInterval = setInterval(() => {
+  const obj = new MeteorRain(155, 25, 200, 5, 20, true, 100);
+  const meteorRainInterval = setInterval(() => {
     obj.render();
   }, 100);
   intervals.push(meteorRainInterval);
@@ -620,8 +619,8 @@ meteorRainBtn.onclick = function () {
 
 bouncingBallsBtn.onclick = function () {
   clearIntervals();
-  let obj = new BauncingBalls(255, true, 10, 3);
-  let bounceInterval = setInterval(() => {
+  const obj = new BauncingBalls(255, true, 10, 3);
+  const bounceInterval = setInterval(() => {
     obj.render();
   }, 100);
   intervals.push(bounceInterval);
@@ -629,8 +628,8 @@ bouncingBallsBtn.onclick = function () {
 
 fireFlameBtn.onclick = function () {
   clearIntervals();
-  let obj = new FireFlame(150, 30);
-  let fireInterval = setInterval(() => {
+  const obj = new FireFlame(150, 30);
+  const fireInterval = setInterval(() => {
     obj.render();
   }, 100);
   intervals.push(fireInterval);
@@ -638,8 +637,8 @@ fireFlameBtn.onclick = function () {
 
 colorWheelBtn.onclick = function () {
   clearIntervals();
-  let obj = new ColorWheel(2);
-  let colorInterval = setInterval(() => {
+  const obj = new ColorWheel(2);
+  const colorInterval = setInterval(() => {
     obj.render();
   }, 100);
   intervals.push(colorInterval);
@@ -650,9 +649,9 @@ function processCtxData() {
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
   // make the snapshot
-  let ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext("2d");
   ctx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
-  let frame = ctx.getImageData(0, 0, video.videoWidth, video.videoHeight);
+  const frame = ctx.getImageData(0, 0, video.videoWidth, video.videoHeight);
   //interresting pixels at the top and bottom
 
   const averagePixelHeight = (0.2 * video.videoHeight) | 0;
@@ -671,25 +670,25 @@ function processCtxData() {
     i < frame.data.length / 4;
     i += 15
   ) {
-    let currentNeoPix = ((i % video.videoWidth) / averagePixelWidth) | 0;
+    const currentNeoPix = ((i % video.videoWidth) / averagePixelWidth) | 0;
 
-    let r = frame.data[i * 4 + 0];
+    const r = frame.data[i * 4 + 0];
     neopixels[currentNeoPix * 4 + 0] = neopixels[currentNeoPix * 4 + 0] + r;
 
-    let g = frame.data[i * 4 + 1];
+    const g = frame.data[i * 4 + 1];
     neopixels[currentNeoPix * 4 + 1] = neopixels[currentNeoPix * 4 + 1] + g;
 
-    let b = frame.data[i * 4 + 2];
+    const b = frame.data[i * 4 + 2];
     neopixels[currentNeoPix * 4 + 2] = neopixels[currentNeoPix * 4 + 2] + b;
 
     // pixel counter for average neopixel do not need alpha
     neopixels[currentNeoPix * 4 + 3] = neopixels[currentNeoPix * 4 + 3] + 1;
   }
 
-  let stripe = [];
+  const stripe = [];
 
   for (let i = 0; i < neopixelCount; i++) {
-    let count = neopixels[i * 4 + 3];
+    const count = neopixels[i * 4 + 3];
     stripe[i] =
       rgbToHex((neopixels[i * 4 + 0] / count) | 0) +
       rgbToHex((neopixels[i * 4 + 1] / count) | 0) +
