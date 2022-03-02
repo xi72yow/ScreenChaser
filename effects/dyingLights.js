@@ -24,9 +24,7 @@ class DyingLights {
     );
     return this.stripe;
   }
-  flickerValue() {
-    
-  }
+  flickerValue() {}
   startUvTube() {
     let hsv = rgbToHsv({ r: this.red, g: this.green, b: this.blue });
     const value = hsv.v / (this.neopixelCount / random(4));
@@ -45,12 +43,24 @@ class DyingLights {
   }
   render() {
     this.count++;
+    
     if (this.count < 20 && this.count % random(4) === 0) {
       this.stripe = this.startUvTube();
     }
 
     if (this.count % 25 === 0) {
       this.stripe = this.flickerRed();
+    }
+
+    if (this.count % 25 === random(5)) {
+      this.stripe = [...this.baseStripe];
+    }
+
+    if (this.count % 121 === 1 || this.count % 121 === 25) {
+      this.stripe = setAll(0, 0, 0, this.neopixelCount);
+    }
+    if (this.count % 121 === 5 || this.count % 121 === 27) {
+      this.stripe = [...this.baseStripe];
     }
 
     return this.stripe;
