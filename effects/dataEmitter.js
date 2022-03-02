@@ -2,7 +2,7 @@ const dgram = require("dgram");
 const os = require("os");
 
 class DataEmitter {
-  constructor(ipaddr = "", DEBUG = false) {
+  constructor(DEBUG = false, ipaddr = "") {
     this.ipaddr = ipaddr;
     this.lastChunk = [];
     this.xSlaves = [];
@@ -130,10 +130,14 @@ class DataEmitter {
 
   logHealth() {
     if (this.DEBUG) {
-      console.log(`sendedPacks: ${sendedPacks}`);
-      console.log(`recivedPacks: ${recivedPacks}`);
-      console.log(`packageloss: ${(recivedPacks / sendedPacks) * 100 - 100}%`);
-    } else console.log("DEBUG is off");
+      console.log(`sendedPacks: ${this.sendedPacks}`);
+      console.log(`recivedPacks: ${this.recivedPacks}`);
+      console.log(
+        `packageloss: ${(this.recivedPacks / this.sendedPacks) * 100 - 100}%`
+      );
+    } else {
+      console.log("debug is off");
+    }
   }
 
   async init() {
@@ -180,7 +184,7 @@ class DataEmitter {
       const addressesCount = 2 ** (32 - netmaskCount) - 2;
 
       const trys = this.combinations(32 - netmaskCount);
-      
+
       while (this.xSlaves.length === 0) {
         scanningCount++;
 

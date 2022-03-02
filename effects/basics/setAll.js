@@ -1,4 +1,4 @@
-const rgbToHex = require("./rgbToHex")
+const {rgbToHex} = require("./convertRgbHex")
 /**
  * 
  * @param {byte} r 8Bit color

@@ -1,4 +1,4 @@
-const rgbToHex = require("./rgbToHex")
+const {rgbToHex} = require("./convertRgbHex")
 /**
  * set one neopixel of the stripe 
  *
