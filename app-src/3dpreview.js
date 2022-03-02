@@ -21,6 +21,9 @@ var createScene = function () {
   });
 
   for (let i = 0; i < 120; i++) {
+    let pl = new BABYLON.PointLight("pl", scene);
+    pl.diffuse = new BABYLON.Color3(0, 0, 0);
+    pl.intensity = 0.07;
     let led = new BABYLON.MeshBuilder.CreateBox(
       "stripe-led",
       { height: 0.025, width: 0.05, depth: 0.05 },
@@ -31,11 +34,14 @@ var createScene = function () {
     ledMat.emissiveColor = new BABYLON.Color3(0, 0, 0);
     ledMat.str;
     led.material = ledMat;
+    pl.position.x = 0 + 0.06 * i;
+    pl.position.y = 1.5;
+
     led.position.x = 0 + 0.06 * i;
     led.position.y = 1.5;
 
     ledGlow.addIncludedOnlyMesh(led);
-    stripe3D[i] = led;
+    stripe3D[i] = { led: led, pl: pl };
   }
 
   // This creates and positions a free camera (non-mesh)
@@ -54,8 +60,8 @@ var createScene = function () {
   /*   var ground = BABYLON.Mesh.CreateGround("ground1", 6, 6, 2, scene, false);
    */
   var screen = {
-    height: 9,
-    width: 16,
+    height: 0.45,
+    width: 0.8,
     sideOrientation: BABYLON.Mesh.DOUBLESIDE,
   };
 
@@ -64,7 +70,8 @@ var createScene = function () {
     screen,
     scene
   );
-  var vidPos = new BABYLON.Vector3(0, 0, 0.1);
+
+  var vidPos = new BABYLON.Vector3(0, 1.3, -0.7);
   ANote0Video.position = vidPos;
   var ANote0VideoMat = new BABYLON.StandardMaterial("m", scene);
   var ANote0VideoVidTex = new BABYLON.VideoTexture(
@@ -85,7 +92,18 @@ var createScene = function () {
     }
   }, BABYLON.PointerEventTypes.POINTERPICK);
 
-  BABYLON.SceneLoader.ImportMeshAsync(null, "./", "isometricRoom.gltf");
+  BABYLON.SceneLoader.ImportMeshAsync(null, "./", "isometricRoom.gltf").then(
+    (meshes) => {
+      console.log(
+        "🚀 ~ file: 3dpreview.js ~ line 96 ~ createScene ~ meshes",
+        meshes
+      );
+
+      for (let i = 0; i < meshes.meshes.length; i++) {
+        console.log("meshes[i].name");
+      }
+    }
+  );
 
   /*   var light = new BABYLON.HemisphericLight(
     "HemiLight",

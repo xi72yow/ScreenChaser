@@ -146,7 +146,12 @@ function renderPreview(htmlStrip) {
   for (let i = 0; i < spanLeds.length; i++) {
     const rgb = hexToRgb(htmlStrip[i]);
 
-    stripe3D[i].material.emissiveColor = new BABYLON.Color3(
+    stripe3D[i].led.material.emissiveColor = new BABYLON.Color3(
+      rgb.r / 255,
+      rgb.g / 255,
+      rgb.b / 255
+    );
+    stripe3D[i].pl.diffuse = new BABYLON.Color3(
       rgb.r / 255,
       rgb.g / 255,
       rgb.b / 255
@@ -224,7 +229,9 @@ class ColorWheel {
     this.count = this.speed + this.count;
     if (this.count < 256 * 5) {
       for (let i = 0; i < neopixelCount; i++) {
-        const color = this.Wheel(((i * 256) / neopixelCount + this.count) & 255);
+        const color = this.Wheel(
+          ((i * 256) / neopixelCount + this.count) & 255
+        );
         this.stripe = setPixel(i, this.stripe, color.r, color.g, color.b);
       }
       showStrip(this.stripe);
