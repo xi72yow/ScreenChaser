@@ -1,9 +1,11 @@
 const dgram = require("dgram");
 const os = require("os");
+const { hexToRgb } = require("./basics/convertRgbHex");
 
 class DataEmitter {
   constructor(DEBUG = false, ipaddr = "") {
     this.ipaddr = ipaddr;
+    this.currentPixelArray = [];
     this.lastChunk = [];
     this.xSlaves = [];
     this.DEBUG = DEBUG;
@@ -108,6 +110,7 @@ class DataEmitter {
 
     const hexColorStrip = [];
     let pixelUDPframe = "";
+    this.currentPixelArray = [...pixelArray];
     for (let i = 0; i < pixelArray.length; i++) {
       const rgb = pixelArray[i];
       pixelUDPframe += rgb;
@@ -206,6 +209,23 @@ class DataEmitter {
       this.SCAN_NETWORK = false;
       resolve(this.xSlaves);
     });
+  }
+
+  claculatePower() {
+    let power = 0;
+
+    this.currentPixelArray.forEach((color, i) => {
+      let rgb = hexToRgb(color);
+      power += (rgb.r / 255) * 20 + (rgb.g / 255) * 20 + (rgb.b / 255) * 20;
+    });
+    
+    //D1 Mini 100mA RPI0 1A
+    return power * 0.005;
+  }
+
+  logMaxPower() {
+    const maxPower = this.claculatePower();
+    console.log(`maxPower for LEDs: ${maxPower} W`);
   }
 }
 

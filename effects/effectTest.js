@@ -34,9 +34,10 @@ async function main() {
     count++;
     if (count % 60 === 0) {
       DataEmitterForIP.logHealth();
+      DataEmitterForIP.logMaxPower();
     }
     DataEmitterForIP.emit(MeteorRainEffect.render());
-  }, 120);
+  }, 105);
 }
 
 main();
