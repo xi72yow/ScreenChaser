@@ -21,7 +21,7 @@ function createExampleStripe(neopixelCount) {
 }
 
 const DyingLightEffect = new DyingLights(120);
-const MeteorRainEffect = new MeteorRain(155, 25, 200, 5, 20, 100, 120);
+const MeteorRainEffect = new MeteorRain(155, 25, 200, 5, 20, 100, 120, true);
 const FireFlameEffect = new FireFlame(150, 30, 120);
 const BouncingBallsEffect = new BouncingBalls(255, false, 10, 3, 120);
 const ColorWheelEffect = new ColorWheel(2, 120);
@@ -35,7 +35,7 @@ async function main() {
     if (count % 60 === 0) {
       DataEmitterForIP.logHealth();
     }
-    DataEmitterForIP.emit(DyingLightEffect.render());
+    DataEmitterForIP.emit(MeteorRainEffect.render());
   }, 120);
 }
 

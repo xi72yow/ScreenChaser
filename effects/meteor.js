@@ -1,6 +1,7 @@
 const random = require("./basics/random");
 const setAll = require("./basics/setAll");
 const setPixel = require("./basics/setPixel");
+const { hsvToRgb, rgbToHsv } = require("./basics/convertHsvRgb");
 
 class MeteorRain {
   constructor(
@@ -10,7 +11,8 @@ class MeteorRain {
     meteorSize,
     meteorTrailDecay,
     meteorRandomDecay,
-    neopixelCount
+    neopixelCount,
+    rainbow = false
   ) {
     this.stripe = setAll(0, 0, 0, neopixelCount);
     this.red = red;
@@ -21,6 +23,7 @@ class MeteorRain {
     this.meteorRandomDecay = meteorRandomDecay;
     this.count = 0;
     this.neopixelCount = neopixelCount;
+    this.rainbow = rainbow;
   }
 
   fadeToBlack(pixel, stripe, fadeValue) {
@@ -44,14 +47,25 @@ class MeteorRain {
     }
     // draw meteor
     for (let k = 0; k < this.meteorSize; k++) {
+      let rgb = hsvToRgb({ h: this.count * 15, s: 1, v: 1 });
+
       if (this.count - k < this.neopixelCount && this.count - k >= 0) {
-        this.stripe = setPixel(
-          this.count - k,
-          this.stripe,
-          this.red,
-          this.green,
-          this.blue
-        );
+        if (this.rainbow)
+          this.stripe = setPixel(
+            this.count - k,
+            this.stripe,
+            rgb.r,
+            rgb.g,
+            rgb.b
+          );
+        else
+          this.stripe = setPixel(
+            this.count - k,
+            this.stripe,
+            this.red,
+            this.green,
+            this.blue
+          );
       }
     }
 

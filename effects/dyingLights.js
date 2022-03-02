@@ -43,7 +43,7 @@ class DyingLights {
   }
   render() {
     this.count++;
-    
+
     if (this.count < 20 && this.count % random(4) === 0) {
       this.stripe = this.startUvTube();
     }
