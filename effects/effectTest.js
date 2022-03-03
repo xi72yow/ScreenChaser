@@ -36,8 +36,8 @@ async function main() {
       DataEmitterForIP.logHealth();
       DataEmitterForIP.logMaxPower();
     }
-    DataEmitterForIP.emit(FrostyPikeEffect.render());
-  }, 105);
+    DataEmitterForIP.emit(MeteorRainEffect.render());
+  }, 60);
 }
 
 main();

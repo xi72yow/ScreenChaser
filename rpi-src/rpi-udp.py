@@ -39,6 +39,18 @@ while(True):
         r = int(data[i*6]+data[i*6+1], 16)
         g = int(data[i*6+2]+data[i*6+3], 16)
         b = int(data[i*6+4]+data[i*6+5], 16)
+        if r<0:
+            r = 0
+        if g<0:
+            g = 0
+        if b<0:
+            b = 0  
+        if r>255:
+            r = 255
+        if g>255:
+            g = 255
+        if b>255:
+            b = 255
         print(r, g, b)
         pixels[startLed+i] = (r, g, b)
         i = i + 1
