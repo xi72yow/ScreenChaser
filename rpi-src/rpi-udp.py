@@ -3,7 +3,8 @@ import socket
 import board
 import neopixel
 
-pixels = neopixel.NeoPixel(board.D18, 30)
+pixels = neopixel.NeoPixel(
+    board.D18, 720, auto_write=False, pixel_order=neopixel.RGB)
 
 localPort = 4210
 
