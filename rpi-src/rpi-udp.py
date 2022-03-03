@@ -4,7 +4,7 @@ import board
 import neopixel
 
 pixels = neopixel.NeoPixel(
-    board.D18, 720, auto_write=False, pixel_order=neopixel.RGB)
+    board.D18, 720, auto_write=False, pixel_order=neopixel.GRB)
 
 localPort = 4210
 
