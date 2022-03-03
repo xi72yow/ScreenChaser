@@ -33,17 +33,19 @@ while(True):
         message = data.decode('utf-8')
         startLed = int(message[0], 16)*42
         i = 0
-        data = message[1:].replace("\n", "")
+        data = message[1:].replace("\n", "").lower()
+        try:
+            while i < len(data)/6:
+                print(data)
+                r = int(data[i*6]+data[i*6+1], 16)
+                g = int(data[i*6+2]+data[i*6+3], 16)
+                b = int(data[i*6+4]+data[i*6+5], 16)
+                print(r, g, b)
+                pixels[startLed+i] = (r, g, b)
+                i = i + 1
+        except Exception as e:
+            print('Exception in RGB Calculation: ', e)
 
-        while i < len(data)/6:
-            print(data)
-            r = int(data[i*6]+data[i*6+1], 16)
-            g = int(data[i*6+2]+data[i*6+3], 16)
-            b = int(data[i*6+4]+data[i*6+5], 16)
-            print(r, g, b)
-            pixels[startLed+i] = (r, g, b)
-            i = i + 1
-            
         pixels.show()
         clientMsg = "Message from Client:{}".format(data)
         clientIP = "Client IP Address:{}".format(address)

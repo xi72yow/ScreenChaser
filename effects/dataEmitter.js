@@ -194,7 +194,7 @@ class DataEmitter {
         for (let i = 0; i < trys.length; i++) {
           const tryy = trys[i];
           this.server.send(
-            "FFFFFFFFFFFF",
+            "FFFFFFF",
             4210,
             this.binToIp(baseAddressBin + tryy)
           );
