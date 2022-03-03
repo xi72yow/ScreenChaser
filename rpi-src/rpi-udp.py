@@ -1,4 +1,9 @@
+from email import message
 import socket
+import board
+import neopixel
+
+pixels = neopixel.NeoPixel(board.D18, 30)
 
 localPort = 4210
 
@@ -22,18 +27,31 @@ print("UDP server up and listening")
 
 while(True):
 
-    bytesAddressPair = UDPServerSocket.recvfrom(bufferSize)
+    try:
+        data, address = UDPServerSocket.recvfrom(bufferSize)
 
-    message = bytesAddressPair[0]
+        message = data.decode('utf-8')
+        startLed = int(message[0], 16)*42
+        i = 0
+        data = message[1:].replace("\n", "")
 
-    address = bytesAddressPair[1]
+        while i < len(data)/6:
+            print(data)
+            r = int(data[i*6]+data[i*6+1], 16)
+            g = int(data[i*6+2]+data[i*6+3], 16)
+            b = int(data[i*6+4]+data[i*6+5], 16)
+            print(r, g, b)
+            pixels[startLed+i] = (r, g, b)
+            i = i + 1
 
-    clientMsg = "Message from Client:{}".format(message)
-    clientIP = "Client IP Address:{}".format(address)
+        clientMsg = "Message from Client:{}".format(data)
+        clientIP = "Client IP Address:{}".format(address)
+        print(clientMsg)
+        print(clientIP)
 
-    print(clientMsg)
-    print(clientIP)
+        # Sending a reply to client
 
-    # Sending a reply to client
-
-    UDPServerSocket.sendto(bytesToSend, address)
+        UDPServerSocket.sendto(bytesToSend, address)
+        
+    except Exception as e:
+        print('Exception: ', e)
