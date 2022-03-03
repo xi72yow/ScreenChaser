@@ -4,7 +4,7 @@ import board
 import neopixel
 
 pixels = neopixel.NeoPixel(
-    board.D18, 720, auto_write=True, pixel_order=neopixel.GRB)
+    board.D18, 720, auto_write=False, pixel_order=neopixel.GRB)
 
 localPort = 4210
 
@@ -55,6 +55,7 @@ while(True):
         pixels[startLed+i] = (r, g, b)
         i = i + 1
 
+    pixels.show()
     clientMsg = "Message from Client:{}".format(data)
     clientIP = "Client IP Address:{}".format(address)
     print(clientMsg)

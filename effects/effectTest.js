@@ -37,7 +37,7 @@ async function main() {
       DataEmitterForIP.logMaxPower();
     }
     DataEmitterForIP.emit(MeteorRainEffect.render());
-  }, 100);
+  }, 40);
 }
 
 main();
