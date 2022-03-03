@@ -43,7 +43,8 @@ while(True):
             print(r, g, b)
             pixels[startLed+i] = (r, g, b)
             i = i + 1
-
+            
+        pixels.show()
         clientMsg = "Message from Client:{}".format(data)
         clientIP = "Client IP Address:{}".format(address)
         print(clientMsg)
