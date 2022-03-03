@@ -27,34 +27,27 @@ print("UDP server up and listening")
 
 while(True):
 
-    try:
-        data, address = UDPServerSocket.recvfrom(bufferSize)
+    data, address = UDPServerSocket.recvfrom(bufferSize)
 
-        message = data.decode('utf-8')
-        startLed = int(message[0], 16)*42
-        i = 0
-        data = message[1:].replace("\n", "").lower()
-        try:
-            while i < len(data)/6:
-                print(data)
-                r = int(data[i*6]+data[i*6+1], 16)
-                g = int(data[i*6+2]+data[i*6+3], 16)
-                b = int(data[i*6+4]+data[i*6+5], 16)
-                print(r, g, b)
-                pixels[startLed+i] = (r, g, b)
-                i = i + 1
-        except Exception as e:
-            print('Exception in RGB Calculation: ', e)
+    message = data.decode('utf-8')
+    startLed = int(message[0].lower(), 16)*42
+    i = 0
+    data = message[1:].replace("\n", "").lower()
+    while i < len(data)/6:
+        print(data)
+        r = int(data[i*6]+data[i*6+1], 16)
+        g = int(data[i*6+2]+data[i*6+3], 16)
+        b = int(data[i*6+4]+data[i*6+5], 16)
+        print(r, g, b)
+        pixels[startLed+i] = (r, g, b)
+        i = i + 1
 
-        pixels.show()
-        clientMsg = "Message from Client:{}".format(data)
-        clientIP = "Client IP Address:{}".format(address)
-        print(clientMsg)
-        print(clientIP)
+    pixels.show()
+    clientMsg = "Message from Client:{}".format(data)
+    clientIP = "Client IP Address:{}".format(address)
+    print(clientMsg)
+    print(clientIP)
 
-        # Sending a reply to client
+    # Sending a reply to client
 
-        UDPServerSocket.sendto(bytesToSend, address)
-        
-    except Exception as e:
-        print('Exception: ', e)
+    UDPServerSocket.sendto(bytesToSend, address)
