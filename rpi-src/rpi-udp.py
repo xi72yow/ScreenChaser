@@ -35,7 +35,7 @@ while(True):
     i = 0
     data = message[1:].replace("\n", "").lower()
     while i < len(data)/6:
-        print(data)
+        #print(data)
         r = int(data[i*6]+data[i*6+1], 16)
         g = int(data[i*6+2]+data[i*6+3], 16)
         b = int(data[i*6+4]+data[i*6+5], 16)
@@ -56,10 +56,10 @@ while(True):
         i = i + 1
 
     pixels.show()
-    clientMsg = "Message from Client:{}".format(data)
-    clientIP = "Client IP Address:{}".format(address)
-    print(clientMsg)
-    print(clientIP)
+    #clientMsg = "Message from Client:{}".format(data)
+    #clientIP = "Client IP Address:{}".format(address)
+    #print(clientMsg)
+    #print(clientIP)
 
     # Sending a reply to client
 
