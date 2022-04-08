@@ -51,7 +51,7 @@ while(True):
             g = 255
         if b > 255:
             b = 255
-        print(r, g, b)
+        #print(r, g, b)
         pixels[startLed+i] = (r, g, b)
         i = i + 1
 
