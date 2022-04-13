@@ -3,52 +3,23 @@
   <head>
     <meta charset="UTF-8" />
     <title>ScreenChaser</title>
+    <script src="https://unpkg.com/konva@8.3.5/konva.min.js"></script>
+
     <link rel="stylesheet" href="index.css" />
     <script defer src="render.js"></script>
-
-    <style>
-      .leds {
-        width: 10px;
-        height: 10px;
-      }
-    </style>
   </head>
+  <button id="videoSelectBtn">Choose a Video Source</button>
+
+  <div id="container"></div>
+  <script></script>
   <body class="content">
-    <div class="monitor-wrapper">
-      <div class="stand">
-        <div class="monitor">
-          <video id="video" width="100%"></video>
-        </div>
-      </div>
-    </div>
-
-    <div
-      id="ledStripeRef"
-      style="display: flex; justify-content: space-between; width: 100%"
-    >
-      <span class="led"></span>
-    </div>
-
-    <div id="test"></div>
-
-    <button id="videoSelectBtn">Choose a Video Source</button>
     <button id="frostyPikeBtn">frostyPike</button>
     <button id="twinkleRandomBtn">twinkleRandom</button>
     <button id="meteorRainBtn">meteorRain</button>
     <button id="bouncingBallsBtn">bouncingBalls</button>
     <button id="fireFlameBtn">fireFlame</button>
     <button id="colorWheelBtn">colorWheel</button>
-
     <button id="packageloss">showPackageLoss</button>
-
     <canvas id="canvas" hidden></canvas>
-
-    <script>
-      for (let index = 0; index < 120; index++) {
-        let htmlStripe = document.getElementById("ledStripeRef");
-        htmlStripe.innerHTML =
-          htmlStripe.innerHTML + `<span class="leds" ></span>`;
-      }
-    </script>
   </body>
 </html>

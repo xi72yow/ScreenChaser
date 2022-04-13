@@ -1,108 +1,197 @@
 const { desktopCapturer, remote } = require("electron");
 const { dialog, Menu } = remote;
 const neopixelCount = 120;
-const DEBUG = true;
 
+var width = window.innerWidth;
+var height = window.innerHeight;
 
-function clearIntervals() {
-  if (intervals.length != 0) {
-    //console.log(intervals)
-    intervals.forEach(clearInterval);
-    intervals = [];
-  }
+var stage = new Konva.Stage({
+  container: "container",
+  width: width,
+  height: height,
+});
+
+var layer = new Konva.Layer();
+stage.add(layer);
+
+var tooltip = new Konva.Text({
+  text: "",
+  fontFamily: "Calibri",
+  fontSize: 12,
+  padding: 5,
+  textFill: "white",
+  fill: "black",
+  alpha: 0.75,
+  visible: false,
+});
+
+var tooltipLayer = new Konva.Layer();
+tooltipLayer.add(tooltip);
+stage.add(tooltipLayer);
+
+var stripesLayer = new Konva.Layer();
+stage.add(stripesLayer);
+
+var video = document.createElement("video");
+
+const stripe = {
+  group: null,
+  leds: [],
+  isForAmbient: false,
+  connetedTo: "",
+  isConnected: false,
+  breakPoint: [],
+};
+
+const previewWidth = 800;
+const previewHeight = 450;
+
+//sum of array
+function sum(array) {
+  return array.reduce((a, b) => a + b, 0);
 }
- 
 
 /**
- * shows the stripe data in the preview
  *
- * @param htmlStrip {Array} represents the light colors (hex-color formatted)
+ * @param {pos} start
+ * @param {Array(boolean)} layout [untern rechts oben links] betrachtung vorm screen
  */
-function renderPreview(htmlStrip) {
-  const spanLeds = document.getElementsByClassName("leds");
-  for (let i = 0; i < spanLeds.length; i++) {
-    const rgb = hexToRgb(htmlStrip[i]);
-    const led = spanLeds[i];
-    led.style.backgroundColor = `#${htmlStrip[i]}`;
+function posAmbi(start, layout, pixelCount) {
+  stripe.group = dragGroup = new Konva.Group({
+    draggable: true,
+  });
+
+  dragGroup.on("mouseover", function () {
+    document.body.style.cursor = "pointer";
+  });
+  dragGroup.on("mouseout", function () {
+    document.body.style.cursor = "default";
+  });
+
+  layout = layout.map((e, i) =>
+    e ? (i % 2 === 0 ? previewWidth : previewHeight) : 0
+  );
+
+  const spaceAroundScreen = sum(layout) * 1.05;
+  const spaceForPixel = spaceAroundScreen / pixelCount;
+  const pixelMargin = spaceForPixel * 0.2;
+  const pixelSize = spaceForPixel - pixelMargin;
+
+  for (let i = -1; i < pixelCount; i++) {
+    var rect = new Konva.Rect({
+      x: i == -1 ? start.x : start.x + i * spaceForPixel,
+      y: i == -1 ? start.y + pixelMargin + spaceForPixel : start.y,
+      width: i == -1 ? pixelSize * 2 : pixelSize,
+      height: pixelSize,
+      fill: i == -1 ? "red" : "gray",
+      stroke: "black",
+      strokeWidth: 1,
+    });
+    if (i == -1) {
+      rect.on("mousemove", function () {
+        var mousePos = stage.getPointerPosition();
+        tooltip.position({
+          x: mousePos.x + 15,
+          y: mousePos.y + 15,
+        });
+        tooltip.text(`${stripe.connetedTo} is ${stripe.isConnected} connected`);
+        tooltip.show();
+      });
+
+      rect.on("mouseout", function () {
+        tooltip.hide();
+      });
+    }
+    dragGroup.add(rect);
+    stripe.leds.push(rect);
+    stripesLayer.add(dragGroup);
   }
 }
+posAmbi({ x: 20, y: 900 }, [true, false, false, false], 120);
 
-// buttons fireFlameBtn
-const videoElement = document.querySelector("#video");
-const frostyPikeBtn = document.querySelector("#frostyPikeBtn");
-const twinkleRandomBtn = document.querySelector("#twinkleRandomBtn");
-const meteorRainBtn = document.querySelector("#meteorRainBtn");
-const bouncingBallsBtn = document.querySelector("#bouncingBallsBtn");
-const fireFlameBtn = document.querySelector("#fireFlameBtn");
-const colorWheelBtn = document.querySelector("#colorWheelBtn");
-const packagelossBtn = document.querySelector("#packageloss");
-const canvas = document.querySelector("#canvas");
+var image = new Konva.Image({
+  image: video,
+  draggable: true,
+  x: (stage.width() - previewWidth) / 2,
+  y: 20,
+  width: previewWidth,
+  height: previewHeight,
+  stroke: "black",
+  strokeWidth: 15,
+  lineCap: "round",
+  lineJoin: "round",
+  fill: "#222222",
+});
+layer.add(image);
 
-videoElement.onclick = function () {
+var text = new Konva.Text({
+  text: "Loading video...",
+  width: stage.width(),
+  height: stage.height(),
+  align: "center",
+  verticalAlign: "middle",
+});
+layer.add(text);
+
+var anim = new Konva.Animation(function () {
+  // do nothing, animation just need to update the layer
+}, layer);
+
+// update Konva.Image size when meta is loaded
+video.addEventListener("loadedmetadata", function (e) {
+  text.text("Press PLAY...");
+});
+
+const videoSelectBtn = document.getElementById("videoSelectBtn");
+videoSelectBtn.onclick = getVideoSources;
+
+// get the available video sources
+async function getVideoSources() {
+  //clearIntervals();
+  const inputSources = await desktopCapturer.getSources({
+    types: ["window", "screen"],
+  });
+
+  const videoOptionsMenu = Menu.buildFromTemplate(
+    inputSources.map((source) => ({
+      label: source.name,
+      click: () => selectSource(source),
+    }))
+  );
+  videoOptionsMenu.popup();
+}
+
+// change the videoSource to record
+async function selectSource(source) {
+  videoSelectBtn.innerText = source.name;
+
+  const constraints = {
+    audio: false,
+    video: {
+      mandatory: {
+        chromeMediaSource: "desktop",
+        chromeMediaSourceId: source.id,
+      },
+    },
+  };
+
+  const stream = await navigator.mediaDevices.getUserMedia(constraints);
+
+  // preview the video
+  video.srcObject = stream;
+  video.play();
+  anim.start();
+
+  /* video.pause();
+  anim.stop(); */
+}
+
+/* videoElement.onclick = function () {
   clearIntervals();
   const ambiInterval = setInterval(() => {
     processCtxData();
   }, 70);
   intervals.push(ambiInterval);
-};
-
-packagelossBtn.onclick = function () {
-  console.log(`sendedPacks: ${sendedPacks}`);
-  console.log(`recivedPacks: ${recivedPacks}`);
-  console.log(`packageloss: ${(recivedPacks / sendedPacks) * 100 - 100}%`);
-};
-
-frostyPikeBtn.onclick = function () {
-  clearIntervals();
-  const frostyPikeInterval = setInterval(() => {
-    frostyPike(10, 10, 10, 100);
-  }, 100);
-  intervals.push(frostyPikeInterval);
-};
-
-twinkleRandomBtn.onclick = function () {
-  const stripe = setAll(0, 0, 0);
-  clearIntervals();
-  const twinkleRandomInterval = setInterval(() => {
-    twinkleRandom(stripe);
-  }, 100);
-  intervals.push(twinkleRandomInterval);
-};
-
-meteorRainBtn.onclick = function () {
-  clearIntervals();
-  const obj = new MeteorRain(155, 25, 200, 5, 20, true, 100);
-  const meteorRainInterval = setInterval(() => {
-    obj.render();
-  }, 100);
-  intervals.push(meteorRainInterval);
-};
-
-bouncingBallsBtn.onclick = function () {
-  clearIntervals();
-  const obj = new BauncingBalls(255, true, 10, 3);
-  const bounceInterval = setInterval(() => {
-    obj.render();
-  }, 100);
-  intervals.push(bounceInterval);
-};
-
-fireFlameBtn.onclick = function () {
-  clearIntervals();
-  const obj = new FireFlame(150, 30);
-  const fireInterval = setInterval(() => {
-    obj.render();
-  }, 100);
-  intervals.push(fireInterval);
-};
-
-colorWheelBtn.onclick = function () {
-  clearIntervals();
-  const obj = new ColorWheel(2);
-  const colorInterval = setInterval(() => {
-    obj.render();
-  }, 100);
-  intervals.push(colorInterval);
 };
 
 function processCtxData() {
@@ -156,44 +245,4 @@ function processCtxData() {
       rgbToHex((neopixels[i * 4 + 2] / count) | 0);
   }
   showStrip(stripe);
-}
-
-const videoSelectBtn = document.getElementById("videoSelectBtn");
-videoSelectBtn.onclick = getVideoSources;
-
-// get the available video sources
-async function getVideoSources() {
-  clearIntervals();
-  const inputSources = await desktopCapturer.getSources({
-    types: ["window", "screen"],
-  });
-
-  const videoOptionsMenu = Menu.buildFromTemplate(
-    inputSources.map((source) => ({
-      label: source.name,
-      click: () => selectSource(source),
-    }))
-  );
-  videoOptionsMenu.popup();
-}
-
-// change the videoSource to record
-async function selectSource(source) {
-  videoSelectBtn.innerText = source.name;
-
-  const constraints = {
-    audio: false,
-    video: {
-      mandatory: {
-        chromeMediaSource: "desktop",
-        chromeMediaSourceId: source.id,
-      },
-    },
-  };
-
-  const stream = await navigator.mediaDevices.getUserMedia(constraints);
-
-  // preview
-  videoElement.srcObject = stream;
-  videoElement.play();
-}
+} */
