@@ -50,7 +50,6 @@ const previewHeight = 450;
 function sum(array) {
   return array.reduce((a, b) => a + b, 0);
 }
-
 /**
  *
  * @param {pos} start
@@ -72,48 +71,119 @@ function posAmbi(start, layout, pixelCount) {
     e ? (i % 2 === 0 ? previewWidth : previewHeight) : 0
   );
 
-  const spaceAroundScreen = sum(layout) * 1.05;
+  const spaceAroundScreen = sum(layout) * 1.1;
   const spaceForPixel = spaceAroundScreen / pixelCount;
   const pixelMargin = spaceForPixel * 0.2;
   const pixelSize = spaceForPixel - pixelMargin;
 
-  for (let i = -1; i < pixelCount; i++) {
+  var espRect = new Konva.Rect({
+    x: start.x - spaceForPixel * 3.2,
+    y: start.y,
+    width: pixelSize * 2,
+    height: pixelSize,
+    fill: "red",
+    stroke: "black",
+    strokeWidth: 1,
+    opacity: 0.7,
+  });
+
+  espRect.on("mousemove", function () {
+    var mousePos = stage.getPointerPosition();
+    tooltip.position({
+      x: mousePos.x + 15,
+      y: mousePos.y + 15,
+    });
+    tooltip.text(`${stripe.connetedTo} is ${stripe.isConnected} connected`);
+    tooltip.show();
+  });
+
+  espRect.on("mouseout", function () {
+    tooltip.hide();
+  });
+
+  dragGroup.add(espRect);
+
+  for (let i = 0; i < pixelCount; i++) {
     var rect = new Konva.Rect({
-      x: i == -1 ? start.x : start.x + i * spaceForPixel,
-      y: i == -1 ? start.y + pixelMargin + spaceForPixel : start.y,
-      width: i == -1 ? pixelSize * 2 : pixelSize,
+      x: start.x + i * spaceForPixel,
+      y: start.y,
+      width: pixelSize,
       height: pixelSize,
-      fill: i == -1 ? "red" : "gray",
+      fill: "gray",
       stroke: "black",
       strokeWidth: 1,
+      opacity: 0.7,
     });
-    if (i == -1) {
-      rect.on("mousemove", function () {
-        var mousePos = stage.getPointerPosition();
-        tooltip.position({
-          x: mousePos.x + 15,
-          y: mousePos.y + 15,
-        });
-        tooltip.text(`${stripe.connetedTo} is ${stripe.isConnected} connected`);
-        tooltip.show();
-      });
 
-      rect.on("mouseout", function () {
-        tooltip.hide();
+    let click = 0;
+
+    rect.on("mousemove", function () {
+      var mousePos = stage.getPointerPosition();
+      tooltip.position({
+        x: mousePos.x + 15,
+        y: mousePos.y + 15,
       });
-    }
+      tooltip.text(`LED number: ${i + 1}`);
+      tooltip.show();
+    });
+
+    rect.on("mouseout", function () {
+      tooltip.hide();
+    });
+
+    rect.on("click", function () {
+      click++;
+      for (let index = i + 1; index < stripe.leds.length; index++) {
+        const lastLed = stripe.leds[i];
+        const led = stripe.leds[index];
+
+        switch (click % 4) {
+          case 0:
+            led.position({
+              x: lastLed.x(),
+              y: lastLed.y() - index * spaceForPixel + i * spaceForPixel, //top
+            });
+            break;
+          case 1:
+            led.position({
+              x: lastLed.x() + index * spaceForPixel - i * spaceForPixel, //right
+              y: lastLed.y(),
+            });
+            break;
+
+          case 2:
+            led.position({
+              x: lastLed.x(),
+              y: lastLed.y() + index * spaceForPixel - i * spaceForPixel, //down
+            });
+            break;
+
+          case 3:
+            led.position({
+              x: lastLed.x() - index * spaceForPixel + i * spaceForPixel, //left
+              y: lastLed.y(),
+            });
+            break;
+
+          default:
+            break;
+        }
+      }
+    });
+
     dragGroup.add(rect);
     stripe.leds.push(rect);
     stripesLayer.add(dragGroup);
   }
 }
-posAmbi({ x: 20, y: 900 }, [true, false, false, false], 120);
+
+posAmbi({ x: 100, y: 900 }, [true, true, true, true], 120);
 
 var image = new Konva.Image({
   image: video,
   draggable: true,
   x: (stage.width() - previewWidth) / 2,
-  y: 20,
+  y: 69,
   width: previewWidth,
   height: previewHeight,
   stroke: "black",
