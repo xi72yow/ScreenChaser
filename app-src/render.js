@@ -39,7 +39,8 @@ const stripe = {
   leds: [],
   isForAmbient: false,
   connetedTo: "",
-  isConnected: false,
+  espIsConnected: false,
+  stripeToExpand: null,
   breakPoint: [],
 };
 
@@ -93,7 +94,7 @@ function posAmbi(start, layout, pixelCount) {
       x: mousePos.x + 15,
       y: mousePos.y + 15,
     });
-    tooltip.text(`${stripe.connetedTo} is ${stripe.isConnected} connected`);
+    tooltip.text(`${stripe.connetedTo} is ${stripe.espIsConnected} connected`);
     tooltip.show();
   });
 
