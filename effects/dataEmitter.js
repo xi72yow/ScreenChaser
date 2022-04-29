@@ -1,6 +1,8 @@
 const dgram = require("dgram");
 const os = require("os");
 const { hexToRgb } = require("./basics/convertRgbHex");
+const events = require("events");
+const fetch = require("node-fetch");
 
 class DataEmitter {
   constructor(DEBUG = false, ipaddr = "") {
@@ -13,6 +15,7 @@ class DataEmitter {
     this.sendedPacks = 0;
     this.recivedPacks = 0;
     this.server = dgram.createSocket("udp4");
+    this.fetcher = new events.EventEmitter();
 
     this.server.on("error", (err) => {
       console.log(`server error:\n${err.stack}`);
@@ -26,17 +29,32 @@ class DataEmitter {
         }
         this.recivedPacks++;
       }
-      if (this.SCAN_NETWORK) this.xSlaves.push({ ...senderInfo });
+
+      const stripe = {
+        ip: senderInfo.address,
+        type: "led",
+        port: senderInfo.port,
+      };
+
+      if (this.SCAN_NETWORK) this.xSlaves.push({ ...stripe });
 
       /*server.send(msg,senderInfo.port,senderInfo.address,()=>{
             console.log(`Message sent to ${senderInfo.address}:${senderInfo.port}`)
             })*/
     });
 
+    this.fetcher.on("cam", (cam) => {
+      this.xSlaves.push({ ...cam });
+    });
+
     this.server.on("listening", () => {
       const address = this.server.address();
       console.log(`server listening on ${address.address}:${address.port}`);
     });
+  }
+
+  logSlaves() {
+    console.log(this.xSlaves);
   }
 
   /**
@@ -193,11 +211,29 @@ class DataEmitter {
 
         for (let i = 0; i < trys.length; i++) {
           const tryy = trys[i];
+          const ip = this.binToIp(baseAddressBin + tryy);
           this.server.send(
             "FFFFFFF",
             4210,
             this.binToIp(baseAddressBin + tryy)
           );
+
+          const cam = {
+            ip: ip,
+            type: "cam",
+          };
+
+          const fetchURL = `http://${ip}/status`;
+
+          fetch(fetchURL)
+            .then(async (res) => {
+              const body = await res.json().catch((err) => {});
+
+              if (body.framesize) {
+                this.fetcher.emit("cam", cam);
+              }
+            })
+            .catch((err) => {});
         }
         await this.delay(150);
         if (scanningCount > 3) {
@@ -206,6 +242,11 @@ class DataEmitter {
       }
 
       await this.delay(1500);
+
+      this.xSlaves = [
+        ...new Map(this.xSlaves.map((item) => [item["ip"], item])).values(),
+      ];
+
       this.SCAN_NETWORK = false;
       resolve(this.xSlaves);
     });
@@ -218,7 +259,7 @@ class DataEmitter {
       let rgb = hexToRgb(color);
       power += (rgb.r / 255) * 20 + (rgb.g / 255) * 20 + (rgb.b / 255) * 20;
     });
-    
+
     //D1 Mini 100mA RPI0 1A
     return power * 0.005;
   }
@@ -228,5 +269,10 @@ class DataEmitter {
     console.log(`maxPower for LEDs: ${maxPower} W`);
   }
 }
-
+async function main() {
+  const DataEmitterForIP = new DataEmitter(true);
+  await DataEmitterForIP.init();
+  DataEmitterForIP.logSlaves();
+}
+main();
 module.exports = DataEmitter;

@@ -1,0 +1,4 @@
+[submodule "esp-src/esp32-cam-webserver"]
+	path = esp-src/esp32-cam-webserver
+	url = https://github.com/easytarget/esp32-cam-webserver
+	branch = master
