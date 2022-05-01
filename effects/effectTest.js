@@ -1,5 +1,5 @@
 const MeteorRain = require("./meteor");
-const DataEmitter = require("./dataEmitter");
+const DataEmitter = require("./network/dataEmitter");
 const BouncingBalls = require("./bouncingBalls");
 const FireFlame = require("./fireFlame");
 const ColorWheel = require("./colorWheel");
