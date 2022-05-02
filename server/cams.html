@@ -187,11 +187,123 @@
       /* end of media query */
     </style>
   </head>
+
   <body>
+    <!--     <img id="video-frame" />
+    <script>
+      var socket = io();
+      socket.on("frame", function (frame) {
+        document
+          .getElementById("video-frame")
+          .attr("src", "data:image/jpg;base64," + frame);
+      });
+    </script>
+  </body> -->
+    <!-- http://192.168.2.123:81/view -->
+    <!-- http://192.168.2.123/stop -->
+
     <div class="row">
       <div class="column small-6 medium-4 large-3">
-        <img id="stream" src="http://127.0.0.1:3000/cam1" />
+        <img
+          id="stream"
+          src="http://127.0.0.1:3000/cams"
+          title="ESP32 camera server
+        (doubleclick for fullscreen)"
+          style="display: block"
+        />
+        <script>
+       /*    setInterval(function () {
+            document.getElementById("stream").src =
+              "http://127.0.0.1:3000/cams?time=" + new Date().getTime();
+          }, 50); */
+        </script>
       </div>
     </div>
+    <!--  <script>
+      document.addEventListener("DOMContentLoaded", function (event) {
+        var baseHost = document.location.origin;
+        var streamURL = "Undefined";
+
+        const rotate = document.getElementById("rotate");
+        const stream = document.getElementById("stream");
+        const spinner = document.getElementById("wait-settings");
+
+        const updateValue = (el, value, updateRemote) => {
+          updateRemote = updateRemote == null ? true : updateRemote;
+          let initialValue;
+          if (el.type === "checkbox") {
+            initialValue = el.checked;
+            value = !!value;
+            el.checked = value;
+          } else {
+            initialValue = el.value;
+            el.value = value;
+          }
+
+          if (updateRemote && initialValue !== value) {
+            updateConfig(el);
+          } else if (!updateRemote) {
+            if (el.id === "cam_name") {
+              window.document.title = value;
+              stream.setAttribute(
+                "title",
+                value + "\n(doubleclick for fullscreen)"
+              );
+              console.log("Name set to: " + value);
+            } else if (el.id === "rotate") {
+              rotate.value = value;
+              console.log("Rotate recieved: " + rotate.value);
+            } else if (el.id === "stream_url") {
+              streamURL = value;
+              console.log("Stream URL set to:" + value);
+            }
+          }
+        };
+
+        // read initial values
+        fetch(`${baseHost}/info`)
+          .then(function (response) {
+            return response.json();
+          })
+          .then(function (state) {
+            document.querySelectorAll(".action-setting").forEach((el) => {
+              updateValue(el, state[el.id], false);
+            });
+            spinner.style.display = `none`;
+            applyRotation();
+            startStream();
+          });
+
+        const startStream = () => {
+          stream.src = streamURL;
+          stream.style.display = `block`;
+        };
+
+        const applyRotation = () => {
+          rot = rotate.value;
+          if (rot == -90) {
+            stream.style.transform = `rotate(-90deg)`;
+          } else if (rot == 90) {
+            stream.style.transform = `rotate(90deg)`;
+          }
+          console.log("Rotation " + rot + " applied");
+        };
+
+        stream.ondblclick = () => {
+          if (stream.requestFullscreen) {
+            stream.requestFullscreen();
+          } else if (stream.mozRequestFullScreen) {
+            /* Firefox */
+            stream.mozRequestFullScreen();
+          } else if (stream.webkitRequestFullscreen) {
+            /* Chrome, Safari and Opera */
+            stream.webkitRequestFullscreen();
+          } else if (stream.msRequestFullscreen) {
+            /* IE/Edge */
+            stream.msRequestFullscreen();
+          }
+        };
+      });
+    </script> -->
   </body>
 </html>
