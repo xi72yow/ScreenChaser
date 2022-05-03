@@ -1,13 +1,14 @@
 var MjpegCamera = require("mjpeg-camera");
 
 class CamManager {
-  constructor(ips) {
+  constructor(ips, io) {
     this.cams = [];
     this.frames = [];
     this.ips = ips;
     this.timer;
     this.timerInterval = 1000;
     this.aktive = false;
+    this.io = io;
 
     for (let i = 0; i < ips.length; i++) {
       let camera = new MjpegCamera({
@@ -18,22 +19,29 @@ class CamManager {
 
       this.cams.push(camera);
     }
-
-    this.cams.forEach((cam, i) => {
-      cam.on("data", (frame) => {
-        this.frames[i] = frame.data;
-      });
-    });
   }
 
   start() {
-    this.aktive = true;
+    if (!this.aktive) {
+      this.aktive = true;
+      this.cams.forEach((cam, i) => {
+        cam.on("data", async (frame) => {
+          this.io.emit("cam" + i, frame.data.toString("base64"));
+          this.frames[i] = frame.data;
+        });
+      });
+    }
     this.cams.forEach((cam, i) => {
       cam.start();
     });
   }
 
   stop() {
+    if (this.aktive) {
+      this.cams.forEach((cam, i) => {
+        cam.removeAllListeners("data");
+      });
+    }
     this.aktive = false;
     this.cams.forEach((cam, i) => {
       cam.stop();

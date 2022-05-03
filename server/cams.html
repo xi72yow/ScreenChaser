@@ -20,8 +20,30 @@
 
       /* 12 COLUMN GRID SYSTEM */
 
+      /*       body {
+              background: linear-gradient(-45deg, #231e1d, #e73c7e, #131515, #23d5ab);
+              background-size: 400% 400%;
+              animation: gradient 15s ease infinite;
+            }
+
+            @keyframes gradient {
+              0% {
+                background-position: 0% 50%;
+              }
+              50% {
+                background-position: 100% 50%;
+              }
+              100% {
+                background-position: 0% 50%;
+              }
+            } */
+
+      body {
+        background: #131515;
+      }
+
       img {
-        margin: 2rem;
+        width: 100%;
       }
 
       .row {
@@ -33,6 +55,7 @@
       .column {
         float: left;
         margin-top: 0;
+        margin: 2rem;
       }
 
       .small-1 {
@@ -186,39 +209,65 @@
       }
       /* end of media query */
     </style>
+    <script src="/socket.io.js"></script>
   </head>
 
   <body>
-    <!--     <img id="video-frame" />
+    <div id="cam_grid" class="row"></div>
     <script>
       var socket = io();
-      socket.on("frame", function (frame) {
-        document
-          .getElementById("video-frame")
-          .attr("src", "data:image/jpg;base64," + frame);
-      });
-    </script>
-  </body> -->
-    <!-- http://192.168.2.123:81/view -->
-    <!-- http://192.168.2.123/stop -->
 
-    <div class="row">
-      <div class="column small-6 medium-4 large-3">
-        <img
-          id="stream"
-          src="http://127.0.0.1:3000/cams"
-          title="ESP32 camera server
-        (doubleclick for fullscreen)"
-          style="display: block"
-        />
-        <script>
-       /*    setInterval(function () {
-            document.getElementById("stream").src =
-              "http://127.0.0.1:3000/cams?time=" + new Date().getTime();
-          }, 50); */
-        </script>
-      </div>
-    </div>
+      fetch(document.location.origin + "/xSlaves")
+        .then(function (response) {
+          return response.json();
+        })
+        .then(function (state) {
+          console.log(`Ⓧ: `, state);
+          let grid = document.getElementById("cam_grid");
+          state.forEach((cam, i) => {
+            grid.insertAdjacentHTML(
+              "beforeend",
+              ` <div class="column small-6 medium-4 large-3">
+                 <img id="stream_${i}" title="CAM${i} (doubleclick for fullscreen)" />
+                 <button onclick="openSettings('${cam}')">
+                 Einstellungen
+                 </button>
+                </div>`
+            );
+
+            socket.on("cam" + i, (...args) => {
+              let new_image = "data:image/jpeg;base64," + args[0];
+
+              document
+                .getElementById("stream_" + i)
+                .setAttribute("src", new_image);
+            });
+          });
+          document.querySelectorAll("img").forEach((img) => {
+            img.addEventListener("dblclick", (e) => {
+              if (img.requestFullscreen) {
+                img.requestFullscreen();
+              } else if (img.mozRequestFullScreen) {
+                /* Firefox */
+                img.mozRequestFullScreen();
+              } else if (img.webkitRequestFullscreen) {
+                /* Chrome, Safari and Opera */
+                img.webkitRequestFullscreen();
+              } else if (img.msRequestFullscreen) {
+                /* IE/Edge */
+                img.msRequestFullscreen();
+              }
+            });
+          });
+        });
+      function openSettings(ip) {
+        window.open(
+          `http://${ip}/?view=full`,
+          "_blank",
+          "location=yes,height=600,width=430,scrollbars=yes,status=yes"
+        );
+      }
+    </script>
     <!--  <script>
       document.addEventListener("DOMContentLoaded", function (event) {
         var baseHost = document.location.origin;
