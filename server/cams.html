@@ -213,6 +213,8 @@
   </head>
 
   <body>
+    <button id="refresh" type="button" onclick="scan()">Refresh</button>
+
     <div id="cam_grid" class="row"></div>
     <script>
       var socket = io();
@@ -243,6 +245,7 @@
                 .setAttribute("src", new_image);
             });
           });
+
           document.querySelectorAll("img").forEach((img) => {
             img.addEventListener("dblclick", (e) => {
               if (img.requestFullscreen) {
@@ -260,12 +263,20 @@
             });
           });
         });
+
       function openSettings(ip) {
         window.open(
           `http://${ip}/?view=full`,
           "_blank",
           "location=yes,height=600,width=430,scrollbars=yes,status=yes"
         );
+      }
+
+      function scan() {
+        fetch(document.location.origin + "/scan").then(function (response) {
+          location.reload();
+          return response.ok;
+        });
       }
     </script>
     <!--  <script>

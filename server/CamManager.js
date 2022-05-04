@@ -10,6 +10,12 @@ class CamManager {
     this.aktive = false;
     this.io = io;
 
+    this.createCams(ips);
+  }
+
+  createCams(ips) {
+    this.ips = ips;
+    this.cams = [];
     for (let i = 0; i < ips.length; i++) {
       let camera = new MjpegCamera({
         name: "backdoor",
@@ -30,10 +36,10 @@ class CamManager {
           this.frames[i] = frame.data;
         });
       });
+      this.cams.forEach((cam, i) => {
+        cam.start();
+      });
     }
-    this.cams.forEach((cam, i) => {
-      cam.start();
-    });
   }
 
   stop() {
@@ -41,11 +47,24 @@ class CamManager {
       this.cams.forEach((cam, i) => {
         cam.removeAllListeners("data");
       });
+      this.aktive = false;
+      this.cams.forEach((cam, i) => {
+        cam.stop();
+      });
     }
-    this.aktive = false;
-    this.cams.forEach((cam, i) => {
-      cam.stop();
-    });
+  }
+
+  refresh(ips) {
+    if (this.aktive) {
+      this.cams.forEach((cam, i) => {
+        cam.removeAllListeners("data");
+      });
+      this.aktive = false;
+      this.cams.forEach((cam, i) => {
+        cam.stop();
+      });
+    }
+    this.createCams(ips);
   }
 
   getFrames() {
@@ -64,6 +83,7 @@ class CamManager {
     console.log("🚀 ~ file: camApi.js ~ line 87 ~ frames", this.frames);
   }
 }
+
 module.exports = CamManager;
 
 /* 

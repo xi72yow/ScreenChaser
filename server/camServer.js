@@ -11,21 +11,23 @@ const CamManager = require("./CamManager");
 let Cams = null;
 
 async function init() {
-  let camIps = [];
-  try {
-    const netScanner = new NetScanner();
-    let xSlaves = await netScanner.scanNetwork();
-    netScanner.logSlaves();
-    xSlaves.forEach((slave) => {
-      if (slave.type === "cam") {
-        camIps.push(slave.ip);
-      }
-    });
-    Cams = new CamManager(camIps, io);
-  } catch (error) {
-    console.log("🚀 ~ file: camApi.js ~ line 21 ~ error", error);
-  }
-  return Cams;
+  return new Promise(async (resolve, reject) => {
+    let camIps = [];
+    try {
+      const netScanner = new NetScanner();
+      let xSlaves = await netScanner.scanNetwork();
+      netScanner.logSlaves();
+      xSlaves.forEach((slave) => {
+        if (slave.type === "cam") {
+          camIps.push(slave.ip);
+        }
+      });
+      Cams = new CamManager(camIps, io);
+    } catch (error) {
+      console.log("🚀 ~ file: camApi.js ~ line 21 ~ error", error);
+    }
+    resolve(camIps);
+  });
 }
 
 init();
@@ -35,6 +37,15 @@ app.get("/xSlaves", function (req, res) {
     res.end(JSON.stringify(Cams.getIps()));
   }
   res.status(205).end();
+});
+
+app.get("/scan", async function (req, res) {
+  res.end("scan");
+  let ips = await init();
+  Cams.refresh(ips);
+  setTimeout(() => {
+    res.end("scan");
+  }, 500);
 });
 
 app.get("/", (req, res) => {
