@@ -6,6 +6,8 @@ const { Server } = require("socket.io");
 const io = new Server(server);
 const compression = require("compression");
 var ip = require("ip");
+const fetch = require("node-fetch");
+
 /* const helmet = require("helmet");
  */
 /* app.use(helmet());
@@ -95,6 +97,16 @@ async function cServer() {
       if (clients.length === 0 && Cams.aktive) {
         Cams.stop();
         // Cams = new CamManager(camIps, io);
+
+        camIps.forEach((ip) => {
+          const fetchURL = `http://${ip}/stop`;
+
+          fetch(fetchURL)
+            .then(async (res) => {
+              const body = await res.json().catch((err) => {});
+            })
+            .catch((err) => {});
+        });
         console.log("no clients");
         console.log("streams stopped");
       }
