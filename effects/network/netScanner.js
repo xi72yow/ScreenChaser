@@ -116,7 +116,7 @@ class NetScanner {
       const importantInterface = os.networkInterfaces()[interfaces[0]][0];
 
       const regexIpv4 = new RegExp(
-        "!^((25[0-5]|(2[0-4]|1d|[1-9]|)d)(.(?!$)|$)){4}$"
+        "^((25[0-5]|(2[0-4]|1[0-9]|[1-9]|)[0-9])(.(?!$)|$)){4}$"
       );
 
       if (!regexIpv4.test(importantInterface.address)) {
