@@ -42,6 +42,7 @@ class CamManager {
       let camera = new MjpegCamera({
         name: "backdoor",
         url: "http://" + ips[i] + ":81/",
+        timeout: 30000,
       });
       // camera.start();
 

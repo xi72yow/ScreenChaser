@@ -37,6 +37,7 @@ async function cServer() {
 
   async function init() {
     return new Promise(async (resolve, reject) => {
+      camIps.length = 0;
       try {
         const netScanner = new NetScanner();
         let xSlaves = await netScanner.scanNetwork();
@@ -93,7 +94,7 @@ async function cServer() {
       const clients = await io.fetchSockets();
       if (clients.length === 0 && Cams.aktive) {
         Cams.stop();
-        Cams = new CamManager(camIps, io);
+        // Cams = new CamManager(camIps, io);
         console.log("no clients");
         console.log("streams stopped");
       }
