@@ -114,6 +114,10 @@ class NetScanner {
       );
 
       const importantInterface = os.networkInterfaces()[interfaces[0]][0];
+      if (!importantInterface) {
+        console.log("No network interfaces found");
+        resolve([]);
+      }
       const netmaskBin = this.ipToBin(importantInterface.netmask);
       const addressBin = this.ipToBin(importantInterface.address);
       const netmaskCount = netmaskBin.indexOf("0");

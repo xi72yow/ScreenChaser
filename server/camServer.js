@@ -77,6 +77,7 @@ io.on("connection", async (socket) => {
   const clients = await io.fetchSockets();
   if (clients.length === 1) {
     Cams.start();
+    console.log("streams started");
   }
   socket.on("disconnect", async () => {
     console.log("user disconnected");
@@ -84,6 +85,7 @@ io.on("connection", async (socket) => {
     const clients = await io.fetchSockets();
     if (clients.length === 0) {
       Cams.stop();
+      console.log("no clients");
     }
   });
   console.log("a user connected");
