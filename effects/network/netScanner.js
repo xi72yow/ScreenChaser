@@ -114,10 +114,17 @@ class NetScanner {
       );
 
       const importantInterface = os.networkInterfaces()[interfaces[0]][0];
-      if (!importantInterface) {
+
+      const regexIpv4 = new RegExp(
+        "!^((25[0-5]|(2[0-4]|1d|[1-9]|)d)(.(?!$)|$)){4}$"
+      );
+
+      if (regexIpv4.test(importantInterface.address)) {
         console.log("No network interfaces found");
         resolve([]);
+        return;
       }
+
       const netmaskBin = this.ipToBin(importantInterface.netmask);
       const addressBin = this.ipToBin(importantInterface.address);
       const netmaskCount = netmaskBin.indexOf("0");

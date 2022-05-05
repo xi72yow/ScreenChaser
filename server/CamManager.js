@@ -1,4 +1,4 @@
-var MjpegCamera = require("mjpeg-camera");
+var MjpegCamera = require("./mjpeg-camera/mjpeg-camera");
 
 class CamManager {
   constructor(ips, io) {

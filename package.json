@@ -53,7 +53,6 @@
     "forever-monitor": "^3.0.3",
     "helmet": "^5.0.2",
     "ip": "^1.1.5",
-    "mjpeg-camera": "^2.0.0",
     "socket.io": "^4.5.0",
     "ws": "^7.5.1"
   },

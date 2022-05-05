@@ -2,3 +2,6 @@
 	path = esp-src/esp32-cam-webserver
 	url = https://github.com/easytarget/esp32-cam-webserver
 	branch = master
+[submodule "server/mjpeg-camera"]
+	path = server/mjpeg-camera
+	url = https://github.com/mmaelzer/mjpeg-camera.git

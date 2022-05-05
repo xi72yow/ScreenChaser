@@ -31,7 +31,7 @@ function sleep(ms) {
 }
 
 async function cServer() {
-  await sleep(30000);
+  // await sleep(30000);
   let Cams = null;
 
   async function init() {
@@ -94,6 +94,7 @@ async function cServer() {
       if (clients.length === 0) {
         Cams.stop();
         console.log("no clients");
+        console.log("streams stopped");
       }
     });
     console.log("a user connected");
