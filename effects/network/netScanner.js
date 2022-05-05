@@ -119,7 +119,7 @@ class NetScanner {
         "!^((25[0-5]|(2[0-4]|1d|[1-9]|)d)(.(?!$)|$)){4}$"
       );
 
-      if (regexIpv4.test(importantInterface.address)) {
+      if (!regexIpv4.test(importantInterface.address)) {
         console.log("No network interfaces found");
         resolve([]);
         return;
