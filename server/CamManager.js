@@ -24,6 +24,7 @@ class CamManager {
         cam.stop();
         await sleep(200);
         cam.removeAllListeners();
+        cam.setState(true);
       });
       this.aktive = false;
     }
@@ -53,6 +54,7 @@ class CamManager {
   start() {
     if (!this.aktive) {
       this.cams.forEach((cam, i) => {
+        cam.setState(false);
         cam.on("data", (frame) => {
           this.io.emit("cam" + i, frame.data.toString("base64"));
           this.frames[i] = frame.data;
@@ -65,7 +67,7 @@ class CamManager {
   }
 
   stop() {
-    this.createCams(this.ips);
+    this.camsOff();
   }
 
   refresh(ips) {

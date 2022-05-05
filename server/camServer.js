@@ -7,7 +7,6 @@ const io = new Server(server);
 const compression = require("compression");
 var ip = require("ip");
 const fetch = require("node-fetch");
-require("console-stamp")(console, "[HH:MM:ss.l]");
 
 /* const helmet = require("helmet");
  */
@@ -36,10 +35,12 @@ function sleep(ms) {
 async function cServer() {
   // await sleep(30000);
   let Cams = null;
-  let camIps = [];
+  let ips = await init();
 
   async function init() {
     return new Promise(async (resolve, reject) => {
+      let camIps = [];
+
       camIps.length = 0;
       try {
         const netScanner = new NetScanner();
@@ -57,8 +58,6 @@ async function cServer() {
       resolve(camIps);
     });
   }
-
-  init();
 
   app.get("/xSlaves", function (req, res) {
     if (Cams) {
@@ -89,8 +88,10 @@ async function cServer() {
     const clients = await io.fetchSockets();
     if (clients.length > 0 && !Cams.aktive) {
       Cams.start();
+
       console.log("streams started");
     }
+
     socket.on("disconnect", async () => {
       console.log("user disconnected");
       //var clients = io.sockets.sockets;
@@ -98,21 +99,6 @@ async function cServer() {
       if (clients.length === 0 && Cams.aktive) {
         Cams.stop();
         // Cams = new CamManager(camIps, io);
-
-        setInterval(() => {
-          console.log(`Ⓧ `);
-        }, 1000);
-        setTimeout(() => {
-          camIps.forEach((ip) => {
-            const fetchURL = `http://${ip}/stop`;
-
-            fetch(fetchURL)
-              .then(async (res) => {
-                const body = await res.json().catch((err) => {});
-              })
-              .catch((err) => {});
-          });
-        }, 20000);
 
         console.log("no clients");
         console.log("streams stopped");
