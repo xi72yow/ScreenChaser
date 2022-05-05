@@ -4,4 +4,4 @@
 	branch = master
 [submodule "server/mjpeg-camera"]
 	path = server/mjpeg-camera
-	url = https://github.com/mmaelzer/mjpeg-camera.git
+	url = https://github.com/xi72yow/mjpeg-camera.git
