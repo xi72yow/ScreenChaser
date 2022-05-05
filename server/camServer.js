@@ -102,10 +102,7 @@ async function cServer() {
 
   server.listen(3000, ip.address(), () => {
     var host = server.address().address;
-    console.log(
-      "🚀 ~ file: camApi.js ~ line 14 ~ server ~ host",
-      server.address()
-    );
+
     var port = server.address().port;
 
     console.log("🚀 ~ app listening at http://%s:%s", host, port);
