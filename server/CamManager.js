@@ -1,5 +1,9 @@
 var MjpegCamera = require("./mjpeg-camera/mjpeg-camera");
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 class CamManager {
   constructor(ips, io) {
     this.cams = [];
@@ -15,11 +19,10 @@ class CamManager {
 
   camsOff() {
     if (this.aktive) {
-      this.cams.forEach((cam, i) => {
-        cam.removeAllListeners("data");
-      });
-      this.cams.forEach((cam, i) => {
+      this.cams.forEach(async (cam, i) => {
         cam.stop();
+        await sleep(200);
+        cam.removeAllListeners("data");
       });
       this.aktive = false;
     }
@@ -44,7 +47,7 @@ class CamManager {
     if (!this.aktive) {
       this.aktive = true;
       this.cams.forEach((cam, i) => {
-        cam.on("data", async (frame) => {
+        cam.on("data", (frame) => {
           this.io.emit("cam" + i, frame.data.toString("base64"));
           this.frames[i] = frame.data;
         });
