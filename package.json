@@ -46,10 +46,12 @@
     "babylonjs": "^4.2.1",
     "babylonjs-loaders": "^4.2.1",
     "broadcast-stream": "^0.2.2",
-    "dgram": "^1.0.1",
+    "compression": "^1.7.4",
     "electron-reload": "^2.0.0-alpha.1",
     "electron-squirrel-startup": "^1.0.0",
     "express": "^4.18.1",
+    "helmet": "^5.0.2",
+    "ip": "^1.1.5",
     "mjpeg-camera": "^2.0.0",
     "socket.io": "^4.5.0",
     "ws": "^7.5.1"

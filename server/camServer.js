@@ -4,11 +4,27 @@ const http = require("http");
 const server = http.createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server);
-
+const compression = require("compression");
+var ip = require("ip");
+/* const helmet = require("helmet");
+ */
+app.use(compression({ filter: shouldCompress }));
+/* app.use(helmet());
+ */
 const NetScanner = require("../effects/network/netScanner");
 const CamManager = require("./CamManager");
 
 let Cams = null;
+
+function shouldCompress(req, res) {
+  if (req.headers["x-no-compression"]) {
+    // don't compress responses with this request header
+    return false;
+  }
+
+  // fallback to standard filter function
+  return compression.filter(req, res);
+}
 
 async function init() {
   return new Promise(async (resolve, reject) => {
@@ -73,7 +89,7 @@ io.on("connection", async (socket) => {
   console.log("a user connected");
 });
 
-server.listen(3000, "localhost", () => {
+server.listen(3000, ip.address(), () => {
   var host = server.address().address;
   console.log(
     "🚀 ~ file: camApi.js ~ line 14 ~ server ~ host",
@@ -81,5 +97,5 @@ server.listen(3000, "localhost", () => {
   );
   var port = server.address().port;
 
-  console.log("Example app listening at http://%s:%s", host, port);
+  console.log("🚀 ~ app listening at http://%s:%s", host, port);
 });
