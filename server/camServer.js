@@ -7,6 +7,7 @@ const io = new Server(server);
 const compression = require("compression");
 var ip = require("ip");
 const fetch = require("node-fetch");
+require("console-stamp")(console, "[HH:MM:ss.l]");
 
 /* const helmet = require("helmet");
  */
@@ -97,6 +98,10 @@ async function cServer() {
       if (clients.length === 0 && Cams.aktive) {
         Cams.stop();
         // Cams = new CamManager(camIps, io);
+
+        setInterval(() => {
+          console.log(`Ⓧ `);
+        }, 1000);
 
         camIps.forEach((ip) => {
           const fetchURL = `http://${ip}/stop`;
