@@ -83,7 +83,7 @@ async function cServer() {
   io.on("connection", async (socket) => {
     if (!Cams) return;
     const clients = await io.fetchSockets();
-    if (clients.length === 1) {
+    if (clients.length > 0 && !Cams.aktive) {
       Cams.start();
       console.log("streams started");
     }
@@ -91,7 +91,7 @@ async function cServer() {
       console.log("user disconnected");
       //var clients = io.sockets.sockets;
       const clients = await io.fetchSockets();
-      if (clients.length === 0) {
+      if (clients.length === 0 && Cams.aktive) {
         Cams.stop();
         console.log("no clients");
         console.log("streams stopped");

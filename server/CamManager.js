@@ -18,10 +18,10 @@ class CamManager {
       this.cams.forEach((cam, i) => {
         cam.removeAllListeners("data");
       });
-      this.aktive = false;
       this.cams.forEach((cam, i) => {
         cam.stop();
       });
+      this.aktive = false;
     }
   }
 
@@ -49,9 +49,11 @@ class CamManager {
           this.frames[i] = frame.data;
         });
       });
+
       this.cams.forEach((cam, i) => {
         cam.start();
       });
+      this.aktive = true;
     }
   }
 
