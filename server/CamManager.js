@@ -22,7 +22,7 @@ class CamManager {
       this.cams.forEach(async (cam, i) => {
         cam.stop();
         await sleep(200);
-        cam.removeAllListeners("data");
+        //cam.removeAllListeners("data");
       });
       this.aktive = false;
     }
