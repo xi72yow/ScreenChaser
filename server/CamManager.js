@@ -13,7 +13,20 @@ class CamManager {
     this.createCams(ips);
   }
 
+  camsOff() {
+    if (this.aktive) {
+      this.cams.forEach((cam, i) => {
+        cam.removeAllListeners("data");
+      });
+      this.aktive = false;
+      this.cams.forEach((cam, i) => {
+        cam.stop();
+      });
+    }
+  }
+
   createCams(ips) {
+    this.camsOff();
     this.ips = ips;
     this.cams = [];
     for (let i = 0; i < ips.length; i++) {
@@ -43,27 +56,12 @@ class CamManager {
   }
 
   stop() {
-    if (this.aktive) {
-      this.cams.forEach((cam, i) => {
-        cam.removeAllListeners("data");
-      });
-      this.aktive = false;
-      this.cams.forEach((cam, i) => {
-        cam.stop();
-      });
-    }
+    this.camsOff();
   }
 
   refresh(ips) {
-    if (this.aktive) {
-      this.cams.forEach((cam, i) => {
-        cam.removeAllListeners("data");
-      });
-      this.aktive = false;
-      this.cams.forEach((cam, i) => {
-        cam.stop();
-      });
-    }
+    this.camsOff();
+
     this.createCams(ips);
   }
 
