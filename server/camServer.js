@@ -102,16 +102,18 @@ async function cServer() {
         setInterval(() => {
           console.log(`Ⓧ `);
         }, 1000);
+        setTimeout(() => {
+          camIps.forEach((ip) => {
+            const fetchURL = `http://${ip}/stop`;
 
-        camIps.forEach((ip) => {
-          const fetchURL = `http://${ip}/stop`;
+            fetch(fetchURL)
+              .then(async (res) => {
+                const body = await res.json().catch((err) => {});
+              })
+              .catch((err) => {});
+          });
+        }, 20000);
 
-          fetch(fetchURL)
-            .then(async (res) => {
-              const body = await res.json().catch((err) => {});
-            })
-            .catch((err) => {});
-        });
         console.log("no clients");
         console.log("streams stopped");
       }
