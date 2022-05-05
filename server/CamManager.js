@@ -20,9 +20,10 @@ class CamManager {
   camsOff() {
     if (this.aktive) {
       this.cams.forEach(async (cam, i) => {
+        await sleep(200);
         cam.stop();
         await sleep(200);
-        //cam.removeAllListeners("data");
+        cam.removeAllListeners();
       });
       this.aktive = false;
     }
@@ -31,7 +32,12 @@ class CamManager {
   createCams(ips) {
     this.camsOff();
     this.ips = ips;
-    this.cams = [];
+    this.cams.splice(0, this.cams.length);
+    console.log(
+      "🚀 ~ file: CamManager.js ~ line 35 ~ CamManager ~ createCams ~ this.cams",
+      this.cams
+    );
+
     for (let i = 0; i < ips.length; i++) {
       let camera = new MjpegCamera({
         name: "backdoor",
@@ -45,23 +51,20 @@ class CamManager {
 
   start() {
     if (!this.aktive) {
-      this.aktive = true;
       this.cams.forEach((cam, i) => {
         cam.on("data", (frame) => {
           this.io.emit("cam" + i, frame.data.toString("base64"));
           this.frames[i] = frame.data;
         });
-      });
-
-      this.cams.forEach((cam, i) => {
         cam.start();
       });
+
       this.aktive = true;
     }
   }
 
   stop() {
-    this.camsOff();
+    this.createCams(this.ips);
   }
 
   refresh(ips) {
