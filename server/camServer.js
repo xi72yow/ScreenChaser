@@ -69,10 +69,11 @@ async function cServer() {
   app.get("/scan", async function (req, res) {
     res.end("scan");
     let ips = await init();
-    Cams.refresh(ips);
+    Cams = new CamManager(ips, io);
     setTimeout(() => {
       res.end("scan");
     }, 500);
+    Cams.start();
   });
 
   app.get("/", (req, res) => {
@@ -84,9 +85,11 @@ async function cServer() {
   });
 
   io.on("connection", async (socket) => {
+    await sleep(300);
+
     if (!Cams) return;
     const clients = await io.fetchSockets();
-    if (clients.length > 0 && !Cams.aktive) {
+    if (clients.length > 0 || !Cams.aktive) {
       Cams.start();
 
       console.log("streams started");
@@ -94,6 +97,7 @@ async function cServer() {
 
     socket.on("disconnect", async () => {
       console.log("user disconnected");
+      await sleep(300);
       //var clients = io.sockets.sockets;
       const clients = await io.fetchSockets();
       if (clients.length === 0 && Cams.aktive) {

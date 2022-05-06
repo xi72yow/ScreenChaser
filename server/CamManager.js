@@ -6,7 +6,7 @@ function sleep(ms) {
 
 class CamManager {
   constructor(ips, io) {
-    this.cams = [];
+    this.cams = [null, null];
     this.frames = [];
     this.ips = ips;
     this.timer;
@@ -17,23 +17,23 @@ class CamManager {
     this.createCams(ips);
   }
 
-  camsOff() {
+  async camsOff() {
     if (this.aktive) {
-      this.cams.forEach(async (cam, i) => {
+      for (let index = 0; index < this.ips.length; index++) {
+        const cam = this.cams[index];
         await sleep(200);
         cam.stop();
+        cam.setState(true);
         await sleep(200);
         cam.removeAllListeners();
-        cam.setState(true);
-      });
+      }
+
       this.aktive = false;
     }
   }
 
   createCams(ips) {
-    this.camsOff();
     this.ips = ips;
-    this.cams.splice(0, this.cams.length);
     console.log(
       "🚀 ~ file: CamManager.js ~ line 35 ~ CamManager ~ createCams ~ this.cams",
       this.cams
@@ -45,9 +45,13 @@ class CamManager {
         url: "http://" + ips[i] + ":81/",
         timeout: 30000,
       });
-      // camera.start();
+      camera.setState(false);
 
-      this.cams.push(camera);
+      // camera.start();
+      /* camera.url="http11://" + ips[i] + ":81/";
+      console.log(camera.url); */
+
+      this.cams[i] = camera;
     }
   }
 
@@ -71,7 +75,7 @@ class CamManager {
   }
 
   refresh(ips) {
-    this.camsOff();
+    //this.camsOff();
 
     this.createCams(ips);
   }
