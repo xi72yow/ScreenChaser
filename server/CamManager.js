@@ -6,7 +6,7 @@ function sleep(ms) {
 
 class CamManager {
   constructor(ips, io) {
-    this.cams = [null, null];
+    this.cams = Array(ips.length).fill(null);
     this.frames = [];
     this.ips = ips;
     this.timer;

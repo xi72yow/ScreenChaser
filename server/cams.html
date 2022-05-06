@@ -219,7 +219,11 @@
   <body>
     <!--     <button id="refresh" type="button" onclick="scan()">Refresh</button> -->
     <div id="cam_grid" class="row"></div>
+    <button onclick="close_window();return false;">close</button>
     <script>
+      function close_window() {
+        window.close();
+      }
       var socket = io();
 
       fetch(document.location.origin + "/xSlaves")
