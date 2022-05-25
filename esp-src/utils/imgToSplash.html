@@ -1,0 +1,175 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <style>
+    body {
+      background-color: rgb(0, 0, 0);
+      color: aliceblue;
+    }
+    canvas {
+      border: 1px solid red;
+    }
+    .row {
+      margin-top: 1rem;
+      display: flex;
+      justify-content: center;
+    }
+    .hidden {
+      display: none;
+    }
+    textarea {
+      overflow-y: scroll;
+      overflow-x: hidden;
+      resize: none;
+    }
+    .sourche {
+      width: 90px;
+      height: 5vh;
+      resize: both;
+    }
+  </style>
+  <body>
+    <div class="row">
+      <input id="ab" type="file" id="file" name="file" accept="image/*" />
+      <input type="checkbox" class="hidden" id="invert" />
+      <button id="btn" class="hidden">start</button>
+      <button id="copy" class="hidden">copy</button>
+    </div>
+    <div id="preview" class="row"></div>
+    <div class="row">
+      <textarea id="code" class="hidden"></textarea>
+    </div>
+
+    <div class="row">
+      <textarea id="arduino" cols="150" rows="42" class="hidden"></textarea>
+    </div>
+
+    <script>
+      function chunkArray(myArray, chunk_size) {
+        let index = 0;
+        const tempArray = [];
+
+        for (index = 0; index < myArray.length; index += chunk_size) {
+          const myChunk = myArray.slice(index, index + chunk_size);
+          // Do something if you want with the group
+          tempArray.push(myChunk);
+        }
+        return tempArray;
+      }
+
+      function loadCanvasWithInputFile() {
+        const preview = document.getElementById("preview");
+        const fileinput = document.getElementById("ab");
+        const code = document.getElementById("code");
+        const arduino = document.getElementById("arduino");
+
+        const checkbox = document.getElementById("invert");
+        const btn = document.getElementById("btn");
+        const copy = document.getElementById("copy");
+
+        fileinput.onchange = function (evt) {
+          document.querySelectorAll("canvas").forEach((canvas) => {
+            canvas.remove();
+          });
+          const img = new Image();
+          const reader = new FileReader();
+          const canvas = document.createElement("canvas");
+          preview.appendChild(canvas);
+          const context = canvas.getContext("2d");
+
+          const files = evt.target.files;
+          const file = files[0];
+          if (file.type.match("image.*")) {
+            reader.readAsDataURL(file);
+            reader.onload = function (evt) {
+              if (evt.target.readyState == FileReader.DONE) {
+                img.src = evt.target.result;
+                img.onload = () => {
+                  canvas.width = img.width;
+                  canvas.height = img.height;
+                  context.drawImage(img, 0, 0);
+                  if (btn.classList.contains("hidden")) {
+                    checkbox.classList.toggle("hidden");
+                    btn.classList.toggle("hidden");
+                  }
+                };
+              }
+            };
+          } else {
+            alert("not an image");
+          }
+        };
+
+        copy.onclick = function () {
+          arduino.select();
+          document.execCommand("copy");
+        };
+
+        btn.onclick = function () {
+          const canvas = document.querySelector("canvas");
+          const context = canvas.getContext("2d");
+
+          console.log(`Ⓧ: `, canvas.width);
+          var imgd = context.getImageData(0, 0, canvas.width, canvas.height);
+          var pix = imgd.data;
+          let binary = "";
+          console.log(`Ⓧ: `, pix);
+
+          console.log(`Ⓧ: `, checkbox.checked);
+          // Loop over each pixel and invert the color.
+          for (var i = 0, n = pix.length; i < n; i += 4) {
+            if (checkbox.checked) {
+              pix[i] = 255 - pix[i]; // red
+              pix[i + 1] = 255 - pix[i + 1]; // green
+              pix[i + 2] = 255 - pix[i + 2]; // blue
+            }
+
+            const r = pix[i];
+            const g = pix[i + 1];
+            const b = pix[i + 2];
+
+            const avg = (r + g + b) / 3;
+
+            if (avg > 128) {
+              binary += "1";
+            } else {
+              binary += "0";
+            }
+
+            // i+3 is alpha (the fourth element)
+          }
+          if (code.classList.contains("hidden")) {
+            code.classList.toggle("hidden");
+            copy.classList.toggle("hidden");
+            arduino.classList.toggle("hidden");
+          }
+          code.cols = canvas.width;
+          code.rows = canvas.height;
+          code.value = binary;
+          const chunkBin = chunkArray(binary, 8);
+          arduino.value = "";
+          chunkBin.forEach((chunk, i) => {
+            if (i == 0) {
+              arduino.value += `//xi72yow.de\n#define splash1_width  ${canvas.width}\n#define splash1_height ${canvas.height}\n\nconst uint8_t PROGMEM splash1_data[] = {`;
+            }
+
+            arduino.value += `0b${chunk},`;
+
+            if ((i % canvas.width) / 8 == 0) {
+              arduino.value += "\n";
+            }
+
+            if (i == chunkBin.length - 1) {
+              arduino.value += "};";
+            }
+          });
+        };
+      }
+      loadCanvasWithInputFile();
+    </script>
+  </body>
+</html>
