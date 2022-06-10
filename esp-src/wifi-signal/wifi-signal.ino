@@ -14,7 +14,7 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 //Wifi
 #include "Arduino.h"
-#include <ESP8266WiFi.h>
+#include <WiFi.h>
 #include <WiFiClient.h>
 #include "parsebytes.h"
 
@@ -43,58 +43,59 @@ IPAddress net;
 IPAddress gw;
 
 // Notification LED
+#define LED_BUILTIN  2
 void flashLED(int flashtime) {
 #if defined(LED_BUILTIN)                // If we have it; flash it.
-  digitalWrite(LED_BUILTIN, 0);  // On at full power.
+  digitalWrite(LED_BUILTIN, 1);  // On at full power.
   delay(flashtime);               // delay
-  digitalWrite(LED_BUILTIN, 1); // turn Off
+  digitalWrite(LED_BUILTIN, 0); // turn Off
 #else
   return;                         // No notifcation LED, do nothing, no delay
 #endif
 }
 
-void drawSignal(int rssi){
-  if (rssi >= -55) { 
-    display.fillRect(102,7,4,1, INVERSE);
-    display.fillRect(107,6,4,2, INVERSE);
-    display.fillRect(112,4,4,4, INVERSE);
-    display.fillRect(117,2,4,6, INVERSE);
-    display.fillRect(122,0,4,8, INVERSE);
+void drawSignal(int rssi) {
+  if (rssi >= -55) {
+    display.fillRect(102, 7, 4, 1, INVERSE);
+    display.fillRect(107, 6, 4, 2, INVERSE);
+    display.fillRect(112, 4, 4, 4, INVERSE);
+    display.fillRect(117, 2, 4, 6, INVERSE);
+    display.fillRect(122, 0, 4, 8, INVERSE);
     display.display();
   } else if (rssi < -55 & rssi > -65) {
-    display.fillRect(102,7,4,1, INVERSE);
-    display.fillRect(107,6,4,2, INVERSE);
-    display.fillRect(112,4,4,4, INVERSE);
-    display.fillRect(117,2,4,6, INVERSE);
-    display.drawRect(122,0,4,8, WHITE);
+    display.fillRect(102, 7, 4, 1, INVERSE);
+    display.fillRect(107, 6, 4, 2, INVERSE);
+    display.fillRect(112, 4, 4, 4, INVERSE);
+    display.fillRect(117, 2, 4, 6, INVERSE);
+    display.drawRect(122, 0, 4, 8, WHITE);
     display.display();
   } else if (rssi < -65 & rssi > -75) {
-    display.fillRect(102,8,4,1, INVERSE);
-    display.fillRect(107,6,4,2, INVERSE);
-    display.fillRect(112,4,4,4, INVERSE);
-    display.drawRect(117,2,2,6, WHITE);
-    display.drawRect(122,0,4,8, WHITE);
+    display.fillRect(102, 8, 4, 1, INVERSE);
+    display.fillRect(107, 6, 4, 2, INVERSE);
+    display.fillRect(112, 4, 4, 4, INVERSE);
+    display.drawRect(117, 2, 2, 6, WHITE);
+    display.drawRect(122, 0, 4, 8, WHITE);
     display.display();
   } else if (rssi < -75 & rssi > -85) {
-    display.fillRect(102,8,4,1, INVERSE);
-    display.fillRect(107,6,4,2, INVERSE);
-    display.drawRect(112,4,4,4, WHITE);
-    display.drawRect(117,2,4,6, WHITE);
-    display.drawRect(122,0,4,8, WHITE);
+    display.fillRect(102, 8, 4, 1, INVERSE);
+    display.fillRect(107, 6, 4, 2, INVERSE);
+    display.drawRect(112, 4, 4, 4, WHITE);
+    display.drawRect(117, 2, 4, 6, WHITE);
+    display.drawRect(122, 0, 4, 8, WHITE);
     display.display();
   } else if (rssi < -85 & rssi > -96) {
-    display.fillRect(102,8,4,1, INVERSE);
-    display.drawRect(107,6,4,2, WHITE);
-    display.drawRect(112,4,4,4, WHITE);
-    display.drawRect(117,2,4,6, WHITE);
-    display.drawRect(122,0,4,8, WHITE);
+    display.fillRect(102, 8, 4, 1, INVERSE);
+    display.drawRect(107, 6, 4, 2, WHITE);
+    display.drawRect(112, 4, 4, 4, WHITE);
+    display.drawRect(117, 2, 4, 6, WHITE);
+    display.drawRect(122, 0, 4, 8, WHITE);
     display.display();
   } else {
-    display.drawRect(102,8,4,1, WHITE);
-    display.drawRect(107,6,4,2, WHITE);
-    display.drawRect(112,4,4,4, WHITE);
-    display.drawRect(117,2,4,6, WHITE);
-    display.drawRect(122,0,4,8, WHITE);
+    display.drawRect(102, 8, 4, 1, WHITE);
+    display.drawRect(107, 6, 4, 2, WHITE);
+    display.drawRect(112, 4, 4, 4, WHITE);
+    display.drawRect(117, 2, 4, 6, WHITE);
+    display.drawRect(122, 0, 4, 8, WHITE);
     display.display();
   }
 
@@ -138,7 +139,7 @@ void WifiSetup() {
               (strcmp(stationList[sta].ssid, thisBSSID.c_str()) == 0)) {
             Serial.print("  -  Known!");
 
-            display.drawRect(i, i, display.width()-2*i, display.height()-2*i, WHITE);
+            display.drawRect(i, i, display.width() - 2 * i, display.height() - 2 * i, WHITE);
             display.clearDisplay();
 
             display.setTextSize(2);
@@ -153,6 +154,8 @@ void WifiSetup() {
             display.setCursor(0, 40);
             display.printf("%s (%i)", thisSSID.c_str(), thisRSSI);
             drawSignal(thisRSSI);
+            display.display();
+            delay(250);
             // Chose the strongest RSSI seen
             if (thisRSSI > bestRSSI) {
               bestStation = sta;
@@ -197,7 +200,7 @@ void setup() {
     Serial.println(F("SSD1306 allocation failed"));
     for (;;);
   }
-  
+
   // Show the display buffer on the screen. You MUST call display() after
   // drawing commands to make them visible on screen!
   display.display();
