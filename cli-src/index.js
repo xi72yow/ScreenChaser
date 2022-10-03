@@ -1,7 +1,23 @@
 import cliSpinners from 'cli-spinners';
 import select from '@inquirer/select';
+import logUpdate from 'log-update';
 
-console.log(cliSpinners.dots);
+/* const frames = ['-', '\\', '|', '/'];
+let index = 0;
+
+setInterval(() => {
+    const frame = frames[index = ++index % frames.length];
+
+    logUpdate(
+        `
+        ♥♥
+   ${frame} unicorns ${frame}
+        ♥♥
+`
+    );
+}, 80);
+
+console.log(cliSpinners.dots); */
 
 const answer = await select({
     message: 'Select a package manager',
