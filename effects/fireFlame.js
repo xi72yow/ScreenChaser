@@ -3,7 +3,8 @@ const setAll = require("./basics/setAll");
 const setPixel = require("./basics/setPixel");
 
 class FireFlame {
-  constructor(cooling, sparking, neopixelCount) {
+  constructor(options) {
+    const { cooling, sparking, neopixelCount } = options;
     this.stripe = setAll(0, 0, 0);
     this.heat = new Array(neopixelCount).fill(0);
     this.cooling = cooling;

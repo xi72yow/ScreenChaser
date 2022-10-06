@@ -4,16 +4,17 @@ const setPixel = require("./basics/setPixel");
 const { hsvToRgb, rgbToHsv } = require("./basics/convertHsvRgb");
 
 class MeteorRain {
-  constructor(
-    red,
-    green,
-    blue,
-    meteorSize,
-    meteorTrailDecay,
-    meteorRandomDecay,
-    neopixelCount,
-    rainbow = false
-  ) {
+  constructor(options) {
+    const {
+      red,
+      green,
+      blue,
+      meteorSize,
+      meteorTrailDecay,
+      meteorRandomDecay,
+      neopixelCount,
+      rainbow = false,
+    } = options;
     this.stripe = setAll(0, 0, 0, neopixelCount);
     this.red = red;
     this.green = green;

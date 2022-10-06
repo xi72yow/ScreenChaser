@@ -4,7 +4,9 @@ const setPixel = require("./basics/setPixel");
 const millis = require("./basics/millis");
 
 class BauncingBalls {
-  constructor(ballMode, mirrored, tail, BallCount, neopixelCount, baseStripe) {
+  constructor(options) {
+    const { ballMode, mirrored, tail, BallCount, neopixelCount, baseStripe } =
+      options;
     this.mirrored = mirrored;
     this.tail = tail;
     this.speed = 3; //slows down the animation

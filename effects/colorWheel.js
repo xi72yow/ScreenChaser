@@ -3,11 +3,12 @@ const setPixel = require("./basics/setPixel");
 
 class ColorWheel {
   /**
-   * 
+   *
    * @param {number} speed animation speed
    * @param {number} neopixelCount number of neopixels
    */
-  constructor(speed, neopixelCount) {
+  constructor(options) {
+    const { speed, neopixelCount } = options;
     this.count = 0;
     this.stripe = setAll(0, 0, 0);
     this.speed = speed;

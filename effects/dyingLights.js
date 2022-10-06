@@ -4,7 +4,8 @@ const random = require("./basics/random");
 const { hsvToRgb, rgbToHsv } = require("./basics/convertHsvRgb");
 
 class DyingLights {
-  constructor(neopixelCount, red = 155, green = 3, blue = 255) {
+  constructor(options) {
+    const { neopixelCount, red = 155, green = 3, blue = 255 } = options;
     this.baseStripe = setAll(red, green, blue, neopixelCount);
     this.stripe = setAll(red, green, blue, neopixelCount);
     this.red = red;

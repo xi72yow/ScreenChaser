@@ -2,7 +2,6 @@ const dgram = require("dgram");
 const os = require("os");
 const { hexToRgb } = require("../basics/convertRgbHex");
 const events = require("events");
-const fetch = require("node-fetch");
 
 class DataEmitter {
   constructor(DEBUG = false, ipaddr = "") {
@@ -43,10 +42,6 @@ class DataEmitter {
             })*/
     });
 
-    this.fetcher.on("cam", (cam) => {
-      this.xSlaves.push({ ...cam });
-    });
-
     this.server.on("listening", () => {
       const address = this.server.address();
       console.log(`server listening on ${address.address}:${address.port}`);
@@ -56,6 +51,8 @@ class DataEmitter {
   logSlaves() {
     console.log(this.xSlaves);
   }
+
+  getSlaves() { return this.xSlaves }
 
   /**
    * returns an array with arrays of the given size
@@ -196,7 +193,7 @@ class DataEmitter {
       const maxAddrBin = `${baseAddressBin + "1".repeat(31 - netmaskCount)}0`;
       const broadcastAddr = this.dec2bin(
         parseInt(reverseMask, 2) |
-          parseInt(addressBin + "0".repeat(32 - addressBin.length), 2)
+        parseInt(addressBin + "0".repeat(32 - addressBin.length), 2)
       );
       const myIp = this.binToIp(addressBin);
       const broadcast = this.binToIp(broadcastAddr);
@@ -215,25 +212,8 @@ class DataEmitter {
           this.server.send(
             "FFFFFFF",
             4210,
-            this.binToIp(baseAddressBin + tryy)
+            ip
           );
-
-          const cam = {
-            ip: ip,
-            type: "cam",
-          };
-
-          const fetchURL = `http://${ip}/status`;
-
-          fetch(fetchURL)
-            .then(async (res) => {
-              const body = await res.json().catch((err) => {});
-
-              if (body.framesize) {
-                this.fetcher.emit("cam", cam);
-              }
-            })
-            .catch((err) => {});
         }
         await this.delay(150);
         if (scanningCount > 3) {
@@ -269,10 +249,10 @@ class DataEmitter {
     console.log(`maxPower for LEDs: ${maxPower} W`);
   }
 }
-async function main() {
+/* async function main() {
   const DataEmitterForIP = new DataEmitter(true);
   await DataEmitterForIP.init();
   DataEmitterForIP.logSlaves();
 }
-main();
+main(); */
 module.exports = DataEmitter;
