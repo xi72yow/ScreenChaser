@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 const inquirer = require("inquirer");
 const chalk = require("chalk");
+const fs = require("fs");
+const notifier = require("node-notifier");
+
 const MeteorRain = require("./effects_build/meteor");
 const DataEmitter = require("./effects_build/network/dataEmitter");
 const BouncingBalls = require("./effects_build/bouncingBalls");
@@ -8,7 +11,8 @@ const FireFlame = require("./effects_build/fireFlame");
 const ColorWheel = require("./effects_build/colorWheel");
 const FrostyPike = require("./effects_build/frostyPike");
 const DyingLights = require("./effects_build/dyingLights");
-const fs = require("fs");
+const setAll = require("./effects_build/basics/setAll");
+const setPixel = require("./effects_build/basics/setPixel");
 
 const yellow = chalk.hex("#ffbb00");
 const pink = chalk.hex("#af0069");
@@ -17,7 +21,39 @@ let savedConfigs = [];
 let effectConfig = {};
 let xSlaves = [];
 let intervals = [];
-const FRAMETIME = 1000 / 10;
+const FRAMETIME = 110;
+
+function createExampleStripe(neopixelCount) {
+  const stripe = setAll(0, 0, 0);
+
+  for (let index = 0; index < neopixelCount; index++) {
+    if (index < neopixelCount / 2) {
+      setPixel(index, stripe, 255, 187, 0);
+    } else setPixel(index, stripe, 175, 0, 105);
+  }
+  return stripe;
+}
+
+function createStaticStripe(props) {
+  const { neopixelCount, red, green, blue } = props;
+  const stripe = setAll(0, 0, 0);
+  for (let index = 0; index < neopixelCount; index++) {
+    setPixel(index, stripe, red, green, blue);
+  }
+  return stripe;
+}
+
+function healthCheck(DataEmitterForIP) {
+  if (Math.floor(Math.random() * 60) === 7) {
+    if (DataEmitterForIP.getHealth().packageloss < -10)
+      notifier.notify({
+        title: "ScreenChaser Problem",
+        message: `PackageLoss: ${
+          DataEmitterForIP.getHealth().packageloss
+        }% for ${DataEmitterForIP.ipaddr}`,
+      });
+  }
+}
 
 function askFor8BitValue(name, message, defaultNumber) {
   return inquirer.prompt([
@@ -55,11 +91,12 @@ function chooseFromList(name, message, choices) {
 }
 
 function clearTerminal() {
-  console.clear();
+  //console.clear();
   console.log(pink("Screen") + yellow("Chaser") + " CLI " + "by @xi72yow");
 }
 
 async function app() {
+  intervals.forEach((interval) => clearInterval(interval));
   clearTerminal();
   try {
     const savedConfigsTxt = await fs.promises.readFile("./.ScreenChaser.json");
@@ -90,23 +127,80 @@ async function app() {
     }
   }
 
+  //render saved configs on stripe
   for (let i = 0; i < savedConfigs.length; i++) {
     const config = savedConfigs[i];
     if (config.choosenLight === "static Light") {
+      const DataEmitterForIP = new DataEmitter(false, config.deviceIp);
+      DataEmitterForIP.emit(createStaticStripe(config.effectConfig));
     } else
       switch (config.effectConfig.type) {
         case "MeteorRain": {
           const MeteorRainEffect = new MeteorRain(config.effectConfig);
           const DataEmitterForIP = new DataEmitter(false, config.deviceIp);
-          let count;
-          setInterval(() => {
-            count++;
-            if (count % 60 === 0) {
-              DataEmitterForIP.logHealth();
-              DataEmitterForIP.logMaxPower();
-            }
-            DataEmitterForIP.emit(MeteorRainEffect.render());
-          }, FRAMETIME);
+          intervals.push(
+            setInterval(() => {
+              healthCheck(DataEmitterForIP);
+              DataEmitterForIP.emit(MeteorRainEffect.render());
+            }, FRAMETIME)
+          );
+          break;
+        }
+        case "BouncingBalls": {
+          const BouncingBallsEffect = new BouncingBalls(config.effectConfig);
+          const DataEmitterForIP = new DataEmitter(false, config.deviceIp);
+          intervals.push(
+            setInterval(() => {
+              healthCheck(DataEmitterForIP);
+              DataEmitterForIP.emit(BouncingBallsEffect.render());
+            }, FRAMETIME)
+          );
+          break;
+        }
+        case "FireFlame": {
+          const FireFlameEffect = new FireFlame(config.effectConfig);
+          const DataEmitterForIP = new DataEmitter(false, config.deviceIp);
+          intervals.push(
+            setInterval(() => {
+              healthCheck(DataEmitterForIP);
+              DataEmitterForIP.emit(FireFlameEffect.render());
+            }, FRAMETIME)
+          );
+          break;
+        }
+        case "ColorWheel": {
+          const ColorWheelEffect = new ColorWheel(config.effectConfig);
+          const DataEmitterForIP = new DataEmitter(false, config.deviceIp);
+          intervals.push(
+            setInterval(() => {
+              healthCheck(DataEmitterForIP);
+              DataEmitterForIP.emit(ColorWheelEffect.render());
+            }, FRAMETIME)
+          );
+          break;
+        }
+        case "FrostyPike": {
+          const FrostyPikeEffect = new FrostyPike(config.effectConfig);
+          const DataEmitterForIP = new DataEmitter(false, config.deviceIp);
+          intervals.push(
+            setInterval(() => {
+              healthCheck(DataEmitterForIP);
+              DataEmitterForIP.emit(FrostyPikeEffect.render());
+            }, FRAMETIME)
+          );
+          break;
+        }
+        case "DyingLights": {
+          const DyingLightsEffect = new DyingLights(config.effectConfig);
+          const DataEmitterForIP = new DataEmitter(false, config.deviceIp);
+          intervals.push(
+            setInterval(() => {
+              if (Math.floor(Math.random() * 60) === 7) {
+                healthCheck(DataEmitterForIP);
+              }
+              DataEmitterForIP.emit(DyingLightsEffect.render());
+            }, FRAMETIME)
+          );
           break;
         }
 
@@ -125,12 +219,16 @@ async function app() {
     },
   ]);
 
+  const existingConfig = savedConfigs.find(
+    (config) => config.deviceIp === deviceIp.deviceIp
+  );
+
   const neopixelCount = await inquirer.prompt([
     {
       type: "input",
       name: "neopixelCount",
       message: "How many LEDs has the device?",
-      default: "1",
+      default: existingConfig ? existingConfig.neopixelCount : 60,
       validate: (value) => (isNaN(parseInt(value)) ? "Not a number!" : true),
       filter: (value) => (isNaN(parseInt(value)) ? value : parseInt(value, 10)),
     },
@@ -149,13 +247,12 @@ async function app() {
     const choosenColorR = await askFor8BitValue("choosenColorR", "Red", 255);
     const choosenColorG = await askFor8BitValue("choosenColorG", "Green", 187);
     const choosenColorB = await askFor8BitValue("choosenColorB", "Blue", 0);
-
-    choosenColor = [
-      choosenColorR.choosenColorR,
-      choosenColorG.choosenColorG,
-      choosenColorB.choosenColorB,
-    ];
-    console.log(choosenColor);
+    choosenColor = {
+      neopixelCount: neopixelCount.neopixelCount,
+      red: choosenColorR.choosenColorR,
+      green: choosenColorG.choosenColorG,
+      blue: choosenColorB.choosenColorB,
+    };
   } else {
     const choosenEffect = await inquirer.prompt([
       {
@@ -209,7 +306,6 @@ async function app() {
           rainbow: rainbow.rainbow,
           neopixelCount: neopixelCount.neopixelCount,
         };
-        console.log(effectConfig);
         break;
       }
 
@@ -251,7 +347,6 @@ async function app() {
           neopixelCount: neopixelCount.neopixelCount,
           baseStripe: baseStripe,
         };
-        console.log(effectConfig);
         break;
       }
 
@@ -264,7 +359,6 @@ async function app() {
           sparking: sparking.sparking,
           neopixelCount: neopixelCount.neopixelCount,
         };
-        console.log(effectConfig);
         break;
       }
 
@@ -275,7 +369,6 @@ async function app() {
           neopixelCount: neopixelCount.neopixelCount,
           speed: speed.speed,
         };
-        console.log(effectConfig);
         break;
       }
 
@@ -295,7 +388,6 @@ async function app() {
           neopixelCount: neopixelCount.neopixelCount,
           delay: delay.delay,
         };
-        console.log(effectConfig);
         break;
       }
 
@@ -310,7 +402,6 @@ async function app() {
           blue: blue.blue,
           neopixelCount: neopixelCount.neopixelCount,
         };
-        console.log(effectConfig);
         break;
       }
       default: {
@@ -320,14 +411,12 @@ async function app() {
     }
   }
 
-  const existingConfig = savedConfigs.find(
-    (config) => config.deviceIp === deviceIp.deviceIp
-  );
-
   const createdConfig = {
     deviceIp: deviceIp.deviceIp,
     choosenLight: choosenLight.choosenLight,
-    effectConfig: effectConfig,
+    effectConfig: choosenLight.choosenLight.includes("static")
+      ? choosenColor
+      : effectConfig,
     neopixelCount: neopixelCount.neopixelCount,
   };
 
@@ -344,7 +433,7 @@ async function app() {
 
   console.log("✔️ Saved config to .ScreenChaser.json");
 
-  process.exit(1);
+  app();
 }
 
 app();

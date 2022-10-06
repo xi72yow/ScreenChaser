@@ -26,8 +26,8 @@ class DataEmitter {
         if (this.recivedPacks === 0) {
           console.log(`Messages received ${msg}`);
         }
-        this.recivedPacks++;
       }
+      this.recivedPacks++;
 
       const stripe = {
         ip: senderInfo.address,
@@ -44,7 +44,9 @@ class DataEmitter {
 
     this.server.on("listening", () => {
       const address = this.server.address();
-      console.log(`server listening on ${address.address}:${address.port}`);
+      if (DEBUG) {
+        console.log(`server listening on ${address.address}:${address.port}`);
+      }
     });
   }
 
@@ -52,7 +54,9 @@ class DataEmitter {
     console.log(this.xSlaves);
   }
 
-  getSlaves() { return this.xSlaves }
+  getSlaves() {
+    return this.xSlaves;
+  }
 
   /**
    * returns an array with arrays of the given size
@@ -137,9 +141,7 @@ class DataEmitter {
       if (this.lastChunk[i] === frames) {
         return;
       }
-      if (this.DEBUG) {
-        this.sendedPacks++;
-      }
+      this.sendedPacks++;
       this.server.send(i.toString(16) + frames, 4210, this.ipaddr);
     });
     this.lastChunk = sendingFrames;
@@ -156,6 +158,15 @@ class DataEmitter {
     } else {
       console.log("debug is off");
     }
+  }
+
+  getHealth() {
+    return {
+      sendedPacks: this.sendedPacks,
+      recivedPacks: this.recivedPacks,
+      packageloss: (this.recivedPacks / this.sendedPacks) * 100 - 100,
+      power: this.claculatePower(),
+    };
   }
 
   async init() {
@@ -193,7 +204,7 @@ class DataEmitter {
       const maxAddrBin = `${baseAddressBin + "1".repeat(31 - netmaskCount)}0`;
       const broadcastAddr = this.dec2bin(
         parseInt(reverseMask, 2) |
-        parseInt(addressBin + "0".repeat(32 - addressBin.length), 2)
+          parseInt(addressBin + "0".repeat(32 - addressBin.length), 2)
       );
       const myIp = this.binToIp(addressBin);
       const broadcast = this.binToIp(broadcastAddr);
@@ -209,11 +220,7 @@ class DataEmitter {
         for (let i = 0; i < trys.length; i++) {
           const tryy = trys[i];
           const ip = this.binToIp(baseAddressBin + tryy);
-          this.server.send(
-            "FFFFFFF",
-            4210,
-            ip
-          );
+          this.server.send("FFFFFFF", 4210, ip);
         }
         await this.delay(150);
         if (scanningCount > 3) {
