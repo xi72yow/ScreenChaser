@@ -3,12 +3,9 @@ const setAll = require("./basics/setAll");
 const setPixel = require("./basics/setPixel");
 const { hsvToRgb, rgbToHsv } = require("./basics/convertHsvRgb");
 
-class MeteorRain {
+class Snake {
   constructor(options) {
     const {
-      red,
-      green,
-      blue,
       appleCount,
       speed,
       maxSnakeSize,
@@ -16,9 +13,13 @@ class MeteorRain {
       rainbow = false,
     } = options;
     this.stripe = setAll(0, 0, 0, neopixelCount);
-    this.red = red;
-    this.green = green;
-    this.blue = blue;
+    let spice = random(50) > 25;
+    this.headColor = spice
+      ? { r: 255, g: 187, b: 0 }
+      : { r: 175, g: 0, b: 105 };
+    this.tailColor = !spice
+      ? { r: 255, g: 187, b: 0 }
+      : { r: 175, g: 0, b: 105 };
     this.apples = [];
     this.poisonAppleIndex = random(neopixelCount);
     for (let i = 0; i < appleCount; i++) {
@@ -65,14 +66,20 @@ class MeteorRain {
       for (let i = 0; i < this.snakeSize; i++) {
         //draw head
         if (i === 0) {
-          this.stripe = setPixel(this.headIndex, this.stripe, 255, 255, 255);
+          this.stripe = setPixel(
+            this.headIndex,
+            this.stripe,
+            this.headColor.r,
+            this.headColor.g,
+            this.headColor.b
+          );
         } else
           this.stripe = setPixel(
             this.headIndex + i * this.directionHead * -1,
             this.stripe,
-            this.red,
-            this.green,
-            this.blue
+            this.tailColor.r,
+            this.tailColor.g,
+            this.tailColor.b
           );
         //delete tail
         if (i === this.snakeSize - 1) {
@@ -100,7 +107,7 @@ class MeteorRain {
         this.snakeSize = 1;
         this.poisonAppleIndex = random(this.neopixelCount);
       }
-      
+
       this.headIndex = this.directionHead + this.headIndex;
     }
 
@@ -108,14 +115,8 @@ class MeteorRain {
       this.directionHead = this.directionHead * -1;
     }
 
-    /*   //reset animation
-    if (this.count > this.neopixelCount * 2000) {
-      this.stripe = setAll(0, 0, 0, this.neopixelCount);
-      this.count = 0;
-    } */
-
     return this.stripe;
   }
 }
 
-module.exports = MeteorRain;
+module.exports = Snake;

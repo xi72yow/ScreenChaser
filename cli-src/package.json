@@ -9,7 +9,8 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "cd .. && cp -R ./effects ./cli-src/effects_build"
+    "build": "cd .. && rm -rf ./cli-src/effects_build && cp -R ./effects ./cli-src/effects_build",
+    "start": "node index.js"
   },
   "keywords": [],
   "author": "",

@@ -10,6 +10,7 @@ const BouncingBalls = require("./effects_build/bouncingBalls");
 const FireFlame = require("./effects_build/fireFlame");
 const ColorWheel = require("./effects_build/colorWheel");
 const FrostyPike = require("./effects_build/frostyPike");
+const Snake = require("./effects_build/snake");
 const DyingLights = require("./effects_build/dyingLights");
 const setAll = require("./effects_build/basics/setAll");
 const setPixel = require("./effects_build/basics/setPixel");
@@ -195,14 +196,25 @@ async function app() {
           );
           break;
         }
+
+        case "Snake": {
+          const SnakeEffect = new Snake(config.effectConfig);
+          const DataEmitterForIP = new DataEmitter(false, config.deviceIp);
+          intervals.push(
+            setInterval(() => {
+              healthCheck(DataEmitterForIP);
+              DataEmitterForIP.emit(SnakeEffect.render());
+            }, FRAMETIME)
+          );
+          break;
+        }
+
         case "DyingLights": {
           const DyingLightsEffect = new DyingLights(config.effectConfig);
           const DataEmitterForIP = new DataEmitter(false, config.deviceIp);
           intervals.push(
             setInterval(() => {
-              if (Math.floor(Math.random() * 60) === 7) {
-                healthCheck(DataEmitterForIP);
-              }
+              healthCheck(DataEmitterForIP);
               DataEmitterForIP.emit(DyingLightsEffect.render());
             }, FRAMETIME)
           );
@@ -210,6 +222,7 @@ async function app() {
         }
 
         default:
+          console.log("Upps i forgot do add this effect to the switch");
           break;
       }
     const element = savedConfigs[i];
@@ -270,6 +283,7 @@ async function app() {
           "FireFlame",
           "ColorWheel",
           "FrostyPike",
+          "Snake",
           "DyingLights",
         ],
       },
@@ -392,6 +406,28 @@ async function app() {
           baseStripe: baseStripe,
           neopixelCount: neopixelCount.neopixelCount,
           delay: delay.delay,
+        };
+        break;
+      }
+
+      case "Snake": {
+        const speed = await askFor8BitValue("speed", "Speed", 10);
+        const maxSnakeSize = await askFor8BitValue(
+          "maxSnakeSize",
+          "Max Snake Size",
+          10
+        );
+        const appleCount = await askFor8BitValue(
+          "appleCount",
+          "Apple Count",
+          10
+        );
+        effectConfig = {
+          type: "Snake",
+          neopixelCount: neopixelCount.neopixelCount,
+          speed: speed.speed,
+          maxSnakeSize: maxSnakeSize.maxSnakeSize,
+          appleCount: appleCount.appleCount,
         };
         break;
       }
