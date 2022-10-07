@@ -24,6 +24,7 @@ const pink = (str) => {
 };
 
 let savedConfigs = [];
+let notConfiguratedDevices = [];
 let effectConfig = {};
 let xSlaves = [];
 let intervals = [];
@@ -49,15 +50,20 @@ function createStaticStripe(props) {
   return stripe;
 }
 
+let lastNotification = new Date().getTime();
+
 function healthCheck(DataEmitterForIP) {
   if (Math.floor(Math.random() * 60) === 7) {
     if (DataEmitterForIP.getHealth().packageloss < -10)
-      notifier.notify({
-        title: "ScreenChaser Problem",
-        message: `PackageLoss: ${
-          DataEmitterForIP.getHealth().packageloss
-        }% for ${DataEmitterForIP.ipaddr}`,
-      });
+      if ((new Date().getTime() - lastNotification) / 1000 > 300) {
+        notifier.notify({
+          title: "ScreenChaser Problem",
+          message: `PackageLoss: ${
+            DataEmitterForIP.getHealth().packageloss
+          }% for ${DataEmitterForIP.ipaddr}`,
+        });
+        lastNotification = new Date().getTime();
+      }
   }
 }
 
@@ -108,11 +114,11 @@ async function app() {
     const savedConfigsTxt = await fs.promises.readFile("./.ScreenChaser.json");
     savedConfigs = JSON.parse(savedConfigsTxt);
   } catch (err) {
-    console.log(err);
     console.log(
-      "If this is the first time you are running this, ignore this error."
+      `${yellow(
+        "Note:"
+      )} There is no config file yet. Make sure you config all automatic detected devices befor leaving this running script. The ScreenChaser scanned the network only if there is no config file.`
     );
-    console.log("After you have saved a config, this error will go away.");
   }
 
   let counter = 0;
@@ -124,6 +130,9 @@ async function app() {
     xSlaves = detectedDevices.map((slave) => {
       return slave.ip;
     });
+
+    notConfiguratedDevices = xSlaves;
+
     counter++;
     if (counter > 10) {
       console.log(
@@ -233,7 +242,8 @@ async function app() {
       type: "list",
       name: "deviceIp",
       message: "Which Chaser would you like config?",
-      choices: xSlaves,
+      choices:
+        notConfiguratedDevices.length !== 0 ? notConfiguratedDevices : xSlaves,
     },
   ]);
 
