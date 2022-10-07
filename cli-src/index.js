@@ -14,8 +14,13 @@ const DyingLights = require("./effects_build/dyingLights");
 const setAll = require("./effects_build/basics/setAll");
 const setPixel = require("./effects_build/basics/setPixel");
 
-const yellow = chalk.hex("#ffbb00");
-const pink = chalk.hex("#af0069");
+const yellow = (str) => {
+  return chalk.hex("#ffbb00").bold(str);
+};
+
+const pink = (str) => {
+  return chalk.hex("#af0069").bold(str);
+};
 
 let savedConfigs = [];
 let effectConfig = {};

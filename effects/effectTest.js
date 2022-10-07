@@ -5,6 +5,7 @@ const FireFlame = require("./fireFlame");
 const ColorWheel = require("./colorWheel");
 const FrostyPike = require("./frostyPike");
 const DyingLights = require("./dyingLights");
+const Snake = require("./snake");
 
 const setAll = require("./basics/setAll");
 const setPixel = require("./basics/setPixel");
@@ -20,24 +21,34 @@ function createExampleStripe(neopixelCount) {
   return stripe;
 }
 
-const DyingLightEffect = new DyingLights(120);
+/* const DyingLightEffect = new DyingLights(120);
 const MeteorRainEffect = new MeteorRain(155, 25, 200, 5, 20, 100, 120, true);
 const FireFlameEffect = new FireFlame(150, 30, 120);
 const BouncingBallsEffect = new BouncingBalls(255, false, 10, 3, 120);
 const ColorWheelEffect = new ColorWheel(2, 120);
-const FrostyPikeEffect = new FrostyPike(createExampleStripe(120), 5, 120);
+const FrostyPikeEffect = new FrostyPike(createExampleStripe(120), 5, 120); */
+const SnakeEffect = new Snake({
+  neopixelCount: 113,
+  maxSnakeSize: 20,
+  red: 12,
+  green: 255,
+  blue: 0,
+  appleCount: 5,
+  speed: 1,
+  rainbow: true,
+});
 
 async function main() {
-  const DataEmitterForIP = new DataEmitter(true);
-  await DataEmitterForIP.init();
+  const DataEmitterForIP = new DataEmitter(true, "192.168.2.113");
+  //await DataEmitterForIP.init();
   setInterval(() => {
     count++;
     if (count % 60 === 0) {
-      DataEmitterForIP.logHealth();
-      DataEmitterForIP.logMaxPower();
+      /* DataEmitterForIP.logHealth();
+      DataEmitterForIP.logMaxPower(); */
     }
-    DataEmitterForIP.emit(DyingLightEffect.render());
-  }, 50);
+    DataEmitterForIP.emit(SnakeEffect.render());
+  }, 110);
 }
 
 main();
