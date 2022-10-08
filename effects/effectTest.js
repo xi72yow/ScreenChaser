@@ -44,8 +44,8 @@ async function main() {
   setInterval(() => {
     count++;
     if (count % 60 === 0) {
-      /* DataEmitterForIP.logHealth();
-      DataEmitterForIP.logMaxPower(); */
+      DataEmitterForIP.logHealth();
+      DataEmitterForIP.logMaxPower();
     }
     DataEmitterForIP.emit(SnakeEffect.render());
   }, 110);

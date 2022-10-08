@@ -15,6 +15,10 @@ const DyingLights = require("./effects_build/dyingLights");
 const setAll = require("./effects_build/basics/setAll");
 const setPixel = require("./effects_build/basics/setPixel");
 
+const sleep = (milliseconds) => {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+};
+
 const yellow = (str) => {
   return chalk.hex("#ffbb00").bold(str);
 };
@@ -486,5 +490,49 @@ async function app() {
 
   app();
 }
+
+process.stdin.resume();
+
+async function exitHandler(options, exitCode) {
+  intervals.forEach((interval) => clearInterval(interval));
+
+  savedConfigs.forEach(async (config) => {
+    if (config.choosenLight.includes("static")) return;
+    const DataEmitterForIP = new DataEmitter(false, config.deviceIp);
+    const neopixelCount = config.neopixelCount;
+    DataEmitterForIP.emit(createExampleStripe(neopixelCount));
+  });
+  await sleep(250);
+
+  if (exitCode || exitCode === 0) {
+    const DATE = new Date();
+    const HOUER = DATE.getHours();
+    const GOOD_BY_STRING = `👋 `;
+
+    if (HOUER < 12 && HOUER > 4) {
+      console.log(GOOD_BY_STRING + "Have a good start in the day!");
+    }
+    if (HOUER > 12 && HOUER < 20) {
+      console.log(GOOD_BY_STRING + "What’s brown and sticky? A stick.");
+    }
+    if (HOUER > 20 && HOUER < 5) {
+      console.log(GOOD_BY_STRING + `Going to bed?! it's ${HOUER} o'clock!`);
+    }
+  }
+  if (options.exit) process.exit();
+}
+
+//do something when app is closing
+process.on("exit", exitHandler.bind(null, { exit: true }));
+
+//catches ctrl+c event
+process.on("SIGINT", exitHandler.bind(null, { exit: true }));
+
+// catches "kill pid" (for example: nodemon restart)
+process.on("SIGUSR1", exitHandler.bind(null, { exit: true }));
+process.on("SIGUSR2", exitHandler.bind(null, { exit: true }));
+
+//catches uncaught exceptions
+process.on("uncaughtException", exitHandler.bind(null, { exit: true }));
 
 app();
