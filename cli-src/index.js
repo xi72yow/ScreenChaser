@@ -410,11 +410,12 @@ async function app() {
         const baseStripeR = await askFor8BitValue("baseStripeR", "Red", 255);
         const baseStripeG = await askFor8BitValue("baseStripeG", "Green", 187);
         const baseStripeB = await askFor8BitValue("baseStripeB", "Blue", 0);
-        const baseStripe = Array(neopixelCount).fill([
+        const baseStripe = setAll(
           baseStripeR.baseStripeR,
           baseStripeG.baseStripeG,
           baseStripeB.baseStripeB,
-        ]);
+          neopixelCount.neopixelCount
+        );
         effectConfig = {
           type: "FrostyPike",
           baseStripe: baseStripe,
