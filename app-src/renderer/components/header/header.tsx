@@ -22,24 +22,22 @@ import Logo from "../styles/Logo.js";
 import { showNotification } from "@mantine/notifications";
 
 export default function HeaderApp(props) {
-  const { data, setSelectedDevice, form } = props;
+  const { data, form, configs, setConfigs, setSelectedDevice } = props;
   const theme = useMantineTheme();
-  const [selected, setSelected] = useState(data[0]);
-  const [configs, setConfigs] = useLocalStorage({
-    key: "ScreenChaserConfigs",
-  });
 
   React.useEffect(() => {
-    form.setFieldValue("device", { ...form.values.device, ...selected });
-  }, [selected]);
+    form.setFieldValue("device.ip", data[0]?.ip || "");
+    form.setFieldValue("device.name", data[0]?.name || "");
+  }, []);
 
-  const items = data.map((item) => {
+  const items = data.map((item, i) => {
     return (
       <Menu.Item
         key={item.ip}
         onClick={() => {
-          setSelected(item);
-          setSelectedDevice(item);
+          setSelectedDevice(i);
+          form.setFieldValue("device.ip", item?.ip || "");
+          form.setFieldValue("device.name", item?.name || "");
         }}
         icon={<IconCpu size={16} color={theme.colors.blue[6]} stroke={1.5} />}
         rightSection={
@@ -88,7 +86,9 @@ export default function HeaderApp(props) {
                 rightIcon={<IconChevronDown size={18} stroke={1.5} />}
                 pr={12}
               >
-                {selected?.name || selected?.ip || "Choose Device"}
+                {form.values.device?.name ||
+                  form.values.device?.ip ||
+                  "Choose Device"}
               </Button>
             </Menu.Target>
             <Menu.Dropdown>{items}</Menu.Dropdown>
@@ -98,17 +98,36 @@ export default function HeaderApp(props) {
             max={999}
             form={form}
             path="device.neopixelCount"
-            defaultValue={
-              selected?.neopixelCount || form.values.device?.neopixelCount || 60
-            }
+            defaultValue={form.values.device?.neopixelCount || 60}
           ></QuantityInput>
           <ActionIcon
             onClick={() => {
-              setConfigs({ ...form.values });
-              showNotification({
-                title: "Configs saved",
-                message: `The configs were saved successfully for ${selected.ip}`,
-              });
+              const configsEdit = structuredClone(configs);
+
+              const index = configsEdit.configs.findIndex(
+                (config, index, array) => {
+                  return config.device.ip === form.values.device?.ip;
+                }
+              );
+
+              if (index > -1) {
+                configsEdit.configs[index] = { ...form.values };
+              } else {
+                configsEdit.configs.push({ ...form.values });
+              }
+              if (form.values.device?.ip === "") {
+                showNotification({
+                  title: "Configs not saved",
+                  message: `The configs were not saved because the device IP is not set`,
+                  typeof: "error",
+                });
+              } else {
+                setConfigs({ ...configsEdit });
+                showNotification({
+                  title: "Configs saved",
+                  message: `The configs were saved successfully for ${form.values.device?.ip}`,
+                });
+              }
             }}
             variant="filled"
             sx={{ height: 40, width: 40 }}

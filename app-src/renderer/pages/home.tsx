@@ -3,7 +3,7 @@ import { AppShell, Button, Text } from "@mantine/core";
 import NavbarNested from "../components/navbar/navbar";
 import HeaderApp from "../components/header/header";
 import MeteorRainForm from "../components/forms/meteorRainForm";
-import { IconDatabase } from "@tabler/icons";
+import { IconBulb, IconDatabase } from "@tabler/icons";
 import { MantineProvider } from "@mantine/core";
 import { NotificationsProvider } from "@mantine/notifications";
 import { showNotification } from "@mantine/notifications";
@@ -21,21 +21,29 @@ import Chaser from "../components/boards/chaser";
 import { useLocalStorage } from "@mantine/hooks";
 
 function App() {
-  const [selectedDevice, setSelectedDevice] = React.useState(null);
+  const devicesc = [
+    { ip: "192.125.12.132", name: "Tisch" },
+    { ip: "123.111.123.1", name: "PC" },
+  ];
+  const [devices, setDevices] = React.useState(devicesc);
+  const [selectedDevice, setSelectedDevice] = React.useState(0);
   const [taskCode, setTaskCode] = React.useState("dashboard");
   const [configs, setConfigs] = useLocalStorage({
     key: "ScreenChaserConfigs",
     defaultValue: {
-      meteorRain: {},
-      bouncingBalls: {},
-      fireFlame: {},
-      colorWheel: {},
-      frostyPike: {},
-      dyingLights: {},
-      snake: {},
-      device: {},
+      configs: [
+        {
+          meteorRain: {},
+          bouncingBalls: {},
+          fireFlame: {},
+          colorWheel: {},
+          frostyPike: {},
+          dyingLights: {},
+          snake: {},
+          device: { ...devices[selectedDevice] },
+        },
+      ],
     },
-    getInitialValueInEffect: true,
   });
 
   const openModal = () =>
@@ -54,19 +62,21 @@ function App() {
 
   const form = useForm({
     initialValues: {
-      ...configs,
+      ...configs.configs[0],
     },
   });
 
   React.useEffect(() => {
-    form.setValues(structuredClone(configs));
-  }, [configs]);
+    if (configs.configs.length > 0) {
+      form.setValues({ ...configs.configs[selectedDevice] });
+    }
+    console.log("message");
+  }, [configs, selectedDevice]);
 
   React.useEffect(() => {
     //log states
-    console.log("selectedDevice", selectedDevice);
     console.log("taskCode", taskCode);
-  }, [taskCode, selectedDevice]);
+  }, [taskCode]);
 
   React.useEffect(() => {
     //log states
@@ -85,9 +95,11 @@ function App() {
       }
       header={
         <HeaderApp
-          form={form}
-          data={[{ ip: "192.125.12.132" }, { ip: "123.111.123.1" }]}
+          configs={configs}
+          setConfigs={setConfigs}
           setSelectedDevice={setSelectedDevice}
+          form={form}
+          data={devices}
         ></HeaderApp>
       }
       styles={(theme) => ({
@@ -116,28 +128,66 @@ function App() {
               ></Dashboard>
             );
           case "meteorRain":
-            return <MeteorRainForm form={form}></MeteorRainForm>;
+            return (
+              <MeteorRainForm
+                key={selectedDevice + "meteorRain"}
+                form={form}
+              ></MeteorRainForm>
+            );
           case "bouncingBalls":
-            return <BouncingBallsForm form={form}></BouncingBallsForm>;
+            return (
+              <BouncingBallsForm
+                key={selectedDevice + "bouncingBalls"}
+                form={form}
+              ></BouncingBallsForm>
+            );
           case "fireFlame":
-            return <FireFlameForm form={form}></FireFlameForm>;
+            return (
+              <FireFlameForm
+                key={selectedDevice + "fireFlame"}
+                form={form}
+              ></FireFlameForm>
+            );
           case "colorWheel":
-            return <ColorWheelForm form={form}></ColorWheelForm>;
+            return (
+              <ColorWheelForm
+                key={selectedDevice + "colorWheel"}
+                form={form}
+              ></ColorWheelForm>
+            );
           case "frostyPike":
-            return <FrostyPikeForm form={form}></FrostyPikeForm>;
+            return (
+              <FrostyPikeForm
+                key={selectedDevice + "frostyPike"}
+                form={form}
+              ></FrostyPikeForm>
+            );
           case "dyingLights":
-            return <DyingLightsForm form={form}></DyingLightsForm>;
+            return (
+              <DyingLightsForm
+                key={selectedDevice + "dyingLights"}
+                form={form}
+              ></DyingLightsForm>
+            );
           case "snake":
-            return <SnakeForm form={form}></SnakeForm>;
+            return (
+              <SnakeForm key={selectedDevice + "snake"} form={form}></SnakeForm>
+            );
           case "chaser":
-            return <Chaser></Chaser>;
+            return <Chaser key={selectedDevice + "chaser"}></Chaser>;
           default:
             return <h1>work in progress</h1>;
         }
       })()}
-      {taskCode !== "dashboard" && taskCode !== "chaser" && (
+      {taskCode !== "dashboard" && (
         <Button
-          sx={{ float: "right", marginTop: "20px" }}
+          sx={{
+            float: "right",
+            marginTop: "20px",
+            position: "absolute",
+            bottom: "20px",
+            left: "320px",
+          }}
           onClick={() => {
             console.log(form.values);
             openModal();
@@ -146,7 +196,7 @@ function App() {
               message: "Hey there, your code is awesome! 🤥",
             });
           }}
-          leftIcon={<IconDatabase size={14} />}
+          leftIcon={<IconBulb size={14} />}
         >
           Lights On
         </Button>

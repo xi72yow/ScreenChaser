@@ -108,15 +108,6 @@ export default function Chaser() {
         </Menu.Target>
         <Menu.Dropdown>{items}</Menu.Dropdown>
       </Menu>
-      <Button
-        leftIcon={<IconChevronDown size={18} stroke={1.5} />}
-        onClick={() => {
-          console.log("message");
-        }}
-        sx={{ maxWidth: 300 }}
-      >
-        {selected?.name || "Choose Video Source"}
-      </Button>
       <video style={{ width: 320, height: 180, float: "right" }}></video>
     </React.Fragment>
   );

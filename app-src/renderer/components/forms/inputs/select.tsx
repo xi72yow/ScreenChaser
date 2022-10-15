@@ -16,7 +16,6 @@ export default function CheckboxInput({
   path,
   data,
 }: CheckboxProps) {
-    
   React.useEffect(() => {
     if (form) form.setFieldValue(path, defaultValue);
   }, []);
