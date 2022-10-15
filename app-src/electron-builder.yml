@@ -1,0 +1,24 @@
+appId: com.electron.ScreenChaser
+productName: ScreenChaser
+copyright: Copyright © 2022 xi72yow
+directories:
+  output: dist
+  buildResources: resources
+files:
+  - from: .
+    filter:
+      - package.json
+      - app
+linux:
+  target:
+    - target: deb
+      arch:
+        - x64
+        - arm64
+        - armv7l
+    - target: AppImage
+      arch:
+        - x64
+        - arm64
+        - armv7l
+publish: null

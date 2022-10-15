@@ -376,7 +376,7 @@ async function app() {
           ballMode: ballMode.ballMode,
           mirrored: mirrored.mirrored,
           tail: tail.tail,
-          BallCount: BallCount.BallCount,
+          ballCount: BallCount.BallCount,
           neopixelCount: neopixelCount.neopixelCount,
           baseStripe: baseStripe,
         };

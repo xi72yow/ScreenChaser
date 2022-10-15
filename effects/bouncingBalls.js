@@ -5,34 +5,34 @@ const millis = require("./basics/millis");
 
 class BauncingBalls {
   constructor(options) {
-    const { ballMode, mirrored, tail, BallCount, neopixelCount, baseStripe } =
+    const { ballMode, mirrored, tail, ballCount, neopixelCount, baseStripe } =
       options;
     this.mirrored = mirrored;
     this.tail = tail;
     this.speed = 3; //slows down the animation
-    this.ballCount = BallCount;
+    this.ballCount = ballCount;
     this.stripe = baseStripe ? baseStripe : setAll(0, 0, 0, neopixelCount);
     this.baseStripe = baseStripe ? baseStripe : setAll(0, 0, 0, neopixelCount);
     this.gravity = -9.81;
     this.startHeight = 1;
     this.impactVelocityStart = Math.sqrt(-2 * this.gravity * this.startHeight);
-    this.height = new Array(BallCount);
-    this.ballColors = new Array(BallCount);
-    this.impactVelocity = new Array(BallCount);
-    this.timeSinceLastBounce = new Array(BallCount);
-    this.clockTimeSinceLastBounce = new Array(BallCount);
-    this.dampening = new Array(BallCount);
-    this.position = new Array(BallCount);
+    this.height = new Array(ballCount);
+    this.ballColors = new Array(ballCount);
+    this.impactVelocity = new Array(ballCount);
+    this.timeSinceLastBounce = new Array(ballCount);
+    this.clockTimeSinceLastBounce = new Array(ballCount);
+    this.dampening = new Array(ballCount);
+    this.position = new Array(ballCount);
     this.neopixelCount = neopixelCount;
 
-    for (let i = 0; i < BallCount; i++) {
+    for (let i = 0; i < ballCount; i++) {
       this.clockTimeSinceLastBounce[i] = millis();
       this.height[i] = this.StartHeight;
       this.position[i] = 0;
       this.impactVelocity[i] = this.impactVelocityStart;
       this.timeSinceLastBounce[i] = 0;
       this.ballColors[i] = { r: random(255), g: random(255), b: random(255) };
-      this.dampening[i] = 0.9 - i / BallCount ** 2;
+      this.dampening[i] = 0.9 - i / ballCount ** 2;
     }
   }
 

@@ -6,3 +6,8 @@ myconfig.h
 effects_build
 .ScreenChaser.json
 libraries
+
+*.log
+.next
+app
+dist

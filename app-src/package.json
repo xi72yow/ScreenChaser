@@ -1,0 +1,50 @@
+{
+  "private": true,
+  "name": "screen-chaser",
+  "description": "leds are follow me",
+  "version": "1.0.0",
+  "author": "xi72yow",
+  "main": "app/background.js",
+  "homepage": "https://github.com/xi72yow/ScreenChaser",
+  "scripts": {
+    "dev": "nextron",
+    "build": "npx next build ./renderer && nextron build",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "dependencies": {
+    "@electron/remote": "^2.0.8",
+    "@emotion/react": "^11.10.4",
+    "@emotion/server": "^11.10.0",
+    "@mantine/carousel": "^5.5.5",
+    "@mantine/core": "^5.5.5",
+    "@mantine/dates": "^5.5.5",
+    "@mantine/dropzone": "^5.5.5",
+    "@mantine/form": "^5.5.5",
+    "@mantine/hooks": "^5.5.5",
+    "@mantine/modals": "^5.5.5",
+    "@mantine/next": "^5.5.5",
+    "@mantine/notifications": "^5.5.5",
+    "@mantine/nprogress": "^5.5.5",
+    "@mantine/prism": "^5.5.5",
+    "@mantine/rte": "^5.5.5",
+    "@mantine/spotlight": "^5.5.5",
+    "@tabler/icons": "^1.104.0",
+    "dayjs": "^1.11.5",
+    "electron-serve": "^1.1.0",
+    "electron-store": "^8.1.0",
+    "embla-carousel-react": "^7.0.3",
+    "konva": "^8.3.13",
+    "react-konva": "^18.2.3"
+  },
+  "devDependencies": {
+    "@types/node": "^16.11.7",
+    "@types/react": "^18.0.8",
+    "electron": "^20.1.0",
+    "electron-builder": "^23.3.3",
+    "next": "^12.2.5",
+    "nextron": "^8.2.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "typescript": "^4.8.2"
+  }
+}
