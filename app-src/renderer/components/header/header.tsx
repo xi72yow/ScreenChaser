@@ -19,6 +19,7 @@ import { useLocalStorage } from "@mantine/hooks";
 import React, { useState } from "react";
 import QuantityInput from "../forms/inputs/number";
 import Logo from "../styles/Logo.js";
+import { showNotification } from "@mantine/notifications";
 
 export default function HeaderApp(props) {
   const { data, setSelectedDevice, form } = props;
@@ -102,7 +103,13 @@ export default function HeaderApp(props) {
             }
           ></QuantityInput>
           <ActionIcon
-            onClick={() => setConfigs({ ...form.values })}
+            onClick={() => {
+              setConfigs({ ...form.values });
+              showNotification({
+                title: "Configs saved",
+                message: `The configs were saved successfully for ${selected.ip}`,
+              });
+            }}
             variant="filled"
             sx={{ height: 40, width: 40 }}
           >

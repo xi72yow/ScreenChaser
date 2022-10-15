@@ -30,19 +30,19 @@ export default function MeteorRainForm({ form }: MeteorRainFormProps) {
         form={form}
         path="meteorRain.meteorSize"
         label="Meteor Size"
-        defaultValue={10}
+        defaultValue={form.values.meteorRain?.meteorSize || 10}
       ></QuantityInput>
       <QuantityInput
         form={form}
         path="meteorRain.meteorTrailDecay"
         label="Meteor Trail Decay"
-        defaultValue={64}
+        defaultValue={form.values.meteorRain?.meteorTrailDecay || 64}
       ></QuantityInput>
       <QuantityInput
         form={form}
         path="meteorRain.meteorRandomDecay"
         label="Meteor Random Decay"
-        defaultValue={3}
+        defaultValue={form.values.meteorRain?.meteorRandomDecay || 7}
       ></QuantityInput>
       <Checkbox label="Rainbow Meteor?" form={form} path="meteorRain.rainbow" />
     </React.Fragment>

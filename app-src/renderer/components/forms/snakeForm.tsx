@@ -12,19 +12,19 @@ export default function SnakeForm({ form }: SnakeFormProps) {
         form={form}
         path="snake.speed"
         label="Speed"
-        defaultValue={10}
+        defaultValue={form.values.snake?.speed || 10}
       ></QuantityInput>
       <QuantityInput
         form={form}
         path="snake.maxSnakeSize"
         label="Max Snake Size"
-        defaultValue={10}
+        defaultValue={form.values.snake?.maxSnakeSize || 10}
       ></QuantityInput>
       <QuantityInput
         form={form}
         path="snake.appleCount"
         label="Apple Count"
-        defaultValue={3}
+        defaultValue={form.values.snake?.appleCount || 3}
       ></QuantityInput>
     </React.Fragment>
   );

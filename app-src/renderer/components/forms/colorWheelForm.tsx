@@ -12,7 +12,7 @@ export default function ColorWheelForm({ form }: ColorWheelProps) {
         form={form}
         path="colorWheel.speed"
         label="Speed"
-        defaultValue={10}
+        defaultValue={form.values.colorWheel?.speed || 10}
       ></QuantityInput>
     </React.Fragment>
   );

@@ -59,7 +59,7 @@ function App() {
   });
 
   React.useEffect(() => {
-    form.setValues(configs);
+    form.setValues(structuredClone(configs));
   }, [configs]);
 
   React.useEffect(() => {

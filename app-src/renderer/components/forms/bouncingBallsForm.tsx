@@ -33,7 +33,7 @@ export default function BouncingBallsForm({ form }: BouncingBallsProps) {
         form={form}
         path="bouncingBalls.ballCount"
         label="Ball Count"
-        defaultValue={3}
+        defaultValue={form.values.bouncingBalls?.ballCount || 3}
       ></QuantityInput>
       <ColorInput
         placeholder="Pick color"

@@ -55,10 +55,9 @@ interface QuantityInputProps {
   max?: number;
   label?: string;
   defaultValue?: number;
-  form?: any;
+  form: any;
   path: string;
   sx?: any;
-  onChange?: (value: number) => void;
 }
 
 export default function QuantityInput({
@@ -69,16 +68,16 @@ export default function QuantityInput({
   form,
   path,
   sx,
-  onChange,
 }: QuantityInputProps) {
   const { classes } = useStyles();
-  const handlers = useRef<NumberInputHandlers>(null);
   const [value, setValue] = useState<number | undefined>(defaultValue);
+
   React.useEffect(() => {
-    if (form) {
-      form.setFieldValue(path, value);
-    }
-    if (onChange) onChange(value);
+    form.setFieldValue(path, defaultValue);
+  }, []);
+
+  React.useEffect(() => {
+    form.setFieldValue(path, value);
   }, [value]);
 
   return (
@@ -89,7 +88,7 @@ export default function QuantityInput({
         <ActionIcon<"button">
           size={28}
           variant="transparent"
-          onClick={() => handlers.current?.decrement()}
+          onClick={() => setValue((value) => value - 1)}
           disabled={value === min}
           className={classes.control}
           onMouseDown={(event) => event.preventDefault()}
@@ -102,16 +101,17 @@ export default function QuantityInput({
           min={min}
           max={max}
           sx={sx}
-          handlersRef={handlers}
           value={value}
-          onChange={setValue}
+          onChange={(value) => {
+            setValue(value);
+          }}
           classNames={{ input: classes.input }}
         />
 
         <ActionIcon<"button">
           size={28}
           variant="transparent"
-          onClick={() => handlers.current?.increment()}
+          onClick={() => setValue((value) => value + 1)}
           disabled={value === max}
           className={classes.control}
           onMouseDown={(event) => event.preventDefault()}

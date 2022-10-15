@@ -19,7 +19,7 @@ export default function FrostyPikeForm({ form }: FrostyPikeFormProps) {
         form={form}
         path="frostyPike.delay"
         label="Delay"
-        defaultValue={10}
+        defaultValue={form.values.frostyPike?.delay || 10}
       ></QuantityInput>
     </React.Fragment>
   );

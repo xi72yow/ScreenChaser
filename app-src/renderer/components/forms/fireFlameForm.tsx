@@ -12,13 +12,13 @@ export default function FireFlameForm({ form }: FireFlameProps) {
         form={form}
         path="fireFlame.cooling"
         label="Cooling"
-        defaultValue={55}
+        defaultValue={form.values.fireFlame?.cooling || 55}
       ></QuantityInput>
       <QuantityInput
         form={form}
         path="fireFlame.sparking"
         label="Sparking"
-        defaultValue={120}
+        defaultValue={form.values.fireFlame?.sparking || 120}
       ></QuantityInput>
     </React.Fragment>
   );
