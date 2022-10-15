@@ -1,8 +1,8 @@
 import React from "react";
-import { ColorInput, NativeSelect } from "@mantine/core";
+import { ColorInput } from "@mantine/core";
 import QuantityInput from "./inputs/number";
 import Checkbox from "./inputs/checkbox";
-
+import Select from "./inputs/select";
 interface BouncingBallsProps {
   form: any;
 }
@@ -10,13 +10,25 @@ interface BouncingBallsProps {
 export default function BouncingBallsForm({ form }: BouncingBallsProps) {
   return (
     <React.Fragment>
-      <NativeSelect
+      <Select
         data={["random", "rainbow", "single"]}
         label="Ball Mode"
-        {...form.getInputProps("bouncingBalls.ballMode", { type: "select" })}
+        form={form}
+        path="bouncingBalls.ballMode"
+        defaultValue={form.values.bouncingBalls?.ballMode || "random"}
       />
-      <Checkbox label="Mirrored?" form={form} path="bouncingBalls.mirrored" />
-      <Checkbox label="Tail?" form={form} path="bouncingBalls.tail" />
+      <Checkbox
+        label="Mirrored?"
+        form={form}
+        path="bouncingBalls.mirrored"
+        defaultValue={form.values.bouncingBalls?.mirrored || false}
+      />
+      <Checkbox
+        label="Tail?"
+        form={form}
+        path="bouncingBalls.tail"
+        defaultValue={form.values.bouncingBalls?.tail || false}
+      />
       <QuantityInput
         form={form}
         path="bouncingBalls.ballCount"

@@ -7,15 +7,14 @@ import {
   useMantineTheme,
   Text,
   ActionIcon,
-  useMantineColorScheme,
 } from "@mantine/core";
-
 import {
   IconChevronDown,
   IconCpu,
   IconCpu2,
   IconDeviceFloppy,
 } from "@tabler/icons";
+import { useLocalStorage } from "@mantine/hooks";
 
 import React, { useState } from "react";
 import QuantityInput from "../forms/inputs/number";
@@ -25,7 +24,13 @@ export default function HeaderApp(props) {
   const { data, setSelectedDevice, form } = props;
   const theme = useMantineTheme();
   const [selected, setSelected] = useState(data[0]);
-  const [neopixelCount, setNeopixelCount] = useState(60);
+  const [configs, setConfigs] = useLocalStorage({
+    key: "ScreenChaserConfigs",
+  });
+
+  React.useEffect(() => {
+    form.setFieldValue("device", { ...form.values.device, ...selected });
+  }, [selected]);
 
   const items = data.map((item) => {
     return (
@@ -34,7 +39,6 @@ export default function HeaderApp(props) {
         onClick={() => {
           setSelected(item);
           setSelectedDevice(item);
-          form.setFieldValue("device", { ...item });
         }}
         icon={<IconCpu size={16} color={theme.colors.blue[6]} stroke={1.5} />}
         rightSection={
@@ -93,9 +97,15 @@ export default function HeaderApp(props) {
             max={999}
             form={form}
             path="device.neopixelCount"
-            defaultValue={selected?.neopixelCount || neopixelCount}
+            defaultValue={
+              selected?.neopixelCount || form.values.device?.neopixelCount || 60
+            }
           ></QuantityInput>
-          <ActionIcon variant="filled" sx={{ height: 40, width: 40 }}>
+          <ActionIcon
+            onClick={() => setConfigs({ ...form.values })}
+            variant="filled"
+            sx={{ height: 40, width: 40 }}
+          >
             <IconDeviceFloppy size={18} stroke={1.5} />
           </ActionIcon>
         </Group>

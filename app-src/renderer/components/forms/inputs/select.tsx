@@ -1,31 +1,34 @@
-import { Checkbox } from "@mantine/core";
+import { NativeSelect } from "@mantine/core";
 import React from "react";
 
 interface CheckboxProps {
   label: string;
-  defaultValue?: boolean;
-  form?: any;
+  defaultValue?: string;
+  form: any;
+  data: string[];
   path: string;
 }
 
 export default function CheckboxInput({
   label,
-  defaultValue = false,
+  defaultValue,
   form,
   path,
+  data,
 }: CheckboxProps) {
+    
   React.useEffect(() => {
     if (form) form.setFieldValue(path, defaultValue);
   }, []);
 
   return (
-    <Checkbox
-      sx={{ marginTop: 3, marginBottom: 3 }}
+    <NativeSelect
+      data={data}
       label={label}
-      defaultChecked={defaultValue}
       onChange={(event) => {
-        if (form) form.setFieldValue(path, event.currentTarget.checked);
+        if (form) form.setFieldValue(path, event.currentTarget.value);
       }}
+      defaultValue={defaultValue}
     />
   );
 }

@@ -105,7 +105,7 @@ export default function LinksGroup({
       }
       key={link.label}
       onClick={(event) => {
-        form.setFieldValue("device.taskCode", link.taskCode);
+        form.setFieldValue("device.runningTaskCode", link.taskCode);
         setTaskCode(link.taskCode);
         event.preventDefault();
       }}
@@ -121,7 +121,8 @@ export default function LinksGroup({
           setOpened((o) => !o);
           if (!hasLinks) {
             setTaskCode(taskCode);
-            form.setFieldValue("device.taskCode", taskCode);
+            if (taskCode !== "dashboard")
+              form.setFieldValue("device.runningTaskCode", taskCode);
           }
         }}
         className={

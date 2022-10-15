@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { AppShell, Button, Text } from "@mantine/core";
 import NavbarNested from "../components/navbar/navbar";
 import HeaderApp from "../components/header/header";
@@ -23,6 +23,21 @@ import { useLocalStorage } from "@mantine/hooks";
 function App() {
   const [selectedDevice, setSelectedDevice] = React.useState(null);
   const [taskCode, setTaskCode] = React.useState("dashboard");
+  const [configs, setConfigs] = useLocalStorage({
+    key: "ScreenChaserConfigs",
+    defaultValue: {
+      meteorRain: {},
+      bouncingBalls: {},
+      fireFlame: {},
+      colorWheel: {},
+      frostyPike: {},
+      dyingLights: {},
+      snake: {},
+      device: {},
+    },
+    getInitialValueInEffect: true,
+  });
+
   const openModal = () =>
     openConfirmModal({
       title: "Please confirm your action",
@@ -36,22 +51,17 @@ function App() {
       onCancel: () => console.log("Cancel"),
       onConfirm: () => console.log("Confirmed"),
     });
+
   const form = useForm({
     initialValues: {
-      meteorRain: {},
-      bouncingBalls: {},
-      fireFlame: {},
-      colorWheel: {},
-      frostyPike: {},
-      dyingLights: {},
-      snake: {},
-      device: {},
+      ...configs,
     },
-
-    /*     validate: {
-      email: (value: string) => (/^\S+@\S+$/.test(value) ? null : "Invalid email"),
-    }, */
   });
+
+  React.useEffect(() => {
+    form.setValues(configs);
+  }, [configs]);
+
   React.useEffect(() => {
     //log states
     console.log("selectedDevice", selectedDevice);
