@@ -45,6 +45,7 @@ function App() {
             mirrored: false,
             tail: false,
             ballCount: 3,
+            baseStripe: [],
           },
           fireFlame: {
             cooling: 55,

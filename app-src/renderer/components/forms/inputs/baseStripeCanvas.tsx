@@ -5,66 +5,23 @@ const Canvas = (props) => {
   const canvasRef = useRef(null);
   const canvasWidth = window.innerWidth - window.innerWidth * 0.1;
   const PIX_COUNT = 115;
+  const cellPixelLength = canvasWidth / PIX_COUNT;
   const canvasHeight = canvasWidth / PIX_COUNT;
+  console.log(props.path);
 
-  const draw = (ctx) => {
-    ctx.fillStyle = "#000000";
-    ctx.beginPath();
-    ctx.arc(50, 100, 20, 0, 2 * Math.PI);
-    ctx.fill();
-  };
+  const [baseStripe, setBaseStripe] = React.useState(
+    Array(PIX_COUNT).fill("#000000")
+  );
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    const context = canvas.getContext("2d");
-    const cellPixelLength = canvas.width / PIX_COUNT;
-    // Initialize the canvas background
-    context.fillStyle = "#FFF";
-    context.fillRect(0, 0, canvas.width, canvas.height);
+    props.form.setFieldValue(props.path, baseStripe);
+  }, [baseStripe]);
 
-    function fillCell(cellX, cellY) {
-      const startX = cellX * cellPixelLength;
-      const startY = cellY * cellPixelLength;
-
-      var randomColor = Math.floor(Math.random() * 16777215).toString(16);
-
-      context.fillStyle = "#" + randomColor;
-      context.fillRect(startX, startY, cellPixelLength, cellPixelLength);
-    }
-    function handleFillCell(e) {
-      if (e.button !== 0) {
-        return;
-      }
-      const canvasBoundingRect = canvas.getBoundingClientRect();
-      const x = e.clientX - canvasBoundingRect.left;
-      const y = e.clientY - canvasBoundingRect.top;
-      const cellX = Math.floor(x / cellPixelLength);
-      const cellY = Math.floor(y / cellPixelLength);
-
-      fillCell(cellX, cellY);
-      e.stopPropagation();
-      e.preventDefault();
-    }
-
-    canvas.addEventListener("mousedown", function (e) {
-      handleFillCell(e);
-
-      canvas.onmousemove = function (e) {
-        handleFillCell(e);
-      };
-    });
-
-    canvas.addEventListener("mouseup", function (e) {
-      canvas.onmousemove = null;
-    });
-
-    canvas.addEventListener("mouseleave", function (e) {
-      canvas.onmousemove = null;
-    });
-
-    //Our draw come here
-    //draw(context);
-  }, [draw]);
+  function fillCell(context, color, i) {
+    var randomColor = Math.floor(Math.random() * 16777215).toString(16);
+    context.fillStyle = color; //"#" + randomColor;
+    context.fillRect(i * cellPixelLength, 0, cellPixelLength, cellPixelLength);
+  }
 
   return (
     <Group position="center">
@@ -79,11 +36,50 @@ const Canvas = (props) => {
           gridTemplateColumns: `repeat(${PIX_COUNT}, 1fr)`,
         }}
       >
-        {[...Array(PIX_COUNT)].map(() => (
-          <div style={{ border: "1px solid rgba(0, 0, 0, 0.1)" }}></div>
+        {[...Array(PIX_COUNT)].map((v, i) => (
+          <div
+            key={"led" + i}
+            style={{ border: "1px solid rgba(0, 0, 0, 0.1)" }}
+          ></div>
         ))}
       </div>
       <canvas
+        onMouseMove={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          const canvas = canvasRef.current;
+          const ctx = canvas.getContext("2d");
+          const canvasBoundingRect = canvas.getBoundingClientRect();
+          if (e.ctrlKey) {
+            const x = e.clientX - canvasBoundingRect.left;
+            const cellX = Math.floor(x / cellPixelLength);
+            if (baseStripe[cellX] === props.color) return;
+            fillCell(ctx, props.color, cellX);
+
+            setBaseStripe((prev) => {
+              const newBaseStripe = [...prev];
+              newBaseStripe[cellX] = props.color;
+              return newBaseStripe;
+            });
+          }
+        }}
+        onMouseDown={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          const canvas = canvasRef.current;
+          const ctx = canvas.getContext("2d");
+          const canvasBoundingRect = canvas.getBoundingClientRect();
+          const x = e.clientX - canvasBoundingRect.left;
+          const cellX = Math.floor(x / cellPixelLength);
+          if (baseStripe[cellX] === props.color) return;
+          fillCell(ctx, props.color, cellX);
+
+          setBaseStripe((prev) => {
+            const newBaseStripe = [...prev];
+            newBaseStripe[cellX] = props.color;
+            return newBaseStripe;
+          });
+        }}
         ref={canvasRef}
         {...props}
         width={canvasWidth}

@@ -4,6 +4,7 @@ import QuantityInput from "./inputs/number";
 import Checkbox from "./inputs/checkbox";
 import Select from "./inputs/select";
 import BaseStripeInput from "./inputs/baseStripeInput";
+
 interface BouncingBallsProps {
   form: any;
 }
@@ -36,13 +37,13 @@ export default function BouncingBallsForm({ form }: BouncingBallsProps) {
         label="Ball Count"
         defaultValue={form.values.bouncingBalls?.ballCount || 3}
       ></QuantityInput>
-      <ColorInput
+      {/*     <ColorInput
         placeholder="Pick color"
         label="BaseStripe Color"
         defaultValue="#ff0000"
         {...form.getInputProps("bouncingBalls.BaseStripe", { type: "color" })}
-      />
-      <BaseStripeInput />
+      /> */}
+      <BaseStripeInput form={form} path="bouncingBalls.baseStripe" />
     </React.Fragment>
   );
 }
