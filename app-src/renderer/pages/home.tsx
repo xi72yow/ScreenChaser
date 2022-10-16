@@ -33,13 +33,37 @@ function App() {
     defaultValue: {
       configs: [
         {
-          meteorRain: {},
-          bouncingBalls: {},
-          fireFlame: {},
-          colorWheel: {},
-          frostyPike: {},
-          dyingLights: {},
-          snake: {},
+          meteorRain: {
+            meteorSize: 10,
+            meteorTrailDecay: 64,
+            meteorRandomDecay: 7,
+            rainbow: false,
+            meteorColor: "#9B03FF",
+          },
+          bouncingBalls: {
+            ballMode: "random",
+            mirrored: false,
+            tail: false,
+            ballCount: 3,
+          },
+          fireFlame: {
+            cooling: 55,
+            sparking: 120,
+          },
+          colorWheel: {
+            speed: 10,
+          },
+          frostyPike: {
+            delay: 10,
+          },
+          dyingLights: {
+            lightColor: "#9B03FF",
+          },
+          snake: {
+            speed: 10,
+            maxSnakeSize: 10,
+            appleCount: 3,
+          },
           device: { ...devices[selectedDevice] },
         },
       ],

@@ -14,6 +14,7 @@ export default function CheckboxInput({
   form,
   path,
 }: CheckboxProps) {
+  
   React.useEffect(() => {
     if (form) form.setFieldValue(path, defaultValue);
   }, []);
@@ -26,6 +27,7 @@ export default function CheckboxInput({
       onChange={(event) => {
         if (form) form.setFieldValue(path, event.currentTarget.checked);
       }}
+      {...form?.getInputProps(path, { type: "checkbox" })}
     />
   );
 }

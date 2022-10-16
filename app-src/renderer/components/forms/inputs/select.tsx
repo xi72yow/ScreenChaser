@@ -16,10 +16,11 @@ export default function CheckboxInput({
   path,
   data,
 }: CheckboxProps) {
+
   React.useEffect(() => {
     if (form) form.setFieldValue(path, defaultValue);
   }, []);
-
+  
   return (
     <NativeSelect
       data={data}
@@ -28,6 +29,7 @@ export default function CheckboxInput({
         if (form) form.setFieldValue(path, event.currentTarget.value);
       }}
       defaultValue={defaultValue}
+      {...form.getInputProps(path, { type: "select" })}
     />
   );
 }
