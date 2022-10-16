@@ -1,8 +1,9 @@
 import React from "react";
-import { ColorInput } from "@mantine/core";
+import { Button, ColorInput } from "@mantine/core";
 import QuantityInput from "./inputs/number";
 import Checkbox from "./inputs/checkbox";
 import Select from "./inputs/select";
+import BaseStripeInput from "./inputs/baseStripeInput";
 interface BouncingBallsProps {
   form: any;
 }
@@ -41,6 +42,7 @@ export default function BouncingBallsForm({ form }: BouncingBallsProps) {
         defaultValue="#ff0000"
         {...form.getInputProps("bouncingBalls.BaseStripe", { type: "color" })}
       />
+      <BaseStripeInput />
     </React.Fragment>
   );
 }

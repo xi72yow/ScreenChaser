@@ -22,8 +22,8 @@ import { useLocalStorage } from "@mantine/hooks";
 
 function App() {
   const devicesc = [
-    { ip: "192.125.12.132", name: "Tisch" },
-    { ip: "123.111.123.1", name: "PC" },
+    { ip: "192.125.12.132", name: "Tisch", neoPixelCount: 113 },
+    { ip: "123.111.123.1", name: "PC", neoPixelCount: 45 },
   ];
   const [devices, setDevices] = React.useState(devicesc);
   const [selectedDevice, setSelectedDevice] = React.useState(0);
@@ -231,7 +231,40 @@ function App() {
 
 function Next() {
   return (
-    <MantineProvider withNormalizeCSS withGlobalStyles>
+    <MantineProvider
+      theme={{
+        colorScheme: "light",
+        fontFamily: "Greycliff CF, sans-serif",
+        colors: {
+          dark: [
+            "#7AD1DD",
+            "#5FCCDB",
+            "#44CADC",
+            "#2AC9DE",
+            "#1AC2D9",
+            "#11B7CD",
+            "#09ADC3",
+            "#0E99AC",
+            "#128797",
+            "#147885",
+          ],
+          "bright-pink": [
+            "#F0BBDD",
+            "#ED9BCF",
+            "#EC7CC3",
+            "#ED5DB8",
+            "#F13EAF",
+            "#F71FA7",
+            "#FF00A1",
+            "#E00890",
+            "#C50E82",
+            "#AD1374",
+          ],
+        },
+      }}
+      withNormalizeCSS
+      withGlobalStyles
+    >
       <NotificationsProvider>
         <ModalsProvider>
           <App />
