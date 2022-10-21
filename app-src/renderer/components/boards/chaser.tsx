@@ -174,6 +174,7 @@ export default function Chaser({ form }: ChaserProps) {
   return (
     <>
       <Modal
+        centered
         opened={opened}
         onClose={() => setOpened(false)}
         title="Choose Video Source"

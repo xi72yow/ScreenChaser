@@ -22,10 +22,10 @@ import { useLocalStorage } from "@mantine/hooks";
 
 function App() {
   const devicesc = [
-    { ip: "192.125.12.132", name: "Tisch", neoPixelCount: 113 },
-    { ip: "123.111.123.1", name: "PC", neoPixelCount: 45 },
+    { ip: "192.125.122.132", name: "Tisch", neoPixelCount: 113 },
+    { ip: "123.111.123.100", name: "PC", neoPixelCount: 45 },
   ];
-  const [devices, setDevices] = React.useState(devicesc);
+  const [devices, setDevices] = React.useState([]);
   const [selectedDevice, setSelectedDevice] = React.useState(0);
   const [taskCode, setTaskCode] = React.useState("dashboard");
   const [intervals, setIntervals] = React.useState([]);
@@ -116,6 +116,8 @@ function App() {
   React.useEffect(() => {
     if (configs.configs.length > 0) {
       form.setValues({ ...configs.configs[selectedDevice] });
+      const savedDevices = configs.configs.map((config) => config.device);
+      setDevices(savedDevices);
     }
     console.log("message");
   }, [configs, selectedDevice]);
@@ -155,7 +157,8 @@ function App() {
           setConfigs={setConfigs}
           setSelectedDevice={setSelectedDevice}
           form={form}
-          data={devices}
+          devices={devices}
+          setDevices={setDevices}
         ></HeaderApp>
       }
       styles={(theme) => ({

@@ -14,23 +14,38 @@ import {
   IconCpu2,
   IconDeviceFloppy,
 } from "@tabler/icons";
-import { useLocalStorage } from "@mantine/hooks";
 
-import React, { useState } from "react";
+import React, { Dispatch, SetStateAction, useState } from "react";
 import QuantityInput from "../forms/inputs/number";
 import Logo from "../styles/Logo.js";
 import { showNotification } from "@mantine/notifications";
+import ScanNetworkModal from "../modale/scanNetworkModal";
 
-export default function HeaderApp(props) {
-  const { data, form, configs, setConfigs, setSelectedDevice } = props;
+interface HeaderAppProps {
+  form: any;
+  setDevices: Dispatch<SetStateAction<any[]>>;
+  devices: { ip: string; name: string; neoPixelCount: number }[];
+  setConfigs: any;
+  configs: any;
+  setSelectedDevice: Dispatch<SetStateAction<Number>>;
+}
+
+export default function HeaderApp({
+  devices,
+  setDevices,
+  form,
+  configs,
+  setConfigs,
+  setSelectedDevice,
+}: HeaderAppProps) {
   const theme = useMantineTheme();
 
   React.useEffect(() => {
-    form.setFieldValue("device.ip", data[0]?.ip || "");
-    form.setFieldValue("device.name", data[0]?.name || "");
+    form.setFieldValue("device.ip", devices[0]?.ip || "");
+    form.setFieldValue("device.name", devices[0]?.name || "");
   }, []);
 
-  const items = data.map((item, i) => {
+  const items = devices.map((item, i) => {
     return (
       <Menu.Item
         key={item.ip}
@@ -134,6 +149,11 @@ export default function HeaderApp(props) {
           >
             <IconDeviceFloppy size={18} stroke={1.5} />
           </ActionIcon>
+          <ScanNetworkModal
+            form={form}
+            devices={devices}
+            setDevices={setDevices}
+          ></ScanNetworkModal>
         </Group>
       </Group>
     </Header>
