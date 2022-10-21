@@ -4,17 +4,43 @@ import React, { useRef, useEffect } from "react";
 const Canvas = (props) => {
   const canvasRef = useRef(null);
   const canvasWidth = window.innerWidth - window.innerWidth * 0.1;
-  const PIX_COUNT = 115;
+  const PIX_COUNT = props.form.values.device?.neoPixelCount;
   const cellPixelLength = canvasWidth / PIX_COUNT;
   const canvasHeight = canvasWidth / PIX_COUNT;
-  console.log(props.path);
 
   const [baseStripe, setBaseStripe] = React.useState(
-    Array(PIX_COUNT).fill("#000000")
+    Array(PIX_COUNT)
+      .fill("#000000")
+      .map((color, index, array) => {
+        if (props.defaultValue[index]) {
+          return props.defaultValue[index];
+        } else {
+          return color;
+        }
+      })
   );
 
   useEffect(() => {
+    const canvas = canvasRef.current;
+    const context = canvas.getContext("2d");
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    baseStripe.forEach((color, index) => {
+      context.fillStyle = color;
+      context.fillRect(
+        index * cellPixelLength,
+        0,
+        cellPixelLength,
+        canvasHeight
+      );
+    });
+  }, []);
+
+  useEffect(() => {
     props.form.setFieldValue(props.path, baseStripe);
+    console.log(
+      "🚀 ~ file: baseStripeCanvas.tsx ~ line 18 ~ useEffect ~ baseStripe",
+      baseStripe
+    );
   }, [baseStripe]);
 
   function fillCell(context, color, i) {

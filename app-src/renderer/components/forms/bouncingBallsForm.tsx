@@ -43,7 +43,11 @@ export default function BouncingBallsForm({ form }: BouncingBallsProps) {
         defaultValue="#ff0000"
         {...form.getInputProps("bouncingBalls.BaseStripe", { type: "color" })}
       /> */}
-      <BaseStripeInput form={form} path="bouncingBalls.baseStripe" />
+      <BaseStripeInput
+        form={form}
+        path="bouncingBalls.baseStripe"
+        defaultValue={form.values.bouncingBalls?.baseStripe}
+      />
     </React.Fragment>
   );
 }

@@ -28,6 +28,8 @@ function App() {
   const [devices, setDevices] = React.useState(devicesc);
   const [selectedDevice, setSelectedDevice] = React.useState(0);
   const [taskCode, setTaskCode] = React.useState("dashboard");
+  const [intervals, setIntervals] = React.useState([]);
+
   const [configs, setConfigs] = useLocalStorage({
     key: "ScreenChaserConfigs",
     defaultValue: {
@@ -56,6 +58,7 @@ function App() {
           },
           frostyPike: {
             delay: 10,
+            baseStripe: [],
           },
           dyingLights: {
             lightColor: "#9B03FF",
@@ -64,6 +67,24 @@ function App() {
             speed: 10,
             maxSnakeSize: 10,
             appleCount: 3,
+          },
+          globals: {
+            swatches: [
+              "#25262b",
+              "#868e96",
+              "#fa5252",
+              "#e64980",
+              "#be4bdb",
+              "#7950f2",
+              "#4c6ef5",
+              "#228be6",
+              "#15aabf",
+              "#12b886",
+              "#40c057",
+              "#82c91e",
+              "#fab005",
+              "#fd7e14",
+            ],
           },
           device: { ...devices[selectedDevice] },
         },
@@ -97,6 +118,14 @@ function App() {
     }
     console.log("message");
   }, [configs, selectedDevice]);
+
+  React.useEffect(() => {
+    console.log("configs Changed", configs);
+    intervals.forEach((interval) => {
+      clearInterval(interval);
+    });
+    setIntervals([]);
+  }, [configs]);
 
   React.useEffect(() => {
     //log states

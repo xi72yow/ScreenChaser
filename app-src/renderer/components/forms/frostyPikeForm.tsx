@@ -1,6 +1,7 @@
 import React from "react";
 import { ColorInput } from "@mantine/core";
 import QuantityInput from "./inputs/number";
+import BaseStripeInput from "./inputs/baseStripeInput";
 
 interface FrostyPikeFormProps {
   form: any;
@@ -9,11 +10,10 @@ interface FrostyPikeFormProps {
 export default function FrostyPikeForm({ form }: FrostyPikeFormProps) {
   return (
     <React.Fragment>
-      <ColorInput
-        placeholder="Pick color"
-        label="Base Stripe Color"
-        defaultValue="#ff0000"
-        {...form.getInputProps("frostyPike.BaseStripe", { type: "color" })}
+      <BaseStripeInput
+        form={form}
+        path="frostyPike.baseStripe"
+        defaultValue={form.values.frostyPike?.baseStripe}
       />
       <QuantityInput
         form={form}

@@ -7,27 +7,39 @@ import { DropzoneButton } from "./dropzone";
 interface BaseStripeInputProps {
   form: any;
   path: string;
+  defaultValue: any;
 }
 
-export default function BaseStripeInput({ form, path }: BaseStripeInputProps) {
+export default function BaseStripeInput({
+  form,
+  path,
+  defaultValue,
+}: BaseStripeInputProps) {
   const [open, setOpen] = useState(false);
   const [color, setColor] = useState("#9B03FF");
-  const [swatches, setSwatches] = useState([
-    "#25262b",
-    "#868e96",
-    "#fa5252",
-    "#e64980",
-    "#be4bdb",
-    "#7950f2",
-    "#4c6ef5",
-    "#228be6",
-    "#15aabf",
-    "#12b886",
-    "#40c057",
-    "#82c91e",
-    "#fab005",
-    "#fd7e14",
-  ]);
+
+  const [swatches, setSwatches] = useState(
+    form.values.globals.swatches || [
+      "#25262b",
+      "#868e96",
+      "#fa5252",
+      "#e64980",
+      "#be4bdb",
+      "#7950f2",
+      "#4c6ef5",
+      "#228be6",
+      "#15aabf",
+      "#12b886",
+      "#40c057",
+      "#82c91e",
+      "#fab005",
+      "#fd7e14",
+    ]
+  );
+
+  useEffect(() => {
+    form.setFieldValue("globals.swatches", swatches);
+  }, [swatches]);
 
   return (
     <React.Fragment>
@@ -42,6 +54,7 @@ export default function BaseStripeInput({ form, path }: BaseStripeInputProps) {
           color={color}
           path={path}
           form={form}
+          defaultValue={defaultValue}
         ></BaseStripeCanvas>
         <Group sx={{ display: "flex", paddingTop: "0.5rem" }} position="center">
           {/* <DropzoneButton></DropzoneButton> */}
@@ -87,7 +100,6 @@ export default function BaseStripeInput({ form, path }: BaseStripeInputProps) {
       >
         BaseStripe
       </Button>
-      <div>BaseStripeInput</div>
     </React.Fragment>
   );
 }

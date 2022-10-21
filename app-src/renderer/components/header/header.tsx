@@ -97,7 +97,7 @@ export default function HeaderApp(props) {
             sx={{ width: 69 }}
             max={999}
             form={form}
-            path="device.neopixelCount"
+            path="device.neoPixelCount"
             defaultValue={form.values.device?.neopixelCount || 60}
           ></QuantityInput>
           <ActionIcon
