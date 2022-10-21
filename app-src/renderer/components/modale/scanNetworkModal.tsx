@@ -113,7 +113,7 @@ export default function ScanNetworkModal({
     <React.Fragment>
       <Modal
         centered
-        size={"lg"}
+        size={"xl"}
         opened={open}
         onClose={() => {
           setOpen(false);

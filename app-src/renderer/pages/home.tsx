@@ -117,9 +117,21 @@ function App() {
     if (configs.configs.length > 0) {
       form.setValues({ ...configs.configs[selectedDevice] });
       const savedDevices = configs.configs.map((config) => config.device);
-      setDevices(savedDevices);
+      const newDevices = [];
+      devices.forEach((device) => {
+        if (
+          savedDevices.findIndex((value, index, array) => {
+            return value.ip === device.ip;
+          }) === -1 &&
+          device.ip !== "" &&
+          device.ip
+        ) {
+          newDevices.push(device);
+        }
+      });
+      setDevices([...savedDevices, ...newDevices]);
+      console.log("message");
     }
-    console.log("message");
   }, [configs, selectedDevice]);
 
   React.useEffect(() => {
