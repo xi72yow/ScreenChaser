@@ -92,6 +92,7 @@ export default function BaseStripeInput({
         </Group>
       </Modal>
       <Button
+        fullWidth
         sx={{ marginTop: "0.5rem" }}
         onClick={() => {
           setOpen(true);

@@ -1,20 +1,99 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import electron, { ipcRenderer } from "electron";
 import {
   useMantineTheme,
   Text,
-  Menu,
   Button,
   Group,
   Image,
+  Box,
+  Modal,
+  Col,
+  Grid,
+  ScrollArea,
 } from "@mantine/core";
 import { IconChevronDown, IconCpu } from "@tabler/icons";
+import styled from "@emotion/styled";
+import { useElementSize } from "@mantine/hooks";
+import { showNotification } from "@mantine/notifications";
 
-export default function Chaser() {
+const PlayButton = styled.button`
+  z-index: 100;
+  opacity: 0.8;
+  margin-left: 1rem;
+  position: absolute;
+  border: 0;
+  background: transparent;
+  box-sizing: border-box;
+  width: 0;
+  height: 74px;
+
+  border-color: transparent transparent transparent #af0069;
+  transition: 100ms all ease;
+  cursor: pointer;
+
+  // play state
+  border-style: solid;
+  border-width: 37px 0 37px 60px;
+
+  &.paused {
+    border-style: double;
+    border-width: 0px 0 0px 60px;
+  }
+
+  &:hover {
+    border-color: transparent transparent transparent #ffbb00;
+  }
+`;
+
+const PreviewImage = styled(Image)`
+  cursor: pointer;
+  border: 2px solid rgba(0, 0, 0, 0);
+  &:hover {
+    border: 2px solid #9b03ff;
+    border-radius: 8px;
+  }
+`;
+
+const Holder = styled.div<{ width: number }>`
+  background: #222;
+  width: ${({ width }) => (width ? `${width * 0.25}px` : "100%")};
+  height: 50px;
+`;
+
+//@ts-ignore
+const Stand = styled.div<{ width: number }>`
+  background: #333;
+  border-top-left-radius: 0.5em;
+  border-top-right-radius: 0.5em;
+  width: ${({ width }) => (width ? `${width * 0.5}px` : "100%")};
+  height: 20px;
+`;
+
+interface ChaserProps {
+  form: any;
+}
+
+export default function Chaser({ form }: ChaserProps) {
+  const { ref: refSize, width, height } = useElementSize();
+
   const theme = useMantineTheme();
-  const [selected, setSelected] = useState(null);
+  const [selected, setSelected] = useState({
+    id: form.values.chaser.id || "",
+    name: form.values.chaser.name || "",
+  });
   const [sources, setSources] = useState([]);
   const [opened, setOpened] = useState(false);
+  const [paused, setPaused] = useState(false);
+
+  useEffect(() => {
+    form.setFieldValue("chaser.id", selected?.id || "");
+    form.setFieldValue("chaser.name", selected?.name || "");
+  }, [selected]);
+
+  useEffect(() => {
+    setVideoSource(selected?.id);
+  }, []);
 
   async function setVideoSource(sourceId) {
     try {
@@ -30,6 +109,11 @@ export default function Chaser() {
       });
       handleStream(stream);
     } catch (e) {
+      showNotification({
+        title: "Chaser Error",
+        message: e.message,
+        color: "red",
+      });
       handleError(e);
     }
   }
@@ -46,21 +130,25 @@ export default function Chaser() {
 
   const items = sources.map((item) => {
     return (
-      <Menu.Item
+      <Col
+        span={6}
         key={item.id}
         onClick={() => {
           setSelected(item);
           setOpened(false);
           setVideoSource(item.id);
+          setPaused(false);
         }}
-        icon={<IconCpu size={16} color={theme.colors.blue[6]} stroke={1.5} />}
       >
-        <Group sx={{ display: "flex" }}>
-          <Image
+        <Group
+          sx={{
+            display: "flex",
+          }}
+        >
+          <PreviewImage
             radius="md"
             src={item.thumbnail.toDataURL()}
-            width={37}
-            height={23}
+            width={"100%"}
             alt={item.name + "_thumbnail"}
           />
           <Text
@@ -79,36 +167,84 @@ export default function Chaser() {
             {item.name || "No name"}
           </Text>
         </Group>
-      </Menu.Item>
+      </Col>
     );
   });
 
   return (
-    <React.Fragment>
-      <Menu
+    <>
+      <Modal
         opened={opened}
-        transition="pop-top-right"
-        position="top-start"
-        width={400}
+        onClose={() => setOpened(false)}
+        title="Choose Video Source"
       >
-        <Menu.Target>
-          <Button
-            leftIcon={<IconChevronDown size={18} stroke={1.5} />}
-            onClick={() => {
-              ipcRenderer.invoke("GET_SOURCES").then((sources) => {
-                console.log("result", sources);
-                setSources(sources);
-                setOpened(true);
-              });
-            }}
-            sx={{ maxWidth: 300 }}
-          >
-            {selected?.name || "Choose Video Source"}
-          </Button>
-        </Menu.Target>
-        <Menu.Dropdown>{items}</Menu.Dropdown>
-      </Menu>
-      <video style={{ width: 320, height: 180, float: "right" }}></video>
-    </React.Fragment>
+        <ScrollArea style={{ height: 300 }}>
+          <Grid sx={{ marginRight: "1rem" }}>{items}</Grid>
+        </ScrollArea>
+      </Modal>
+      <Box ref={refSize}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            marginBottom: "1em",
+          }}
+        >
+          <Box>
+            <div
+              style={{
+                width: width * 0.7 + "px",
+                height: ((width * 0.7) / 16) * 9 + "px",
+                border: "solid 18px #333",
+                borderRadius: ".5em",
+                backgroundColor: "#000",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                overflow: "hidden",
+              }}
+            >
+              {selected && (
+                <PlayButton
+                  className={paused ? "paused" : null}
+                  onClick={() => {
+                    setPaused(!paused);
+                    showNotification({
+                      title: "Chaser Notification",
+                      message: `I am ${paused ? "stop" : ""} chasing the video`,
+                    });
+                  }}
+                ></PlayButton>
+              )}
+              <video
+                style={{
+                  height: ((width * 0.7) / 16) * 9 - 30 + "px",
+                  float: "right",
+                }}
+              ></video>
+            </div>
+            <Box sx={{ display: "flex", justifyContent: "center" }}>
+              <Holder width={width * 0.7}></Holder>
+            </Box>
+            <Box sx={{ display: "flex", justifyContent: "center" }}>
+              <Stand width={width * 0.7}></Stand>
+            </Box>
+          </Box>
+        </Box>
+      </Box>
+      <Button
+        fullWidth
+        leftIcon={<IconChevronDown size={18} stroke={1.5} />}
+        onClick={() => {
+          ipcRenderer.invoke("GET_SOURCES").then((sources) => {
+            console.log("result", sources);
+            setSources(sources);
+            setOpened(true);
+          });
+        }}
+      >
+        {selected?.name || "Choose Video Source"}
+      </Button>
+    </>
   );
 }

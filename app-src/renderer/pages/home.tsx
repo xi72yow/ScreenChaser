@@ -29,7 +29,6 @@ function App() {
   const [selectedDevice, setSelectedDevice] = React.useState(0);
   const [taskCode, setTaskCode] = React.useState("dashboard");
   const [intervals, setIntervals] = React.useState([]);
-
   const [configs, setConfigs] = useLocalStorage({
     key: "ScreenChaserConfigs",
     defaultValue: {
@@ -85,7 +84,9 @@ function App() {
               "#fab005",
               "#fd7e14",
             ],
+            taskCode: "dashboard",
           },
+          chaser: { id: "" },
           device: { ...devices[selectedDevice] },
         },
       ],
@@ -130,6 +131,7 @@ function App() {
   React.useEffect(() => {
     //log states
     console.log("taskCode", taskCode);
+    form.setFieldValue("globals.taskCode", taskCode);
   }, [taskCode]);
 
   React.useEffect(() => {
@@ -228,12 +230,14 @@ function App() {
               <SnakeForm key={selectedDevice + "snake"} form={form}></SnakeForm>
             );
           case "chaser":
-            return <Chaser key={selectedDevice + "chaser"}></Chaser>;
+            return (
+              <Chaser key={selectedDevice + "chaser"} form={form}></Chaser>
+            );
           default:
             return <h1>work in progress</h1>;
         }
       })()}
-      {taskCode !== "dashboard" && (
+      {taskCode !== "dashboard" && taskCode !== "chaser" && (
         <Button
           sx={{
             float: "right",
