@@ -72,8 +72,7 @@ export default function ScanNetworkModal({
           title: "Chaser Notification",
           message: `I found a new device: ${newD.ip}`,
         });
-      }else
-      {
+      } else {
         showNotification({
           title: "Chaser Notification",
           message: `No new devices found`,
@@ -87,12 +86,10 @@ export default function ScanNetworkModal({
       console.log("🚀 ~ file: scanNetworkModal.tsx ~ line 70 ~ device", device);
       if (device.new) {
         const DataEmitterForIP = new DataEmitter(false, device.ip);
-        DataEmitterForIP.init().then((value) => {
-          const rgb = IdentifyColors[index].color;
-          DataEmitterForIP.emit(
-            setAll(rgb.r, rgb.g, rgb.b, device.neoPixelCount || 60)
-          );
-        });
+        const rgb = IdentifyColors[index].color;
+        DataEmitterForIP.emit(
+          setAll(rgb.r, rgb.g, rgb.b, device.neoPixelCount || 60)
+        );
       }
     });
   }
@@ -101,39 +98,42 @@ export default function ScanNetworkModal({
     scanNetwork();
   }, []);
 
-  const rows = devices.map((device, i) => (
-    <tr key={device.ip + devices.length} style={{ height: "3rem" }}>
-      <td>{device.new ? <Indicator>{device.ip}</Indicator> : device.ip}</td>
-      <td>
-        <TextInput
-          width={"75px"}
-          type="string"
-          value={devices[i].name}
-          onChange={(e) => {
-            setDevices((old) => {
-              old[i].name = e.target.value;
-              return [...old];
-            });
-          }}
-        ></TextInput>{" "}
-      </td>
-      <td>{IdentifyColors[i].name}</td>
+  const rows = devices.map(
+    (device, i) =>
+      device.ip && (
+        <tr key={device.ip + devices.length} style={{ height: "3rem" }}>
+          <td>{device.new ? <Indicator>{device.ip}</Indicator> : device.ip}</td>
+          <td>
+            <TextInput
+              width={"75px"}
+              type="string"
+              value={devices[i].name}
+              onChange={(e) => {
+                setDevices((old) => {
+                  old[i].name = e.target.value;
+                  return [...old];
+                });
+              }}
+            ></TextInput>{" "}
+          </td>
+          <td>{IdentifyColors[i].name}</td>
 
-      <td>
-        <TextInput
-          width={"75px"}
-          type="number"
-          value={devices[i].neoPixelCount}
-          onChange={(e) => {
-            setDevices((old) => {
-              old[i].neoPixelCount = e.target.value;
-              return [...old];
-            });
-          }}
-        ></TextInput>
-      </td>
-    </tr>
-  ));
+          <td>
+            <TextInput
+              width={"75px"}
+              type="number"
+              value={devices[i].neoPixelCount}
+              onChange={(e) => {
+                setDevices((old) => {
+                  old[i].neoPixelCount = e.target.value;
+                  return [...old];
+                });
+              }}
+            ></TextInput>
+          </td>
+        </tr>
+      )
+  );
 
   return (
     <React.Fragment>
