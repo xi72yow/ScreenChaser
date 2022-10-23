@@ -46,23 +46,26 @@ export default function HeaderApp({
   }, []);
 
   const items = devices.map((item, i) => {
+    console.log("🚀 ~ file: header.tsx ~ line 50 ~ item", item);
     return (
-      <Menu.Item
-        key={item.ip}
-        onClick={() => {
-          setSelectedDevice(i);
-          form.setFieldValue("device.ip", item?.ip || "");
-          form.setFieldValue("device.name", item?.name || "");
-        }}
-        icon={<IconCpu size={16} color={theme.colors.blue[6]} stroke={1.5} />}
-        rightSection={
-          <Text size="xs" transform="uppercase" weight={700} color="dimmed">
-            {item.name || "No name"}
-          </Text>
-        }
-      >
-        {item.ip}
-      </Menu.Item>
+      item.ip && (
+        <Menu.Item
+          key={item.ip}
+          onClick={() => {
+            setSelectedDevice(i);
+            form.setFieldValue("device.ip", item?.ip || "");
+            form.setFieldValue("device.name", item?.name || "");
+          }}
+          icon={<IconCpu size={16} color={theme.colors.blue[6]} stroke={1.5} />}
+          rightSection={
+            <Text size="xs" transform="uppercase" weight={700} color="dimmed">
+              {item.name || "No name"}
+            </Text>
+          }
+        >
+          {item.ip}
+        </Menu.Item>
+      )
     );
   });
   return (

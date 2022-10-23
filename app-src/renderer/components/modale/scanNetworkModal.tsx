@@ -11,6 +11,7 @@ import { IconRefresh, IconFocus2, IconAccessPoint } from "@tabler/icons";
 import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import DataEmitter from "../effects_build/network/dataEmitter.js";
 import setAll from "../effects_build/basics/setAll.js";
+import { showNotification } from "@mantine/notifications";
 
 interface scanNetworkModalProps {
   form: any;
@@ -57,28 +58,26 @@ export default function ScanNetworkModal({
   function checkForNewDevices(old, newDevices) {
     newDevices.forEach((newD, index, array) => {
       old.findIndex((old, index, array) => {
-        console.log(
-          "🚀 ~ file: scanNetworkModal.tsx ~ line 50 ~ old.findIndex ~ old.ip",
-          old.ip,
-          newD.ip
-        );
-
         return old.ip === newD.ip;
       });
       if (
         old.findIndex((old, index, array) => {
-          console.log(
-            "🚀 ~ file: scanNetworkModal.tsx ~ line 50 ~ old.findIndex ~ old.ip",
-            old.ip,
-            newD.ip
-          );
-
           return old.ip === newD.ip;
         }) === -1
       ) {
         newD.new = true;
         setDevices((old) => [...old, newD]);
         setNewDevices((old) => old + 1);
+        showNotification({
+          title: "Chaser Notification",
+          message: `I found a new device: ${newD.ip}`,
+        });
+      }else
+      {
+        showNotification({
+          title: "Chaser Notification",
+          message: `No new devices found`,
+        });
       }
     });
   }
