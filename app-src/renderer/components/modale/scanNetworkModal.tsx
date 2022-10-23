@@ -10,12 +10,24 @@ import {
 import { IconRefresh, IconFocus2, IconAccessPoint } from "@tabler/icons";
 import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import DataEmitter from "../effects_build/network/dataEmitter.js";
+import setAll from "../effects_build/basics/setAll.js";
 
 interface scanNetworkModalProps {
   form: any;
   setDevices: Dispatch<SetStateAction<any[]>>;
   devices: any[];
 }
+
+const IdentifyColors = {
+  "0": { name: "gray", color: { r: 50, g: 50, b: 50 } },
+  "1": { name: "red", color: { r: 255, g: 0, b: 0 } },
+  "2": { name: "green", color: { r: 0, g: 255, b: 0 } },
+  "3": { name: "blue", color: { r: 0, g: 0, b: 255 } },
+  "4": { name: "yellow", color: { r: 255, g: 255, b: 0 } },
+  "5": { name: "cyan", color: { r: 0, g: 255, b: 255 } },
+  "6": { name: "magenta", color: { r: 255, g: 0, b: 255 } },
+  "7": { name: "white", color: { r: 255, g: 255, b: 255 } },
+};
 
 export default function ScanNetworkModal({
   form,
@@ -71,6 +83,21 @@ export default function ScanNetworkModal({
     });
   }
 
+  function sendIdentifyColor() {
+    devices.forEach((device, index, array) => {
+      console.log("🚀 ~ file: scanNetworkModal.tsx ~ line 70 ~ device", device);
+      if (device.new) {
+        const DataEmitterForIP = new DataEmitter(false, device.ip);
+        DataEmitterForIP.init().then((value) => {
+          const rgb = IdentifyColors[index].color;
+          DataEmitterForIP.emit(
+            setAll(rgb.r, rgb.g, rgb.b, device.neoPixelCount || 60)
+          );
+        });
+      }
+    });
+  }
+
   useEffect(() => {
     scanNetwork();
   }, []);
@@ -91,7 +118,7 @@ export default function ScanNetworkModal({
           }}
         ></TextInput>{" "}
       </td>
-      <td>red</td>
+      <td>{IdentifyColors[i].name}</td>
 
       <td>
         <TextInput
@@ -146,6 +173,9 @@ export default function ScanNetworkModal({
         <Button
           sx={{ float: "right", marginRight: "0.5rem" }}
           leftIcon={<IconFocus2></IconFocus2>}
+          onClick={() => {
+            sendIdentifyColor();
+          }}
         >
           Send Identify Color
         </Button>

@@ -212,7 +212,7 @@ export default function Chaser({ form }: ChaserProps) {
                     setPaused(!paused);
                     showNotification({
                       title: "Chaser Notification",
-                      message: `I am ${paused ? "stop" : ""} chasing the video`,
+                      message: `I ${paused ? "stopped" : "started"} chasing the video`,
                     });
                   }}
                 ></PlayButton>
