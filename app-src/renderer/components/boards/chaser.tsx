@@ -211,6 +211,7 @@ export default function Chaser({ form }: ChaserProps) {
         span={6}
         key={item.id}
         onClick={() => {
+          clearInterval(caserInterval.current);
           setSelected(item);
           setOpened(false);
           setVideoSource(item.id);
@@ -300,7 +301,7 @@ export default function Chaser({ form }: ChaserProps) {
                         if (document.getElementById("chaser_canvas")) {
                           const stripe = processCtxData();
                           DataEmitterForIP.current.emit(stripe);
-                          console.log(DataEmitterForIP.current.getHealth());
+                          /*  console.log(DataEmitterForIP.current.getHealth()); */
                         } else {
                           showNotification({
                             title: "Chaser Notification",
