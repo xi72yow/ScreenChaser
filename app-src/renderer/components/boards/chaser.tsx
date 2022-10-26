@@ -101,7 +101,7 @@ export default function Chaser({ form }: ChaserProps) {
   }, [selected]);
 
   useEffect(() => {
-    setVideoSource(selected?.id);
+    if (selected?.id !== "") setVideoSource(selected?.id);
   }, []);
 
   async function setVideoSource(sourceId) {
@@ -113,7 +113,7 @@ export default function Chaser({ form }: ChaserProps) {
           mandatory: {
             chromeMediaSource: "desktop",
             chromeMediaSourceId: sourceId,
-            maxWidth: form.values.device.neoPixelCount,
+            maxWidth: form.values.device.neoPixelCount || 100,
           },
         },
       });
@@ -121,7 +121,7 @@ export default function Chaser({ form }: ChaserProps) {
     } catch (e) {
       showNotification({
         title: "Chaser Error",
-        message: e.message,
+        message: JSON.stringify(e),
         color: "red",
       });
       handleError(e);
@@ -283,7 +283,7 @@ export default function Chaser({ form }: ChaserProps) {
                 overflow: "hidden",
               }}
             >
-              {selected && (
+              {selected?.id !== "" && (
                 <PlayButton
                   className={paused ? "paused" : null}
                   onClick={() => {
