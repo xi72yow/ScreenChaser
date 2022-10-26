@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import electron, { ipcRenderer } from "electron";
 import {
   useMantineTheme,
@@ -80,7 +80,6 @@ interface ChaserProps {
 
 export default function Chaser({ form }: ChaserProps) {
   const { ref: refSize, width, height } = useElementSize();
-  const [caserInterval, setCaserInterval] = useState(null);
   const theme = useMantineTheme();
   const [selected, setSelected] = useState({
     id: form.values.chaser.id || "",
@@ -89,6 +88,12 @@ export default function Chaser({ form }: ChaserProps) {
   const [sources, setSources] = useState([]);
   const [opened, setOpened] = useState(false);
   const [paused, setPaused] = useState(false);
+
+  const caserInterval = useRef(null);
+
+  const DataEmitterForIP = useRef(
+    new DataEmitter(false, form.values.device.ip)
+  );
 
   useEffect(() => {
     form.setFieldValue("chaser.id", selected?.id || "");
@@ -288,19 +293,22 @@ export default function Chaser({ form }: ChaserProps) {
                         paused ? "stopped" : "started"
                       } chasing the video`,
                     });
-                    if (!paused) {
-                      clearInterval(caserInterval);
-                      setCaserInterval(
-                        setInterval(() => {
+                    if (paused) {
+                      clearInterval(caserInterval.current);
+                    } else
+                      caserInterval.current = setInterval(() => {
+                        if (document.getElementById("chaser_canvas")) {
                           const stripe = processCtxData();
-                          const DataEmitterForIP = new DataEmitter(
-                            false,
-                            form.values.device.ip
-                          );
-                          DataEmitterForIP.emit(stripe);
-                        }, 100)
-                      );
-                    }
+                          DataEmitterForIP.current.emit(stripe);
+                          console.log(DataEmitterForIP.current.getHealth());
+                        } else {
+                          showNotification({
+                            title: "Chaser Notification",
+                            message: `I could not find the canvas`,
+                          });
+                          clearInterval(caserInterval.current);
+                        }
+                      }, 100);
                   }}
                 ></PlayButton>
               )}
@@ -334,7 +342,7 @@ export default function Chaser({ form }: ChaserProps) {
       >
         {selected?.name || "Choose Video Source"}
       </Button>
-      <canvas id="chaser_canvas"></canvas>
+      <canvas id="chaser_canvas" hidden></canvas>
     </>
   );
 }
