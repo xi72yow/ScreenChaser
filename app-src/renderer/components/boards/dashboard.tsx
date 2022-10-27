@@ -1,5 +1,12 @@
 import React from "react";
-import { createStyles, Group, Paper, SimpleGrid, Text } from "@mantine/core";
+import {
+  Box,
+  createStyles,
+  Group,
+  Paper,
+  SimpleGrid,
+  Text,
+} from "@mantine/core";
 import {
   IconUserPlus,
   IconDiscount2,
@@ -51,12 +58,12 @@ interface StatsGridProps {
   data: {
     title: string;
     icon: keyof typeof icons;
-    value: string;
+    value: number;
     diff: number;
   }[];
 }
 
-export default function Dashboard({ data }: StatsGridProps) {
+export function StatsGrid({ data }: StatsGridProps) {
   const { classes } = useStyles();
   const stats = data.map((stat) => {
     const Icon = icons[stat.icon];
@@ -72,20 +79,23 @@ export default function Dashboard({ data }: StatsGridProps) {
         </Group>
 
         <Group align="flex-end" spacing="xs" mt={25}>
-          <Text className={classes.value}>{stat.value}</Text>
+          <Text className={classes.value}>
+            {stat.value.toFixed(2)}
+            {stat.icon === "bolt" ? "W" : "%"}
+          </Text>
           <Text
-            color={stat.diff > 0 ? "teal" : "red"}
+            color={stat.diff > 0 ? "red" : "teal"}
             size="sm"
             weight={500}
             className={classes.diff}
           >
-            <span>{stat.diff}%</span>
+            {<span>{stat.diff.toFixed(2)}%</span>}
             <DiffIcon size={16} stroke={1.5} />
           </Text>
         </Group>
 
         <Text size="xs" color="dimmed" mt={7}>
-          Compared to the last 5 min
+          Compared to the last 3 seconds
         </Text>
       </Paper>
     );
@@ -93,14 +103,34 @@ export default function Dashboard({ data }: StatsGridProps) {
   return (
     <div className={classes.root}>
       <SimpleGrid
-        cols={4}
+        cols={2}
         breakpoints={[
-          { maxWidth: "md", cols: 2 },
-          { maxWidth: "xs", cols: 1 },
+          { maxWidth: "md", cols: 6 },
+          { maxWidth: "xs", cols: 2 },
         ]}
       >
         {stats}
       </SimpleGrid>
     </div>
+  );
+}
+
+interface DashboardProps {
+  data: { details: any; title: string }[];
+}
+
+export default function Dashboard({ data }: DashboardProps) {
+  return (
+    <>
+      {data &&
+        data.map((item) => (
+          <Box key={item.title}>
+            <Text size="xl" mt={4} mb={1} weight={900}>
+              {item.title}:
+            </Text>
+            <StatsGrid data={item.details} />
+          </Box>
+        ))}
+    </>
   );
 }

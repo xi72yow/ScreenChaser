@@ -52,19 +52,60 @@ function App() {
   const DataEmittersRef = useRef<any>([]);
   const IntervalsRef = useRef<any>([]);
   const EffectsRef = useRef<any>([]);
+  const [dashBoardData, setDashBoardData] = useState(null);
 
   const configs = useLiveQuery(async () => {
     return await db.configs.toArray();
   });
 
+  const interval = useInterval(
+    () =>
+      setDashBoardData((dashBoardDataLast) => {
+        return DataEmittersRef.current.map((dataEmitter, index, array) => {
+          const data = dataEmitter.getHealth();
+          return {
+            title: dataEmitter.getIp(),
+            details: [
+              {
+                title: "Power:",
+                value: data.power,
+                icon: "bolt",
+                diff: dashBoardDataLast
+                  ? (data.power / dashBoardDataLast[index].details[0]?.value) *
+                      100 -
+                    100
+                  : 100,
+              },
+              {
+                title: "Package Loss:",
+                value: data.packageloss,
+                icon: "package",
+                diff: dashBoardDataLast
+                  ? (data.packageloss /
+                      dashBoardDataLast[index].details[1]?.value) *
+                      100 -
+                    100
+                  : 100,
+              },
+            ],
+          };
+        });
+      }),
+    3000
+  );
+
   const form = useForm({ initialValues: { ...initilalValues } });
 
-  useEffect(() => {
+/*   useEffect(() => {
     console.log(form.values);
-  }, [form]);
+  }, [form]); */
 
   useEffect(() => {
-    console.log(taskCode);
+    if (taskCode === "dashboard") {
+      interval.start();
+    } else {
+      interval.stop();
+    }
   }, [taskCode]);
 
   useEffect(() => {
@@ -220,19 +261,7 @@ function App() {
       {(() => {
         switch (taskCode) {
           case "dashboard":
-            return (
-              <Dashboard
-                data={[
-                  { title: "Power:", value: "3W", diff: 50, icon: "bolt" },
-                  {
-                    title: "Package Loss:",
-                    value: "1%",
-                    diff: -50,
-                    icon: "package",
-                  },
-                ]}
-              ></Dashboard>
-            );
+            return <Dashboard data={dashBoardData}></Dashboard>;
           case "meteorRain":
             return (
               <MeteorRainForm

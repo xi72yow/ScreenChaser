@@ -53,10 +53,6 @@ export default function Toolbar({
             <Button
               onClick={() => {
                 const currentFormConfig = form.values[taskCode];
-                console.log(
-                  "🚀 ~ file: toolbar.tsx ~ line 56 ~ currentFormConfig",
-                  currentFormConfig
-                );
                 updateConfig(selectedDevice + 1, {
                   task: { taskCode },
                   [taskCode]: currentFormConfig,

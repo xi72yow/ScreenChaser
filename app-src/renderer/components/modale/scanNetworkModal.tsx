@@ -109,9 +109,9 @@ export default function ScanNetworkModal({}: scanNetworkModalProps) {
         delete newD.port;
         newD.name = "";
         newD.neoPixelCount = 60;
+        newConfigs.push({ device: { ...newD } });
 
         addConfig({ device: { ...newD } }).then((value) => {
-          newConfigs.push({ device: { ...newD } });
           showNotification({
             title: "Chaser Notification",
             message: `I found a new device: ${newD.ip}`,
@@ -119,6 +119,7 @@ export default function ScanNetworkModal({}: scanNetworkModalProps) {
         });
       }
     });
+    console.log(newConfigs);
     if (newConfigs.length === 0) {
       showNotification({
         title: "Chaser Notification",
@@ -134,6 +135,10 @@ export default function ScanNetworkModal({}: scanNetworkModalProps) {
       DataEmitterForIP.emit(
         setAll(rgb.r, rgb.g, rgb.b, device.neoPixelCount || 60)
       );
+    });
+    showNotification({
+      title: "Chaser Notification",
+      message: `Sent identify colors to all Chasers`,
     });
   }
 
