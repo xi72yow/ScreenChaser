@@ -60,6 +60,8 @@ function App() {
   const EffectsRef = useRef<any>([]);
   const [dashBoardData, setDashBoardData] = useState(null);
 
+  const [lightsOff, setLightsOff] = useState(false);
+
   const configs = useLiveQuery(async () => {
     return await db.configs.toArray();
   });
@@ -122,6 +124,17 @@ function App() {
       });
     }
   }, [taskCode]);
+
+  useEffect(() => {
+    if (configs) {
+      IntervalsRef.current.forEach((interval) => clearInterval(interval));
+      configs.forEach((config, index) => {
+        DataEmittersRef.current[index].emit(
+          setAll(0, 0, 0, config.device.neoPixelCount)
+        );
+      });
+    }
+  }, [lightsOff]);
 
   useEffect(() => {
     IntervalsRef.current.forEach((interval) => clearInterval(interval));
@@ -255,8 +268,8 @@ function App() {
           form={form}
           configs={configs}
           taskCode={taskCode}
-          setTaskCode={setTaskCode}
           selectedDevice={selectedDevice}
+          setLightsOff={setLightsOff}
         ></Toolbar>
       }
       styles={(theme) => ({
@@ -333,9 +346,6 @@ function App() {
                 form={form}
               ></StaticLightForm>
             );
-
-          case "shutdown":
-            return <></>;
 
           default:
             return <h1>work in progress</h1>;

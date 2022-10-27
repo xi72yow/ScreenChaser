@@ -119,7 +119,7 @@ export default function ScanNetworkModal({}: scanNetworkModalProps) {
         });
       }
     });
-    console.log(newConfigs);
+
     if (newConfigs.length === 0) {
       showNotification({
         title: "Chaser Notification",

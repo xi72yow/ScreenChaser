@@ -8,9 +8,9 @@ import { showNotification } from "@mantine/notifications";
 import { IconSun, IconMoonStars, IconPower } from "@tabler/icons";
 import React from "react";
 
-type Props = { setTaskCode: any };
+type Props = { setLightsOff: any };
 
-export default function GlobalSettings({ setTaskCode }: Props) {
+export default function GlobalSettings({ setLightsOff }: Props) {
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
   const theme = useMantineTheme();
 
@@ -38,16 +38,19 @@ export default function GlobalSettings({ setTaskCode }: Props) {
       </ActionIcon>
       <ActionIcon
         onClick={() => {
-          setTaskCode("shutdown");
+          setLightsOff((bool) => {
+            return !bool;
+          });
           showNotification({
             title: "Chaser Notification",
             message:
-              "Signal to turn off the device has been sent. Click Notification to repeat.",
+              "Signal to turn off the device has been sent. Click to repeat.",
             color: "red",
             icon: <IconPower size={18} />,
             onClick: () => {
-              setTaskCode("dashboard");
-              setTaskCode("shutdown");
+              setLightsOff((bool) => {
+                return !bool;
+              });
             },
             sx: { cursor: "pointer" },
           });

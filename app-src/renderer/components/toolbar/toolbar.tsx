@@ -9,7 +9,7 @@ import GlobalSettings from "./globalSettings";
 type ToolbarProps = {
   taskCode: string;
   selectedDevice: number;
-  setTaskCode: any;
+  setLightsOff: any;
   configs: Array<ConfigInterface>;
   form: any;
 };
@@ -19,7 +19,7 @@ export default function Toolbar({
   taskCode,
   selectedDevice,
   configs,
-  setTaskCode,
+  setLightsOff,
 }: ToolbarProps) {
   const { classes } = useStyles();
 
@@ -40,7 +40,7 @@ export default function Toolbar({
           paddingRight: "1rem",
         }}
       >
-        <GlobalSettings setTaskCode={setTaskCode}></GlobalSettings>
+        <GlobalSettings setLightsOff={setLightsOff}></GlobalSettings>
       </Group>
       <Group
         sx={{
