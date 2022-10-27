@@ -20,6 +20,7 @@ import { showNotification } from "@mantine/notifications";
 import { rgbToHex } from "../effects_build/basics/convertRgbHex";
 import DataEmitter from "../effects_build/network/dataEmitter.js";
 import setAll from "../effects_build/basics/setAll.js";
+import { updateConfig } from "../database/db";
 
 const PlayButton = styled.button`
   z-index: 100;
@@ -76,13 +77,14 @@ const Stand = styled.div<{ width: number }>`
 
 interface ChaserProps {
   form: any;
+  selectedDevice: any;
 }
 
-export default function Chaser({ form }: ChaserProps) {
+export default function Chaser({ form, selectedDevice }: ChaserProps) {
   const { ref: refSize, width, height } = useElementSize();
   const theme = useMantineTheme();
   const [selected, setSelected] = useState({
-    id: form.values.chaser.id || "",
+    id: form.values.chaser.sourceId || "",
     name: form.values.chaser.name || "",
   });
   const [sources, setSources] = useState([]);
@@ -102,7 +104,14 @@ export default function Chaser({ form }: ChaserProps) {
 
   useEffect(() => {
     if (selected?.id !== "") setVideoSource(selected?.id);
+    return () => {
+      clearInterval(caserInterval.current);
+    };
   }, []);
+
+  useEffect(() => {
+    DataEmitterForIP.current = new DataEmitter(false, form.values.device.ip);
+  }, [form.values.device.ip]);
 
   async function setVideoSource(sourceId) {
     try {
@@ -297,19 +306,27 @@ export default function Chaser({ form }: ChaserProps) {
                     if (paused) {
                       clearInterval(caserInterval.current);
                     } else
-                      caserInterval.current = setInterval(() => {
-                        if (document.getElementById("chaser_canvas")) {
-                          const stripe = processCtxData();
-                          DataEmitterForIP.current.emit(stripe);
-                          /*  console.log(DataEmitterForIP.current.getHealth()); */
-                        } else {
-                          showNotification({
-                            title: "Chaser Notification",
-                            message: `I could not find the canvas`,
-                          });
-                          clearInterval(caserInterval.current);
-                        }
-                      }, 100);
+                      updateConfig(selectedDevice + 1, {
+                        task: { taskCode: "chaser" },
+                        chaser: {
+                          sourceId: selected?.id,
+                          name: selected?.name,
+                        },
+                      });
+                    caserInterval.current = setInterval(() => {
+                      if (document.getElementById("chaser_canvas")) {
+                        const stripe = processCtxData();
+                        DataEmitterForIP.current.emit(stripe);
+
+                        /*  console.log(DataEmitterForIP.current.getHealth()); */
+                      } else {
+                        showNotification({
+                          title: "Chaser Notification",
+                          message: `I could not find the canvas`,
+                        });
+                        clearInterval(this);
+                      }
+                    }, 100);
                   }}
                 ></PlayButton>
               )}

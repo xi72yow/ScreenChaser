@@ -16,8 +16,8 @@ export const initilalValues = {
     baseStripe: [],
   },
   fireFlame: {
-    cooling: 55,
-    sparking: 120,
+    cooling: 120,
+    sparking: 35,
   },
   colorWheel: {
     speed: 10,
@@ -30,7 +30,7 @@ export const initilalValues = {
     lightColor: "#9B03FF",
   },
   snake: {
-    speed: 10,
+    speed: 1,
     maxSnakeSize: 10,
     appleCount: 3,
   },
@@ -52,8 +52,10 @@ export const initilalValues = {
       "#fd7e14",
     ],
   },
-  chaser: { sourceId: "" },
+  chaser: { sourceId: "", name: "" },
+  staticLight: { baseStripe: [] },
   device: { name: "", ip: "", neoPixelCount: 42, new: false },
+  task: { taskCode: "dashboard" },
 };
 
 export interface MeteorRainInterface {
@@ -69,6 +71,10 @@ export interface BouncingBallsInterface {
   mirrored: boolean;
   tail: boolean;
   ballCount: number;
+  baseStripe: string[];
+}
+
+export interface StaticLightInterface {
   baseStripe: string[];
 }
 
@@ -96,6 +102,7 @@ export interface GlobalsInterface {
 
 export interface ChaserInterface {
   sourceId: string;
+  name: string;
 }
 
 export interface DeviceInterface {
@@ -103,6 +110,16 @@ export interface DeviceInterface {
   name: string;
   neoPixelCount: number;
   new: boolean;
+}
+
+export interface TaskInterface {
+  taskCode: string;
+}
+
+export interface SnakeInterface {
+  speed: number;
+  maxSnakeSize: number;
+  appleCount: number;
 }
 
 export interface ConfigInterface {
@@ -116,6 +133,9 @@ export interface ConfigInterface {
   fireFlame: FireFlameInterface;
   bouncingBalls: BouncingBallsInterface;
   meteorRain: MeteorRainInterface;
+  snake: SnakeInterface;
+  task: TaskInterface;
+  staticLight: StaticLightInterface;
 }
 
 export async function addConfig(param) {

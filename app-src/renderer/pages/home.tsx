@@ -4,6 +4,7 @@ import {
   Button,
   ColorScheme,
   ColorSchemeProvider,
+  ScrollArea,
   Text,
 } from "@mantine/core";
 import NavbarNested from "../components/navbar/navbar";
@@ -24,18 +25,33 @@ import DyingLightsForm from "../components/forms/dyingLightsForm";
 import SnakeForm from "../components/forms/snakeForm";
 import Dashboard from "../components/boards/dashboard";
 import Chaser from "../components/boards/chaser";
-import { useHotkeys, useLocalStorage } from "@mantine/hooks";
+import { useHotkeys, useInterval, useLocalStorage } from "@mantine/hooks";
 
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, initilalValues, updateConfig } from "../components/database/db";
 import Toolbar from "../components/toolbar/toolbar";
+import { hexToRgb } from "../components/effects_build/basics/convertRgbHex";
 import DataEmitter from "../components/effects_build/network/dataEmitter";
+
+import MeteorRain from "../components/effects_build/meteor";
+import BouncingBalls from "../components/effects_build/bouncingBalls";
+import FireFlame from "../components/effects_build/fireFlame";
+import ColorWheel from "../components/effects_build/colorWheel";
+import FrostyPike from "../components/effects_build/frostyPike";
+import DyingLights from "../components/effects_build/dyingLights";
+import Snake from "../components/effects_build/snake";
+import StaticLightForm from "../components/forms/staticLightForm";
+
+function prepareBaseStipe(stripeFromUi) {
+  return stripeFromUi.map((color) => color.replace("#", ""));
+}
 
 function App() {
   const [selectedDevice, setSelectedDevice] = React.useState<any>(0);
   const [taskCode, setTaskCode] = React.useState("dashboard");
-
-  const DataEmitterRef = useRef<any>([]);
+  const DataEmittersRef = useRef<any>([]);
+  const IntervalsRef = useRef<any>([]);
+  const EffectsRef = useRef<any>([]);
 
   const configs = useLiveQuery(async () => {
     return await db.configs.toArray();
@@ -48,16 +64,119 @@ function App() {
   }, [form]);
 
   useEffect(() => {
+    console.log(taskCode);
+  }, [taskCode]);
+
+  useEffect(() => {
+    console.log(
+      "🚀 ~ file: home.tsx ~ line 40 ~ App ~ DataEmittersRef",
+      DataEmittersRef,
+      IntervalsRef,
+      EffectsRef
+    );
+
     if (configs) {
       form.reset();
       form.setValues({ ...configs[selectedDevice] });
+      IntervalsRef.current.forEach((interval) => clearInterval(interval));
+
       configs.forEach((config, i) => {
         if (
-          config.device.ip !== DataEmitterRef.current[i]?.getIp() ||
-          !DataEmitterRef.current[i]
+          config.device.ip !== DataEmittersRef.current[i]?.getIp() ||
+          !DataEmittersRef.current[i]
         )
-          DataEmitterRef.current[i] = new DataEmitter(false, config.device.ip);
-        console.log(DataEmitterRef.current);
+          DataEmittersRef.current[i] = new DataEmitter(false, config.device.ip);
+
+        const neopixelCount = config.device.neoPixelCount;
+
+        switch (config.task.taskCode) {
+          case "meteorRain":
+            const { meteorRain } = config;
+            const {
+              r: red,
+              g: green,
+              b: blue,
+            } = hexToRgb(meteorRain.meteorColor.substring(1));
+            EffectsRef.current[i] = new MeteorRain({
+              ...meteorRain,
+              neopixelCount,
+              red,
+              green,
+              blue,
+            });
+            break;
+
+          case "bouncingBalls":
+            const { bouncingBalls } = config;
+            EffectsRef.current[i] = new BouncingBalls({
+              ...bouncingBalls,
+              neopixelCount,
+              baseStripe: prepareBaseStipe(bouncingBalls.baseStripe),
+            });
+            break;
+
+          case "fireFlame":
+            const { fireFlame } = config;
+            EffectsRef.current[i] = new FireFlame({
+              ...fireFlame,
+              neopixelCount,
+            });
+            break;
+
+          case "colorWheel":
+            const { colorWheel } = config;
+            EffectsRef.current[i] = new ColorWheel({
+              ...colorWheel,
+              neopixelCount,
+            });
+            break;
+
+          case "frostyPike":
+            const { frostyPike } = config;
+            EffectsRef.current[i] = new FrostyPike({
+              ...frostyPike,
+              neopixelCount,
+              baseStripe: prepareBaseStipe(frostyPike.baseStripe),
+            });
+            break;
+
+          case "dyingLights":
+            const { dyingLights } = config;
+            EffectsRef.current[i] = new DyingLights({
+              ...dyingLights,
+              neopixelCount,
+            });
+            break;
+
+          case "snake":
+            const { snake } = config;
+            EffectsRef.current[i] = new Snake({
+              ...snake,
+              neopixelCount,
+            });
+            break;
+
+          case "chaser":
+            clearInterval(IntervalsRef.current[i]);
+            return;
+
+          case "staticLight":
+            const { staticLight } = config;
+            clearInterval(IntervalsRef.current[i]);
+            DataEmittersRef.current[i].emit(
+              prepareBaseStipe(staticLight.baseStripe)
+            );
+            return;
+
+          default:
+            break;
+        }
+
+        IntervalsRef.current[i] = setInterval(() => {
+          if (EffectsRef.current[i]) {
+            DataEmittersRef.current[i].emit(EffectsRef.current[i].render());
+          }
+        }, 110);
       });
     }
   }, [configs, selectedDevice]);
@@ -83,6 +202,7 @@ function App() {
       }
       footer={
         <Toolbar
+          form={form}
           configs={configs}
           taskCode={taskCode}
           selectedDevice={selectedDevice}
@@ -161,8 +281,20 @@ function App() {
             );
           case "chaser":
             return (
-              <Chaser key={selectedDevice + "chaser"} form={form}></Chaser>
+              <Chaser
+                key={selectedDevice + "chaser"}
+                selectedDevice={selectedDevice}
+                form={form}
+              ></Chaser>
             );
+          case "staticLight":
+            return (
+              <StaticLightForm
+                key={selectedDevice + "staticLight"}
+                form={form}
+              ></StaticLightForm>
+            );
+
           default:
             return <h1>work in progress</h1>;
         }
@@ -192,7 +324,7 @@ function Next() {
         theme={{
           colorScheme,
           fontFamily: "Greycliff CF, sans-serif",
-          colors: {
+          /* colors: {
             dark: [
               "#21222c",
               "#414558",
@@ -217,7 +349,7 @@ function Next() {
               "#C50E82",
               "#AD1374",
             ],
-          },
+          }, */
         }}
         withNormalizeCSS
         withGlobalStyles

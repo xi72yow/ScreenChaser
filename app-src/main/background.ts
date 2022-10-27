@@ -15,7 +15,7 @@ if (isProd) {
 
   const mainWindow = createWindow("main", {
     width: 800,
-    height: 600,
+    height: 700,
   });
 
   mainWindow.setMenuBarVisibility(false);

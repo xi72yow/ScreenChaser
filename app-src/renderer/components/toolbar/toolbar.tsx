@@ -2,7 +2,7 @@ import { ActionIcon, Button, createStyles, Footer, Group } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import { IconBulb } from "@tabler/icons";
 import React from "react";
-import { ConfigInterface, db } from "../database/db";
+import { ConfigInterface, db, updateConfig } from "../database/db";
 import useStyles from "../styles/styles";
 import GlobalSettings from "./globalSettings";
 
@@ -10,9 +10,15 @@ type ToolbarProps = {
   taskCode: string;
   selectedDevice: number;
   configs: Array<ConfigInterface>;
+  form: any;
 };
 
-export default function Toolbar({ taskCode }: ToolbarProps) {
+export default function Toolbar({
+  form,
+  taskCode,
+  selectedDevice,
+  configs,
+}: ToolbarProps) {
   const { classes } = useStyles();
 
   return (
@@ -46,14 +52,28 @@ export default function Toolbar({ taskCode }: ToolbarProps) {
           {taskCode !== "dashboard" && taskCode !== "chaser" && (
             <Button
               onClick={() => {
+                const currentFormConfig = form.values[taskCode];
+                console.log(
+                  "🚀 ~ file: toolbar.tsx ~ line 56 ~ currentFormConfig",
+                  currentFormConfig
+                );
+                updateConfig(selectedDevice + 1, {
+                  task: { taskCode },
+                  [taskCode]: currentFormConfig,
+                });
+
                 showNotification({
-                  title: "Default notification",
-                  message: "Hey there, your code is awesome! 🤥",
+                  title: "Changed task",
+                  message:
+                    "Changing Config for " +
+                    taskCode +
+                    " on Device " +
+                    configs[selectedDevice].device.ip,
                 });
               }}
               leftIcon={<IconBulb size={14} />}
             >
-              Lights On
+              Lights On and Save
             </Button>
           )}
         </Group>
