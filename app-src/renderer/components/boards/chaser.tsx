@@ -138,70 +138,74 @@ export default function Chaser({ form, selectedDevice }: ChaserProps) {
   }
 
   function processCtxData() {
-    const canvas = document.getElementById("chaser_canvas");
-    const video = document.getElementById("chaser_video");
+    try {
+      const canvas = document.getElementById("chaser_canvas");
+      const video = document.getElementById("chaser_video");
 
-    const neoPixelCount = form.values.device.neoPixelCount;
+      const neoPixelCount = form.values.device.neoPixelCount;
 
-    /* @ts-ignore */
-    const width = video.videoWidth;
-    /* @ts-ignore */
-    const height = video.videoHeight;
+      /* @ts-ignore */
+      const width = video.videoWidth;
+      /* @ts-ignore */
+      const height = video.videoHeight;
 
-    // set the canvas to the dimensions of the video feed
-    /* @ts-ignore */
-    canvas.width = width;
-    /* @ts-ignore */
-    canvas.height = height;
+      // set the canvas to the dimensions of the video feed
+      /* @ts-ignore */
+      canvas.width = width;
+      /* @ts-ignore */
+      canvas.height = height;
 
-    // make the snapshot
-    /* @ts-ignore */
-    let ctx = canvas.getContext("2d");
-    ctx.drawImage(video, 0, 0, width, height);
-    let frame = ctx.getImageData(0, 0, width, height);
+      // make the snapshot
+      /* @ts-ignore */
+      let ctx = canvas.getContext("2d");
+      ctx.drawImage(video, 0, 0, width, height);
+      let frame = ctx.getImageData(0, 0, width, height);
 
-    //interresting pixels at the top and bottom
-    const averagePixelHeight = (0.2 * height) | 0;
-    const averagePixelWidth = width / neoPixelCount;
-    const importentTestPixel = averagePixelHeight * width;
+      //interresting pixels at the top and bottom
+      const averagePixelHeight = (0.2 * height) | 0;
+      const averagePixelWidth = width / neoPixelCount;
+      const importentTestPixel = averagePixelHeight * width;
 
-    //console.log("Weite je neopix: " + averagePixelWidth)
-    //console.log("importentTestPixel: " + importentTestPixel)
+      //console.log("Weite je neopix: " + averagePixelWidth)
+      //console.log("importentTestPixel: " + importentTestPixel)
 
-    const neopixels = new Array(neoPixelCount * 4).fill(0);
-    // for the top of the screen
-    //for (let i = 0; i < importentTestPixel / 4; i++)
-    // for the bottom of the screen
-    for (
-      let i = frame.data.length / 4 - importentTestPixel;
-      i < frame.data.length / 4;
-      i = i + 15
-    ) {
-      let currentNeoPix = ((i % width) / averagePixelWidth) | 0;
+      const neopixels = new Array(neoPixelCount * 4).fill(0);
+      // for the top of the screen
+      //for (let i = 0; i < importentTestPixel / 4; i++)
+      // for the bottom of the screen
+      for (
+        let i = frame.data.length / 4 - importentTestPixel;
+        i < frame.data.length / 4;
+        i = i + 15
+      ) {
+        let currentNeoPix = ((i % width) / averagePixelWidth) | 0;
 
-      let r = frame.data[i * 4 + 0];
-      neopixels[currentNeoPix * 4 + 0] = neopixels[currentNeoPix * 4 + 0] + r;
+        let r = frame.data[i * 4 + 0];
+        neopixels[currentNeoPix * 4 + 0] = neopixels[currentNeoPix * 4 + 0] + r;
 
-      let g = frame.data[i * 4 + 1];
-      neopixels[currentNeoPix * 4 + 1] = neopixels[currentNeoPix * 4 + 1] + g;
+        let g = frame.data[i * 4 + 1];
+        neopixels[currentNeoPix * 4 + 1] = neopixels[currentNeoPix * 4 + 1] + g;
 
-      let b = frame.data[i * 4 + 2];
-      neopixels[currentNeoPix * 4 + 2] = neopixels[currentNeoPix * 4 + 2] + b;
+        let b = frame.data[i * 4 + 2];
+        neopixels[currentNeoPix * 4 + 2] = neopixels[currentNeoPix * 4 + 2] + b;
 
-      // pixel counter for average neopixel do not need alpha
-      neopixels[currentNeoPix * 4 + 3] = neopixels[currentNeoPix * 4 + 3] + 1;
+        // pixel counter for average neopixel do not need alpha
+        neopixels[currentNeoPix * 4 + 3] = neopixels[currentNeoPix * 4 + 3] + 1;
+      }
+
+      let stripe = [];
+
+      for (let i = 0; i < 113; i++) {
+        let count = neopixels[i * 4 + 3];
+        stripe[i] =
+          rgbToHex((neopixels[i * 4 + 0] / count) | 0) +
+          rgbToHex((neopixels[i * 4 + 1] / count) | 0) +
+          rgbToHex((neopixels[i * 4 + 2] / count) | 0);
+      }
+      return stripe;
+    } catch (e) {
+      handleError(e);
     }
-
-    let stripe = [];
-
-    for (let i = 0; i < 113; i++) {
-      let count = neopixels[i * 4 + 3];
-      stripe[i] =
-        rgbToHex((neopixels[i * 4 + 0] / count) | 0) +
-        rgbToHex((neopixels[i * 4 + 1] / count) | 0) +
-        rgbToHex((neopixels[i * 4 + 2] / count) | 0);
-    }
-    return stripe;
   }
 
   function handleStream(stream) {
@@ -211,7 +215,12 @@ export default function Chaser({ form, selectedDevice }: ChaserProps) {
   }
 
   function handleError(e) {
-    console.log(e);
+    showNotification({
+      title: "Chaser Error",
+      message: JSON.stringify(e),
+      color: "red",
+    });
+    clearInterval(caserInterval.current);
   }
 
   const items = sources.map((item) => {

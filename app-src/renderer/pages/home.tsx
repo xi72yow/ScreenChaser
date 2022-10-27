@@ -96,7 +96,7 @@ function App() {
 
   const form = useForm({ initialValues: { ...initilalValues } });
 
-/*   useEffect(() => {
+  /*   useEffect(() => {
     console.log(form.values);
   }, [form]); */
 
@@ -109,17 +109,11 @@ function App() {
   }, [taskCode]);
 
   useEffect(() => {
-    console.log(
-      "🚀 ~ file: home.tsx ~ line 40 ~ App ~ DataEmittersRef",
-      DataEmittersRef,
-      IntervalsRef,
-      EffectsRef
-    );
+    IntervalsRef.current.forEach((interval) => clearInterval(interval));
 
     if (configs) {
       form.reset();
       form.setValues({ ...configs[selectedDevice] });
-      IntervalsRef.current.forEach((interval) => clearInterval(interval));
 
       configs.forEach((config, i) => {
         if (

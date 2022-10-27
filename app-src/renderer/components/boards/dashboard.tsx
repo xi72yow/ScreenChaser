@@ -106,7 +106,7 @@ export function StatsGrid({ data }: StatsGridProps) {
         cols={2}
         breakpoints={[
           { maxWidth: "md", cols: 6 },
-          { maxWidth: "xs", cols: 2 },
+          { maxWidth: "xs", cols: 12 },
         ]}
       >
         {stats}
