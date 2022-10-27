@@ -25,7 +25,12 @@ import DyingLightsForm from "../components/forms/dyingLightsForm";
 import SnakeForm from "../components/forms/snakeForm";
 import Dashboard from "../components/boards/dashboard";
 import Chaser from "../components/boards/chaser";
-import { useHotkeys, useInterval, useLocalStorage } from "@mantine/hooks";
+import {
+  useHotkeys,
+  useInterval,
+  useLocalStorage,
+  useSetState,
+} from "@mantine/hooks";
 
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, initilalValues, updateConfig } from "../components/database/db";
@@ -41,6 +46,7 @@ import FrostyPike from "../components/effects_build/frostyPike";
 import DyingLights from "../components/effects_build/dyingLights";
 import Snake from "../components/effects_build/snake";
 import StaticLightForm from "../components/forms/staticLightForm";
+import setAll from "../components/effects_build/basics/setAll";
 
 function prepareBaseStipe(stripeFromUi) {
   return stripeFromUi.map((color) => color.replace("#", ""));
@@ -105,6 +111,15 @@ function App() {
       interval.start();
     } else {
       interval.stop();
+    }
+
+    if (taskCode === "shutdown") {
+      IntervalsRef.current.forEach((interval) => clearInterval(interval));
+      configs.forEach((config, index) => {
+        DataEmittersRef.current[index].emit(
+          setAll(0, 0, 0, config.device.neoPixelCount)
+        );
+      });
     }
   }, [taskCode]);
 
@@ -240,6 +255,7 @@ function App() {
           form={form}
           configs={configs}
           taskCode={taskCode}
+          setTaskCode={setTaskCode}
           selectedDevice={selectedDevice}
         ></Toolbar>
       }
@@ -317,6 +333,9 @@ function App() {
                 form={form}
               ></StaticLightForm>
             );
+
+          case "shutdown":
+            return <></>;
 
           default:
             return <h1>work in progress</h1>;
