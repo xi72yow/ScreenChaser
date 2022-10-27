@@ -131,6 +131,13 @@ class DataEmitter {
       return;
     }
 
+    if (!pixelArray) {
+      console.log(
+        "upps something went wrong: pixelArray is not defined or empty"
+      );
+      return;
+    }
+
     const hexColorStrip = [];
     let pixelUDPframe = "";
     this.currentPixelArray = [...pixelArray];
