@@ -102,15 +102,7 @@ export function StatsGrid({ data }: StatsGridProps) {
   });
   return (
     <div className={classes.root}>
-      <SimpleGrid
-        cols={2}
-        breakpoints={[
-          { maxWidth: "md", cols: 6 },
-          { maxWidth: "xs", cols: 12 },
-        ]}
-      >
-        {stats}
-      </SimpleGrid>
+      <SimpleGrid cols={2}>{stats}</SimpleGrid>
     </div>
   );
 }
