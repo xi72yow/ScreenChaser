@@ -1,5 +1,11 @@
-import React, { useEffect } from "react";
-import { AppShell, Button, Text } from "@mantine/core";
+import React, { useEffect, useRef, useState } from "react";
+import {
+  AppShell,
+  Button,
+  ColorScheme,
+  ColorSchemeProvider,
+  Text,
+} from "@mantine/core";
 import NavbarNested from "../components/navbar/navbar";
 import HeaderApp from "../components/header/header";
 import MeteorRainForm from "../components/forms/meteorRainForm";
@@ -18,19 +24,47 @@ import DyingLightsForm from "../components/forms/dyingLightsForm";
 import SnakeForm from "../components/forms/snakeForm";
 import Dashboard from "../components/boards/dashboard";
 import Chaser from "../components/boards/chaser";
-import { useLocalStorage } from "@mantine/hooks";
+import { useHotkeys, useLocalStorage } from "@mantine/hooks";
 
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, initilalValues, updateConfig } from "../components/database/db";
+import Toolbar from "../components/toolbar/toolbar";
+import DataEmitter from "../components/effects_build/network/dataEmitter";
 
 function App() {
-  const devicesc = [
-    { ip: "192.125.122.132", name: "Tisch", neoPixelCount: 113 },
-    { ip: "123.111.123.100", name: "PC", neoPixelCount: 45 },
-  ];
-
-  const [selectedDevice, setSelectedDevice] = React.useState(1);
+  const [selectedDevice, setSelectedDevice] = React.useState<any>(0);
   const [taskCode, setTaskCode] = React.useState("dashboard");
+
+  const DataEmitterRef = useRef<any>([]);
+
+  const configs = useLiveQuery(async () => {
+    return await db.configs.toArray();
+  });
+
+  const form = useForm({ initialValues: { ...initilalValues } });
+
+  useEffect(() => {
+    console.log(form.values);
+  }, [form]);
+
+  useEffect(() => {
+    if (configs) {
+      form.reset();
+      form.setValues({ ...configs[selectedDevice] });
+      configs.forEach((config, i) => {
+        if (
+          config.device.ip !== DataEmitterRef.current[i]?.getIp() ||
+          !DataEmitterRef.current[i]
+        )
+          DataEmitterRef.current[i] = new DataEmitter(false, config.device.ip);
+        console.log(DataEmitterRef.current);
+      });
+    }
+  }, [configs, selectedDevice]);
+
+  if (!configs) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <AppShell
@@ -47,6 +81,13 @@ function App() {
           setSelectedDevice={setSelectedDevice}
         ></HeaderApp>
       }
+      footer={
+        <Toolbar
+          configs={configs}
+          taskCode={taskCode}
+          selectedDevice={selectedDevice}
+        ></Toolbar>
+      }
       styles={(theme) => ({
         main: {
           backgroundColor:
@@ -56,7 +97,7 @@ function App() {
         },
       })}
     >
-      {/*    {(() => {
+      {(() => {
         switch (taskCode) {
           case "dashboard":
             return (
@@ -75,34 +116,42 @@ function App() {
           case "meteorRain":
             return (
               <MeteorRainForm
+                form={form}
                 key={selectedDevice + "meteorRain"}
               ></MeteorRainForm>
             );
           case "bouncingBalls":
             return (
               <BouncingBallsForm
+                form={form}
                 key={selectedDevice + "bouncingBalls"}
               ></BouncingBallsForm>
             );
           case "fireFlame":
             return (
-              <FireFlameForm key={selectedDevice + "fireFlame"}></FireFlameForm>
+              <FireFlameForm
+                form={form}
+                key={selectedDevice + "fireFlame"}
+              ></FireFlameForm>
             );
           case "colorWheel":
             return (
               <ColorWheelForm
+                form={form}
                 key={selectedDevice + "colorWheel"}
               ></ColorWheelForm>
             );
           case "frostyPike":
             return (
               <FrostyPikeForm
+                form={form}
                 key={selectedDevice + "frostyPike"}
               ></FrostyPikeForm>
             );
           case "dyingLights":
             return (
               <DyingLightsForm
+                form={form}
                 key={selectedDevice + "dyingLights"}
               ></DyingLightsForm>
             );
@@ -117,73 +166,69 @@ function App() {
           default:
             return <h1>work in progress</h1>;
         }
-      })()} */}
-      {taskCode !== "dashboard" && taskCode !== "chaser" && (
-        <Button
-          sx={{
-            float: "right",
-            marginTop: "20px",
-            position: "absolute",
-            bottom: "20px",
-            left: "320px",
-          }}
-          onClick={() => {
-            showNotification({
-              title: "Default notification",
-              message: "Hey there, your code is awesome! 🤥",
-            });
-          }}
-          leftIcon={<IconBulb size={14} />}
-        >
-          Lights On
-        </Button>
-      )}
+      })()}
     </AppShell>
   );
 }
 
 function Next() {
+  const [colorScheme, setColorScheme] = useLocalStorage<ColorScheme>({
+    key: "mantine-color-scheme",
+    defaultValue: "light",
+    getInitialValueInEffect: true,
+  });
+
+  const toggleColorScheme = (value?: ColorScheme) =>
+    setColorScheme(value || (colorScheme === "dark" ? "light" : "dark"));
+
+  useHotkeys([["mod+J", () => toggleColorScheme()]]);
+
   return (
-    <MantineProvider
-      theme={{
-        colorScheme: "light",
-        fontFamily: "Greycliff CF, sans-serif",
-        colors: {
-          dark: [
-            "#7AD1DD",
-            "#5FCCDB",
-            "#44CADC",
-            "#2AC9DE",
-            "#1AC2D9",
-            "#11B7CD",
-            "#09ADC3",
-            "#0E99AC",
-            "#128797",
-            "#147885",
-          ],
-          "bright-pink": [
-            "#F0BBDD",
-            "#ED9BCF",
-            "#EC7CC3",
-            "#ED5DB8",
-            "#F13EAF",
-            "#F71FA7",
-            "#FF00A1",
-            "#E00890",
-            "#C50E82",
-            "#AD1374",
-          ],
-        },
-      }}
-      withNormalizeCSS
-      withGlobalStyles
+    <ColorSchemeProvider
+      colorScheme={colorScheme}
+      toggleColorScheme={toggleColorScheme}
     >
-      <NotificationsProvider>
-        <ModalsProvider>
-          <App />
-        </ModalsProvider>
-      </NotificationsProvider>
-    </MantineProvider>
+      <MantineProvider
+        theme={{
+          colorScheme,
+          fontFamily: "Greycliff CF, sans-serif",
+          colors: {
+            dark: [
+              "#21222c",
+              "#414558",
+              "#a7abbe",
+              "#2AC9DE",
+              "#1AC2D9",
+              "#11B7CD",
+              "#09ADC3",
+              "#0E99AC",
+              "#128797",
+              "#147885",
+            ],
+            "bright-pink": [
+              "#F0BBDD",
+              "#ED9BCF",
+              "#EC7CC3",
+              "#ED5DB8",
+              "#F13EAF",
+              "#F71FA7",
+              "#FF00A1",
+              "#E00890",
+              "#C50E82",
+              "#AD1374",
+            ],
+          },
+        }}
+        withNormalizeCSS
+        withGlobalStyles
+      >
+        <NotificationsProvider position="top-center">
+          <ModalsProvider>
+            <App />
+          </ModalsProvider>
+        </NotificationsProvider>
+      </MantineProvider>
+    </ColorSchemeProvider>
   );
 }
 

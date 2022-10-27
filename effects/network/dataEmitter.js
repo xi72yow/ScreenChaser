@@ -58,6 +58,10 @@ class DataEmitter {
     return this.xSlaves;
   }
 
+  getIp() {
+    return this.ipaddr;
+  }
+
   /**
    * returns an array with arrays of the given size
    *

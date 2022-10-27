@@ -15,9 +15,7 @@ import { showNotification } from "@mantine/notifications";
 import { useLiveQuery } from "dexie-react-hooks";
 import { addConfig, db, updateConfig } from "../database/db";
 
-interface scanNetworkModalProps {
-  selectedDevice: any;
-}
+interface scanNetworkModalProps {}
 
 const IdentifyColors = {
   "0": { name: "gray", color: { r: 50, g: 50, b: 50 } },
@@ -73,12 +71,9 @@ function DeviceRow({ device, configs, i }) {
   );
 }
 
-export default function ScanNetworkModal({
-  selectedDevice,
-}: scanNetworkModalProps) {
+export default function ScanNetworkModal({}: scanNetworkModalProps) {
   const [open, setOpen] = useState(false);
   const [scanning, setScanning] = useState(false);
-  const [newDevices, setNewDevices] = useState(0);
   const initialScan = useRef(true);
 
   const configs = useLiveQuery(async () => {
@@ -99,6 +94,7 @@ export default function ScanNetworkModal({
   }
 
   function checkForNewDevices(old, newDevices) {
+    let newConfigs = [];
     newDevices.forEach((newD, index, array) => {
       old.findIndex((old, index, array) => {
         return old.ip === newD.ip;
@@ -115,30 +111,29 @@ export default function ScanNetworkModal({
         newD.neoPixelCount = 60;
 
         addConfig({ device: { ...newD } }).then((value) => {
-          setNewDevices((old) => old + 1);
+          newConfigs.push({ device: { ...newD } });
           showNotification({
             title: "Chaser Notification",
             message: `I found a new device: ${newD.ip}`,
           });
         });
-      } else {
-        showNotification({
-          title: "Chaser Notification",
-          message: `No new devices found`,
-        });
       }
     });
+    if (newConfigs.length === 0) {
+      showNotification({
+        title: "Chaser Notification",
+        message: `No new devices found`,
+      });
+    }
   }
 
   function sendIdentifyColor() {
     configs.forEach(({ device }, index, array) => {
-      if (device.new) {
-        const DataEmitterForIP = new DataEmitter(false, device.ip);
-        const rgb = IdentifyColors[index].color;
-        DataEmitterForIP.emit(
-          setAll(rgb.r, rgb.g, rgb.b, device.neoPixelCount || 60)
-        );
-      }
+      const DataEmitterForIP = new DataEmitter(false, device.ip);
+      const rgb = IdentifyColors[index].color;
+      DataEmitterForIP.emit(
+        setAll(rgb.r, rgb.g, rgb.b, device.neoPixelCount || 60)
+      );
     });
   }
 
@@ -171,7 +166,7 @@ export default function ScanNetworkModal({
         onClose={() => {
           setOpen(false);
         }}
-        title="Scan Network"
+        title="Device Configuration"
       >
         <Table sx={{ marginBottom: "1.5rem" }}>
           <thead>
@@ -208,7 +203,12 @@ export default function ScanNetworkModal({
       </Modal>
       <Indicator
         dot={scanning}
-        label={newDevices}
+        label={configs.reduce(
+          (previousValue, currentValue, currentIndex, array) => {
+            return currentValue.device.new ? previousValue + 1 : previousValue;
+          },
+          0
+        )}
         inline
         size={22}
         position="bottom-end"

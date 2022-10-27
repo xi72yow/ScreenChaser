@@ -51,7 +51,6 @@ export const initilalValues = {
       "#fab005",
       "#fd7e14",
     ],
-    taskCode: "dashboard",
   },
   chaser: { sourceId: "" },
   device: { name: "", ip: "", neoPixelCount: 42, new: false },
@@ -61,14 +60,14 @@ export interface MeteorRainInterface {
   meteorSize: number;
   meteorTrailDecay: number;
   meteorRandomDecay: number;
-  rainbow: Boolean;
+  rainbow: boolean;
   meteorColor: string;
 }
 
 export interface BouncingBallsInterface {
   ballMode: string;
-  mirrored: Boolean;
-  tail: Boolean;
+  mirrored: boolean;
+  tail: boolean;
   ballCount: number;
   baseStripe: string[];
 }
@@ -103,7 +102,7 @@ export interface DeviceInterface {
   ip: string;
   name: string;
   neoPixelCount: number;
-  new: Boolean;
+  new: boolean;
 }
 
 export interface ConfigInterface {

@@ -27,7 +27,9 @@ const useStyles = createStyles((theme) => ({
     marginLeft: -theme.spacing.md,
     marginRight: -theme.spacing.md,
     backgroundColor:
-      theme.colorScheme === "dark" ? theme.colors.dark[7] : theme.colors.gray[0],
+      theme.colorScheme === "dark"
+        ? theme.colors.dark[7]
+        : theme.colors.gray[0],
   },
 
   linksInner: {
@@ -36,8 +38,8 @@ const useStyles = createStyles((theme) => ({
   },
 
   footer: {
-    marginLeft: -theme.spacing.md,
-    marginRight: -theme.spacing.md,
+   /*  paddingLeft: theme.spacing.md,
+    paddingRight: theme.spacing.md, */
     borderTop: `1px solid ${
       theme.colorScheme === "dark" ? theme.colors.dark[4] : theme.colors.gray[3]
     }`,

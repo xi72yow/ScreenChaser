@@ -6,24 +6,15 @@ import {
   Button,
   useMantineTheme,
   Text,
-  ActionIcon,
-  Indicator,
   Badge,
 } from "@mantine/core";
-import {
-  IconChevronDown,
-  IconCpu,
-  IconCpu2,
-  IconDeviceFloppy,
-} from "@tabler/icons";
+import { IconChevronDown, IconCpu, IconCpu2 } from "@tabler/icons";
 
 import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
-import QuantityInput from "../forms/inputs/number";
 import Logo from "../styles/Logo.js";
-import { showNotification } from "@mantine/notifications";
 import ScanNetworkModal from "../modale/scanNetworkModal";
 import { useLiveQuery } from "dexie-react-hooks";
-import { db, addConfig, updateConfig } from "../database/db";
+import { db } from "../database/db";
 
 interface HeaderAppProps {
   setSelectedDevice: Dispatch<SetStateAction<Number>>;
@@ -119,42 +110,7 @@ export default function HeaderApp({
             </Menu.Target>
             <Menu.Dropdown>{items}</Menu.Dropdown>
           </Menu>
-
-          {/*  <ActionIcon
-                onClick={() => {
-              const configsEdit = structuredClone(configs);
-
-              const index = configsEdit.configs.findIndex(
-                (config, index, array) => {
-                  return config.device.ip === form.values.device?.ip;
-                }
-              );
-
-              if (index > -1) {
-                configsEdit.configs[index] = { ...form.values };
-              } else {
-                configsEdit.configs.push({ ...form.values });
-              }
-              if (form.values.device?.ip === "") {
-                showNotification({
-                  title: "Configs not saved",
-                  message: `The configs were not saved because the device IP is not set`,
-                  typeof: "error",
-                });
-              } else {
-                setConfigs({ ...configsEdit });
-                showNotification({
-                  title: "Configs saved",
-                  message: `The configs were saved successfully for ${form.values.device?.ip}`,
-                });
-              }
-            }}
-            variant="filled"
-              sx={{ height: 40, width: 40 }}
-          >
-            <IconDeviceFloppy size={18} stroke={1.5} />
-          </ActionIcon> */}
-          <ScanNetworkModal selectedDevice={selectedDevice}></ScanNetworkModal>
+          <ScanNetworkModal></ScanNetworkModal>
         </Group>
       </Group>
     </Header>
