@@ -5,7 +5,12 @@ import {
   useMantineTheme,
 } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
-import { IconSun, IconMoonStars, IconPower } from "@tabler/icons";
+import {
+  IconSun,
+  IconMoonStars,
+  IconPower,
+  IconInfoCircle,
+} from "@tabler/icons";
 import React from "react";
 
 type Props = { setLightsOff: any };
@@ -16,6 +21,19 @@ export default function GlobalSettings({ setLightsOff }: Props) {
 
   return (
     <Group position="center" my="xl" sx={{ paddingLeft: theme.spacing.md }}>
+      {/*       <ActionIcon
+        onClick={() => {}}
+        size="lg"
+        sx={(theme) => ({
+          backgroundColor:
+            theme.colorScheme === "dark"
+              ? theme.colors.dark[6]
+              : theme.colors.gray[0],
+          color: theme.colors.gray[5],
+        })}
+      >
+        <IconInfoCircle size={18} />
+      </ActionIcon> */}
       <ActionIcon
         onClick={() => toggleColorScheme()}
         size="lg"
@@ -52,10 +70,18 @@ export default function GlobalSettings({ setLightsOff }: Props) {
                 return !bool;
               });
             },
+
             sx: { cursor: "pointer" },
           });
         }}
         size="lg"
+        sx={(theme) => ({
+          backgroundColor:
+            theme.colorScheme === "dark"
+              ? theme.colors.dark[6]
+              : theme.colors.gray[0],
+          color: theme.colors.red[5],
+        })}
       >
         <IconPower size={18} />
       </ActionIcon>

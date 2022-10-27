@@ -41,6 +41,7 @@ const useStyles = createStyles((theme) => ({
     paddingLeft: 31,
     marginLeft: 30,
     fontSize: theme.fontSizes.sm,
+    cursor: "pointer",
     color:
       theme.colorScheme === "dark"
         ? theme.colors.dark[0]

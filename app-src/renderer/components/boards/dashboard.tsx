@@ -1,5 +1,6 @@
 import React from "react";
 import {
+  Badge,
   Box,
   createStyles,
   Group,
@@ -108,7 +109,7 @@ export function StatsGrid({ data }: StatsGridProps) {
 }
 
 interface DashboardProps {
-  data: { details: any; title: string }[];
+  data: { details: any; title: string; task: string }[];
 }
 
 export default function Dashboard({ data }: DashboardProps) {
@@ -117,9 +118,14 @@ export default function Dashboard({ data }: DashboardProps) {
       {data &&
         data.map((item) => (
           <Box key={item.title}>
-            <Text size="xl" mt={4} mb={1} weight={900}>
-              {item.title}:
-            </Text>
+            <Group position="apart">
+              <Text size="xl" mt={4} mb={1} weight={900}>
+                {item.title}:
+              </Text>
+              <Badge color={item.task ? "lime" : "grape"} size="sm">
+                {item.task || "nothing to do"}
+              </Badge>
+            </Group>
             <StatsGrid data={item.details} />
           </Box>
         ))}
