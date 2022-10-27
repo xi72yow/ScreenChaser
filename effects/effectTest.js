@@ -27,7 +27,7 @@ const FireFlameEffect = new FireFlame(150, 30, 120);
 const BouncingBallsEffect = new BouncingBalls(255, false, 10, 3, 120);
 const ColorWheelEffect = new ColorWheel(2, 120);
 const FrostyPikeEffect = new FrostyPike(createExampleStripe(120), 5, 120); */
-const SnakeEffect = new Snake({
+/* const SnakeEffect = new Snake({
   neopixelCount: 113,
   maxSnakeSize: 20,
   red: 12,
@@ -36,6 +36,17 @@ const SnakeEffect = new Snake({
   appleCount: 5,
   speed: 1,
   rainbow: true,
+}); */
+
+const MeteorRainEffect = new MeteorRain({
+  red: 155,
+  green: 3,
+  blue: 255,
+  meteorSize: 10,
+  meteorTrailDecay: 64,
+  meteorRandomDecay: 10,
+  rainbow: false,
+  neopixelCount: 120,
 });
 
 async function main() {
@@ -47,7 +58,7 @@ async function main() {
       DataEmitterForIP.logHealth();
       DataEmitterForIP.logMaxPower();
     }
-    DataEmitterForIP.emit(SnakeEffect.render());
+    DataEmitterForIP.emit(MeteorRainEffect.render());
   }, 110);
 }
 

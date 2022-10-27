@@ -2,6 +2,7 @@ const random = require("./basics/random");
 const setAll = require("./basics/setAll");
 const setPixel = require("./basics/setPixel");
 const { hsvToRgb, rgbToHsv } = require("./basics/convertHsvRgb");
+const { hexToRgb } = require("./basics/convertRgbHex");
 
 class MeteorRain {
   constructor(options) {
@@ -29,12 +30,11 @@ class MeteorRain {
 
   fadeToBlack(pixel, stripe, fadeValue) {
     const oldColor = stripe[pixel];
-    let r = parseInt(oldColor.slice(0, 2), 16);
-    let g = parseInt(oldColor.slice(2, 4), 16);
-    let b = parseInt(oldColor.slice(4, 6), 16);
-    r = r <= 10 ? 0 : r - fadeValue;
-    g = g <= 10 ? 0 : g - fadeValue;
-    b = b <= 10 ? 0 : b - fadeValue;
+    let { r, g, b } = hexToRgb(oldColor);
+
+    r = r - fadeValue <= fadeValue ? 0 : r - fadeValue;
+    g = r - fadeValue <= fadeValue ? 0 : g - fadeValue;
+    b = r - fadeValue <= fadeValue ? 0 : b - fadeValue;
     return setPixel(pixel, stripe, r, g, b);
   }
 
