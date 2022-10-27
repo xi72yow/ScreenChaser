@@ -8,15 +8,15 @@ import {
   TextInput,
 } from "@mantine/core";
 import { IconRefresh, IconFocus2, IconAccessPoint } from "@tabler/icons";
-import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import DataEmitter from "../effects_build/network/dataEmitter.js";
 import setAll from "../effects_build/basics/setAll.js";
 import { showNotification } from "@mantine/notifications";
+import { useLiveQuery } from "dexie-react-hooks";
+import { addConfig, db, updateConfig } from "../database/db";
 
 interface scanNetworkModalProps {
-  form: any;
-  setDevices: Dispatch<SetStateAction<any[]>>;
-  devices: any[];
+  selectedDevice: any;
 }
 
 const IdentifyColors = {
@@ -30,27 +30,70 @@ const IdentifyColors = {
   "7": { name: "white", color: { r: 255, g: 255, b: 255 } },
 };
 
-export default function ScanNetworkModal({
-  form,
-  setDevices,
-  devices,
-}: scanNetworkModalProps) {
-  console.log("🚀 ~ file: scanNetworkModal.tsx ~ line 28 ~ devices", devices);
+function DeviceRow({ device, configs, i }) {
+  return (
+    device.ip && (
+      <tr style={{ height: "3rem" }}>
+        <td>{device.new ? <Indicator>{device.ip}</Indicator> : device.ip}</td>
+        <td>
+          <TextInput
+            width={"75px"}
+            type="string"
+            value={configs[i].device.name}
+            onChange={(e) => {
+              updateConfig(i + 1, {
+                device: {
+                  ...configs[i].device,
+                  name: e.currentTarget.value,
+                  new: false,
+                },
+              });
+            }}
+          ></TextInput>{" "}
+        </td>
+        <td>{IdentifyColors[i].name}</td>
 
+        <td>
+          <TextInput
+            width={"75px"}
+            type="number"
+            value={configs[i].device.neoPixelCount}
+            onChange={(e) => {
+              updateConfig(i + 1, {
+                device: {
+                  ...configs[i].device,
+                  neoPixelCount: parseInt(e.currentTarget.value) || "",
+                },
+              });
+            }}
+          ></TextInput>
+        </td>
+      </tr>
+    )
+  );
+}
+
+export default function ScanNetworkModal({
+  selectedDevice,
+}: scanNetworkModalProps) {
   const [open, setOpen] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [newDevices, setNewDevices] = useState(0);
+  const initialScan = useRef(true);
+
+  const configs = useLiveQuery(async () => {
+    return await db.configs.toArray();
+  }, []);
 
   function scanNetwork() {
     setScanning(true);
     const DataEmitterForIP = new DataEmitter(false);
     DataEmitterForIP.init().then((value) => {
       const detectedDevices = DataEmitterForIP.getSlaves();
-      console.log(
-        "🚀 ~ file: scanNetworkModal.tsx ~ line 30 ~ DataEmitterForIP.init ~ detectedDevices",
+      checkForNewDevices(
+        configs.map((conf) => conf.device),
         detectedDevices
       );
-      checkForNewDevices(devices, detectedDevices);
       setScanning(false);
     });
   }
@@ -66,11 +109,17 @@ export default function ScanNetworkModal({
         }) === -1
       ) {
         newD.new = true;
-        setDevices((old) => [...old, newD]);
-        setNewDevices((old) => old + 1);
-        showNotification({
-          title: "Chaser Notification",
-          message: `I found a new device: ${newD.ip}`,
+        delete newD.type;
+        delete newD.port;
+        newD.name = "";
+        newD.neoPixelCount = 60;
+
+        addConfig({ device: { ...newD } }).then((value) => {
+          setNewDevices((old) => old + 1);
+          showNotification({
+            title: "Chaser Notification",
+            message: `I found a new device: ${newD.ip}`,
+          });
         });
       } else {
         showNotification({
@@ -82,8 +131,7 @@ export default function ScanNetworkModal({
   }
 
   function sendIdentifyColor() {
-    devices.forEach((device, index, array) => {
-      console.log("🚀 ~ file: scanNetworkModal.tsx ~ line 70 ~ device", device);
+    configs.forEach(({ device }, index, array) => {
       if (device.new) {
         const DataEmitterForIP = new DataEmitter(false, device.ip);
         const rgb = IdentifyColors[index].color;
@@ -95,45 +143,24 @@ export default function ScanNetworkModal({
   }
 
   useEffect(() => {
-    scanNetwork();
-  }, []);
+    if (configs && initialScan.current) {
+      scanNetwork();
+      initialScan.current = false;
+    }
+  }, [configs]);
 
-  const rows = devices.map(
-    (device, i) =>
-      device.ip && (
-        <tr key={device.ip + devices.length} style={{ height: "3rem" }}>
-          <td>{device.new ? <Indicator>{device.ip}</Indicator> : device.ip}</td>
-          <td>
-            <TextInput
-              width={"75px"}
-              type="string"
-              value={devices[i].name}
-              onChange={(e) => {
-                setDevices((old) => {
-                  old[i].name = e.target.value;
-                  return [...old];
-                });
-              }}
-            ></TextInput>{" "}
-          </td>
-          <td>{IdentifyColors[i].name}</td>
+  if (configs === undefined) {
+    return <div>Loading...</div>;
+  }
 
-          <td>
-            <TextInput
-              width={"75px"}
-              type="number"
-              value={devices[i].neoPixelCount}
-              onChange={(e) => {
-                setDevices((old) => {
-                  old[i].neoPixelCount = e.target.value;
-                  return [...old];
-                });
-              }}
-            ></TextInput>
-          </td>
-        </tr>
-      )
-  );
+  const rows = configs.map(({ device }, i) => (
+    <DeviceRow
+      key={device.ip + configs.length}
+      device={device}
+      configs={configs}
+      i={i}
+    />
+  ));
 
   return (
     <React.Fragment>

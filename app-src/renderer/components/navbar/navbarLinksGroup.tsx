@@ -78,7 +78,6 @@ interface LinksGroupProps {
   links?: { label: string; taskCode?: string }[];
   setTaskCode: (taskCode: string) => void;
   choosenTaskCode: string;
-  form: any;
 }
 
 export default function LinksGroup({
@@ -88,7 +87,6 @@ export default function LinksGroup({
   links,
   setTaskCode,
   taskCode,
-  form,
   choosenTaskCode,
 }: LinksGroupProps) {
   const { classes, theme } = useStyles();
@@ -105,7 +103,6 @@ export default function LinksGroup({
       }
       key={link.label}
       onClick={(event) => {
-        form.setFieldValue("device.runningTaskCode", link.taskCode);
         setTaskCode(link.taskCode);
         event.preventDefault();
       }}
@@ -121,8 +118,6 @@ export default function LinksGroup({
           setOpened((o) => !o);
           if (!hasLinks) {
             setTaskCode(taskCode);
-            if (taskCode !== "dashboard")
-              form.setFieldValue("device.runningTaskCode", taskCode);
           }
         }}
         className={

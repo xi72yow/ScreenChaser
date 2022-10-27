@@ -7,6 +7,8 @@ import {
   useMantineTheme,
   Text,
   ActionIcon,
+  Indicator,
+  Badge,
 } from "@mantine/core";
 import {
   IconChevronDown,
@@ -15,55 +17,59 @@ import {
   IconDeviceFloppy,
 } from "@tabler/icons";
 
-import React, { Dispatch, SetStateAction, useState } from "react";
+import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import QuantityInput from "../forms/inputs/number";
 import Logo from "../styles/Logo.js";
 import { showNotification } from "@mantine/notifications";
 import ScanNetworkModal from "../modale/scanNetworkModal";
+import { useLiveQuery } from "dexie-react-hooks";
+import { db, addConfig, updateConfig } from "../database/db";
 
 interface HeaderAppProps {
-  form: any;
-  setDevices: Dispatch<SetStateAction<any[]>>;
-  devices: { ip: string; name: string; neoPixelCount: number }[];
-  setConfigs: any;
-  configs: any;
   setSelectedDevice: Dispatch<SetStateAction<Number>>;
+  selectedDevice: any;
 }
 
 export default function HeaderApp({
-  devices,
-  setDevices,
-  form,
-  configs,
-  setConfigs,
   setSelectedDevice,
+  selectedDevice,
 }: HeaderAppProps) {
   const theme = useMantineTheme();
 
-  React.useEffect(() => {
-    form.setFieldValue("device.ip", devices[0]?.ip || "");
-    form.setFieldValue("device.name", devices[0]?.name || "");
-  }, []);
+  const configs = useLiveQuery(async () => {
+    return await db.configs.toArray();
+  });
 
-  const items = devices.map((item, i) => {
-    console.log("🚀 ~ file: header.tsx ~ line 50 ~ item", item);
+  if (!configs) {
+    return <div>Loading...</div>;
+  }
+
+  const items = configs.map(({ device }, i) => {
     return (
-      item.ip && (
+      device.ip && (
         <Menu.Item
-          key={item.ip}
+          key={device.ip}
           onClick={() => {
             setSelectedDevice(i);
-            form.setFieldValue("device.ip", item?.ip || "");
-            form.setFieldValue("device.name", item?.name || "");
           }}
           icon={<IconCpu size={16} color={theme.colors.blue[6]} stroke={1.5} />}
           rightSection={
             <Text size="xs" transform="uppercase" weight={700} color="dimmed">
-              {item.name || "No name"}
+              {device.name || "No name"}
             </Text>
           }
         >
-          {item.ip}
+          <Group position="left">
+            <Text size="sm" weight={900}>
+              {device.ip}
+            </Text>
+            <Badge
+              color={"blue"}
+              variant={theme.colorScheme === "dark" ? "light" : "outline"}
+            >
+              {device.neoPixelCount}
+            </Badge>
+          </Group>
         </Menu.Item>
       )
     );
@@ -97,29 +103,25 @@ export default function HeaderApp({
         }}
       >
         <Group>
-          <Menu transition="pop-top-right" position="top-end" width={220}>
+          <Menu transition="pop-top-right" position="top-end" width={300}>
             <Menu.Target>
               <Button
                 sx={{ height: 40 }}
                 rightIcon={<IconChevronDown size={18} stroke={1.5} />}
                 pr={12}
               >
-                {form.values.device?.name ||
-                  form.values.device?.ip ||
-                  "Choose Device"}
+                {`${
+                  configs[selectedDevice]?.device.name
+                    ? configs[selectedDevice]?.device.name
+                    : "New"
+                }@${configs[selectedDevice]?.device.ip}` || "Choose Device"}
               </Button>
             </Menu.Target>
             <Menu.Dropdown>{items}</Menu.Dropdown>
           </Menu>
-          <QuantityInput
-            sx={{ width: 69 }}
-            max={999}
-            form={form}
-            path="device.neoPixelCount"
-            defaultValue={form.values.device?.neopixelCount || 60}
-          ></QuantityInput>
-          <ActionIcon
-            onClick={() => {
+
+          {/*  <ActionIcon
+                onClick={() => {
               const configsEdit = structuredClone(configs);
 
               const index = configsEdit.configs.findIndex(
@@ -148,15 +150,11 @@ export default function HeaderApp({
               }
             }}
             variant="filled"
-            sx={{ height: 40, width: 40 }}
+              sx={{ height: 40, width: 40 }}
           >
             <IconDeviceFloppy size={18} stroke={1.5} />
-          </ActionIcon>
-          <ScanNetworkModal
-            form={form}
-            devices={devices}
-            setDevices={setDevices}
-          ></ScanNetworkModal>
+          </ActionIcon> */}
+          <ScanNetworkModal selectedDevice={selectedDevice}></ScanNetworkModal>
         </Group>
       </Group>
     </Header>

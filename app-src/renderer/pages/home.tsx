@@ -20,138 +20,17 @@ import Dashboard from "../components/boards/dashboard";
 import Chaser from "../components/boards/chaser";
 import { useLocalStorage } from "@mantine/hooks";
 
+import { useLiveQuery } from "dexie-react-hooks";
+import { db, initilalValues, updateConfig } from "../components/database/db";
+
 function App() {
   const devicesc = [
     { ip: "192.125.122.132", name: "Tisch", neoPixelCount: 113 },
     { ip: "123.111.123.100", name: "PC", neoPixelCount: 45 },
   ];
-  const [devices, setDevices] = React.useState([]);
-  const [selectedDevice, setSelectedDevice] = React.useState(0);
+
+  const [selectedDevice, setSelectedDevice] = React.useState(1);
   const [taskCode, setTaskCode] = React.useState("dashboard");
-  const [intervals, setIntervals] = React.useState([]);
-  const [configs, setConfigs] = useLocalStorage({
-    key: "ScreenChaserConfigs",
-    defaultValue: {
-      configs: [
-        {
-          meteorRain: {
-            meteorSize: 10,
-            meteorTrailDecay: 64,
-            meteorRandomDecay: 7,
-            rainbow: false,
-            meteorColor: "#9B03FF",
-          },
-          bouncingBalls: {
-            ballMode: "random",
-            mirrored: false,
-            tail: false,
-            ballCount: 3,
-            baseStripe: [],
-          },
-          fireFlame: {
-            cooling: 55,
-            sparking: 120,
-          },
-          colorWheel: {
-            speed: 10,
-          },
-          frostyPike: {
-            delay: 10,
-            baseStripe: [],
-          },
-          dyingLights: {
-            lightColor: "#9B03FF",
-          },
-          snake: {
-            speed: 10,
-            maxSnakeSize: 10,
-            appleCount: 3,
-          },
-          globals: {
-            swatches: [
-              "#25262b",
-              "#868e96",
-              "#fa5252",
-              "#e64980",
-              "#be4bdb",
-              "#7950f2",
-              "#4c6ef5",
-              "#228be6",
-              "#15aabf",
-              "#12b886",
-              "#40c057",
-              "#82c91e",
-              "#fab005",
-              "#fd7e14",
-            ],
-            taskCode: "dashboard",
-          },
-          chaser: { id: "" },
-          device: { ...devices[selectedDevice] },
-        },
-      ],
-    },
-  });
-
-  const openModal = () =>
-    openConfirmModal({
-      title: "Please confirm your action",
-      children: (
-        <Text size="sm">
-          This action is so important that you are required to confirm it with a
-          modal. Please click one of these buttons to proceed.
-        </Text>
-      ),
-      labels: { confirm: "Confirm", cancel: "Cancel" },
-      onCancel: () => console.log("Cancel"),
-      onConfirm: () => console.log("Confirmed"),
-    });
-
-  const form = useForm({
-    initialValues: {
-      ...configs.configs[0],
-    },
-  });
-
-  React.useEffect(() => {
-    if (configs.configs.length > 0) {
-      form.setValues({ ...configs.configs[selectedDevice] });
-      const savedDevices = configs.configs.map((config) => config.device);
-      const newDevices = [];
-      devices.forEach((device) => {
-        if (
-          savedDevices.findIndex((value, index, array) => {
-            return value.ip === device.ip;
-          }) === -1 &&
-          device.ip !== "" &&
-          device.ip
-        ) {
-          newDevices.push(device);
-        }
-      });
-      setDevices([...savedDevices, ...newDevices]);
-      console.log("message");
-    }
-  }, [configs, selectedDevice]);
-
-  React.useEffect(() => {
-    console.log("configs Changed", configs);
-    intervals.forEach((interval) => {
-      clearInterval(interval);
-    });
-    setIntervals([]);
-  }, [configs]);
-
-  React.useEffect(() => {
-    //log states
-    console.log("taskCode", taskCode);
-    form.setFieldValue("globals.taskCode", taskCode);
-  }, [taskCode]);
-
-  React.useEffect(() => {
-    //log states
-    console.log("form", form.values);
-  }, [form]);
 
   return (
     <AppShell
@@ -160,17 +39,12 @@ function App() {
         <NavbarNested
           taskCode={taskCode}
           setTaskCode={setTaskCode}
-          form={form}
         ></NavbarNested>
       }
       header={
         <HeaderApp
-          configs={configs}
-          setConfigs={setConfigs}
+          selectedDevice={selectedDevice}
           setSelectedDevice={setSelectedDevice}
-          form={form}
-          devices={devices}
-          setDevices={setDevices}
         ></HeaderApp>
       }
       styles={(theme) => ({
@@ -182,7 +56,7 @@ function App() {
         },
       })}
     >
-      {(() => {
+      {/*    {(() => {
         switch (taskCode) {
           case "dashboard":
             return (
@@ -202,42 +76,34 @@ function App() {
             return (
               <MeteorRainForm
                 key={selectedDevice + "meteorRain"}
-                form={form}
               ></MeteorRainForm>
             );
           case "bouncingBalls":
             return (
               <BouncingBallsForm
                 key={selectedDevice + "bouncingBalls"}
-                form={form}
               ></BouncingBallsForm>
             );
           case "fireFlame":
             return (
-              <FireFlameForm
-                key={selectedDevice + "fireFlame"}
-                form={form}
-              ></FireFlameForm>
+              <FireFlameForm key={selectedDevice + "fireFlame"}></FireFlameForm>
             );
           case "colorWheel":
             return (
               <ColorWheelForm
                 key={selectedDevice + "colorWheel"}
-                form={form}
               ></ColorWheelForm>
             );
           case "frostyPike":
             return (
               <FrostyPikeForm
                 key={selectedDevice + "frostyPike"}
-                form={form}
               ></FrostyPikeForm>
             );
           case "dyingLights":
             return (
               <DyingLightsForm
                 key={selectedDevice + "dyingLights"}
-                form={form}
               ></DyingLightsForm>
             );
           case "snake":
@@ -251,7 +117,7 @@ function App() {
           default:
             return <h1>work in progress</h1>;
         }
-      })()}
+      })()} */}
       {taskCode !== "dashboard" && taskCode !== "chaser" && (
         <Button
           sx={{
@@ -262,8 +128,6 @@ function App() {
             left: "320px",
           }}
           onClick={() => {
-            console.log(form.values);
-            openModal();
             showNotification({
               title: "Default notification",
               message: "Hey there, your code is awesome! 🤥",

@@ -55,9 +55,10 @@ interface QuantityInputProps {
   max?: number;
   label?: string;
   defaultValue?: number;
-  form: any;
-  path: string;
+  form?: any;
+  path?: string;
   sx?: any;
+  onChange?: (value: number) => void;
 }
 
 export default function QuantityInput({
@@ -68,17 +69,23 @@ export default function QuantityInput({
   form,
   path,
   sx,
+  onChange,
 }: QuantityInputProps) {
   const { classes } = useStyles();
   const handlers = useRef<NumberInputHandlers>(null);
   const [value, setValue] = useState<number | undefined>(defaultValue);
 
   React.useEffect(() => {
-    form.setFieldValue(path, defaultValue);
+    if (form) {
+      form.setFieldValue(path, defaultValue);
+    }
   }, []);
 
   React.useEffect(() => {
-    form.setFieldValue(path, value);
+    if (form) {
+      form.setFieldValue(path, value);
+    }
+    onChange && onChange(value);
   }, [value]);
 
   return (
