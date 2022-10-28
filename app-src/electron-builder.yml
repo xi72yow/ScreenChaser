@@ -9,6 +9,7 @@ files:
     filter:
       - package.json
       - app
+#Linux Configuration
 linux:
   target:
     - target: deb
@@ -21,4 +22,21 @@ linux:
         - x64
         - arm64
         - armv7l
+# Windows Configuration
+win:
+  target:
+    - target: "nsis"
+      arch: "x64"
+# Windows Installer Configuration
+nsis:
+  oneClick: false
+  perMachine: false
+  allowElevation: true
+  allowToChangeInstallationDirectory: true
+# macOS Configuration
+mac:
+  target:
+    - target: "dmg"
+      arch:
+        - "universal"
 publish: null
