@@ -78,6 +78,10 @@ class MeteorRain {
 
     return this.stripe;
   }
+
+  getIdentifier() {
+    return "meteor";
+  }
 }
 
 module.exports = MeteorRain;

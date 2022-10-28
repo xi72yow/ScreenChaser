@@ -66,6 +66,10 @@ class FireFlame {
 
     return this.stripe;
   }
+
+  getIdentifier() {
+    return "fireFlame";
+  }
 }
 
 module.exports = FireFlame;

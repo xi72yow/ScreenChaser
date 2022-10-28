@@ -84,6 +84,10 @@ class BauncingBalls {
   getStripe() {
     return this.stripe;
   }
+
+  getIdentifier() {
+    return "bouncingBalls";
+  }
 }
 
 module.exports = BauncingBalls;

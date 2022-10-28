@@ -43,6 +43,10 @@ class ColorWheel {
     this.count = 0;
     return this.stripe;
   }
+
+  getIdentifier() {
+    return "colorWheel";
+  }
 }
 
 module.exports = ColorWheel;

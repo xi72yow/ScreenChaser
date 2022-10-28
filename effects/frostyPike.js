@@ -23,6 +23,10 @@ class FrostyPike {
     this.delayCount++;
     return this.baseStripe;
   }
+
+  getIdentifier() {
+    return "frostyPike";
+  }
 }
 
 module.exports = FrostyPike;

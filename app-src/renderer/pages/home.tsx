@@ -71,11 +71,10 @@ function App() {
       setDashBoardData((dashBoardDataLast) => {
         return DataEmittersRef.current.map((dataEmitter, index, array) => {
           const data = dataEmitter.getHealth();
-
           return {
             title: dataEmitter.getIp(),
             task: EffectsRef.current[index]
-              ? EffectsRef.current[index].constructor.name
+              ? EffectsRef.current[index].getIdentifier()
               : null,
             details: [
               {

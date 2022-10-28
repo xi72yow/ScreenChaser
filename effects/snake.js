@@ -117,6 +117,10 @@ class Snake {
 
     return this.stripe;
   }
+
+  getIdentifier() {
+    return "snake";
+  }
 }
 
 module.exports = Snake;

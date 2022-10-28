@@ -66,6 +66,10 @@ class DyingLights {
 
     return this.stripe;
   }
+
+  getIdentifier() {
+    return "dyingLights";
+  }
 }
 
 module.exports = DyingLights;
