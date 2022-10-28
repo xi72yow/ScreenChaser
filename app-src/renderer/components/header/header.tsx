@@ -81,7 +81,14 @@ export default function HeaderApp({
         }}
       >
         <Group position="apart" sx={{ width: 300, paddingRight: "1rem" }}>
-          <Logo width={180} />
+          <Logo
+            width={180}
+            fill={
+              theme.colorScheme === "dark"
+                ? theme.colors.gray[2]
+                : theme.colors.dark[7]
+            }
+          />
           <Code sx={{ fontWeight: 700 }}>v1.0.0</Code>
         </Group>
       </Group>
