@@ -33,31 +33,16 @@ import {
 } from "@mantine/hooks";
 
 import { useLiveQuery } from "dexie-react-hooks";
-import { db, initilalValues, updateConfig } from "../components/database/db";
+import { db, initilalValues } from "../components/database/db";
 import Toolbar from "../components/toolbar/toolbar";
-import { hexToRgb } from "../components/effects_build/basics/convertRgbHex";
 import DataEmitter from "../components/effects_build/network/dataEmitter";
-
-import MeteorRain from "../components/effects_build/meteor";
-import BouncingBalls from "../components/effects_build/bouncingBalls";
-import FireFlame from "../components/effects_build/fireFlame";
-import ColorWheel from "../components/effects_build/colorWheel";
-import FrostyPike from "../components/effects_build/frostyPike";
-import DyingLights from "../components/effects_build/dyingLights";
-import Snake from "../components/effects_build/snake";
 import StaticLightForm from "../components/forms/staticLightForm";
-import setAll from "../components/effects_build/basics/setAll";
-
-function prepareBaseStipe(stripeFromUi) {
-  return stripeFromUi.map((color) => color.replace("#", ""));
-}
+import Manager from "../components/effects_build/manager/manager";
 
 function App() {
   const [selectedDevice, setSelectedDevice] = React.useState<any>(0);
   const [taskCode, setTaskCode] = React.useState("dashboard");
-  const DataEmittersRef = useRef<any>([]);
-  const IntervalsRef = useRef<any>([]);
-  const EffectsRef = useRef<any>([]);
+  const ManagerRef = useRef<any>(new Manager());
   const [dashBoardData, setDashBoardData] = useState(null);
 
   const [lightsOff, setLightsOff] = useState(false);
@@ -69,12 +54,12 @@ function App() {
   const interval = useInterval(
     () =>
       setDashBoardData((dashBoardDataLast) => {
-        return DataEmittersRef.current.map((dataEmitter, index, array) => {
+        return ManagerRef.current.emitters.map((dataEmitter, index, array) => {
           const data = dataEmitter.getHealth();
           return {
             title: dataEmitter.getIp(),
-            task: EffectsRef.current[index]
-              ? EffectsRef.current[index].getIdentifier()
+            task: ManagerRef.current.runningEffects[index]
+              ? ManagerRef.current.runningEffects[index].getIdentifier()
               : null,
             details: [
               {
@@ -107,9 +92,9 @@ function App() {
 
   const form = useForm({ initialValues: { ...initilalValues } });
 
-  /*   useEffect(() => {
+  useEffect(() => {
     console.log(form.values);
-  }, [form]); */
+  }, [form]);
 
   useEffect(() => {
     if (taskCode === "dashboard") {
@@ -117,134 +102,22 @@ function App() {
     } else {
       interval.stop();
     }
-
-    if (taskCode === "shutdown") {
-      IntervalsRef.current.forEach((interval) => clearInterval(interval));
-      configs.forEach((config, index) => {
-        DataEmittersRef.current[index].emit(
-          setAll(0, 0, 0, config.device.neoPixelCount)
-        );
-      });
-    }
   }, [taskCode]);
 
   useEffect(() => {
     if (configs) {
-      IntervalsRef.current.forEach((interval) => clearInterval(interval));
-      configs.forEach((config, index) => {
-        DataEmittersRef.current[index].emit(
-          setAll(0, 0, 0, config.device.neoPixelCount)
-        );
-      });
+      ManagerRef.current.lightsOff();
     }
   }, [lightsOff]);
 
   useEffect(() => {
-    IntervalsRef.current.forEach((interval) => clearInterval(interval));
-
-    if (configs) {
-      form.reset();
-      form.setValues({ ...configs[selectedDevice] });
-
-      configs.forEach((config, i) => {
-        if (
-          config.device.ip !== DataEmittersRef.current[i]?.getIp() ||
-          !DataEmittersRef.current[i]
-        )
-          DataEmittersRef.current[i] = new DataEmitter(false, config.device.ip);
-
-        const neopixelCount = config.device.neoPixelCount;
-
-        switch (config.task.taskCode) {
-          case "meteorRain":
-            const { meteorRain } = config;
-            const {
-              r: red,
-              g: green,
-              b: blue,
-            } = hexToRgb(meteorRain.meteorColor.substring(1));
-            EffectsRef.current[i] = new MeteorRain({
-              ...meteorRain,
-              neopixelCount,
-              red,
-              green,
-              blue,
-            });
-            break;
-
-          case "bouncingBalls":
-            const { bouncingBalls } = config;
-            EffectsRef.current[i] = new BouncingBalls({
-              ...bouncingBalls,
-              neopixelCount,
-              baseStripe: prepareBaseStipe(bouncingBalls.baseStripe),
-            });
-            break;
-
-          case "fireFlame":
-            const { fireFlame } = config;
-            EffectsRef.current[i] = new FireFlame({
-              ...fireFlame,
-              neopixelCount,
-            });
-            break;
-
-          case "colorWheel":
-            const { colorWheel } = config;
-            EffectsRef.current[i] = new ColorWheel({
-              ...colorWheel,
-              neopixelCount,
-            });
-            break;
-
-          case "frostyPike":
-            const { frostyPike } = config;
-            EffectsRef.current[i] = new FrostyPike({
-              ...frostyPike,
-              neopixelCount,
-              baseStripe: prepareBaseStipe(frostyPike.baseStripe),
-            });
-            break;
-
-          case "dyingLights":
-            const { dyingLights } = config;
-            EffectsRef.current[i] = new DyingLights({
-              ...dyingLights,
-              neopixelCount,
-            });
-            break;
-
-          case "snake":
-            const { snake } = config;
-            EffectsRef.current[i] = new Snake({
-              ...snake,
-              neopixelCount,
-            });
-            break;
-
-          case "chaser":
-            clearInterval(IntervalsRef.current[i]);
-            return;
-
-          case "staticLight":
-            const { staticLight } = config;
-            clearInterval(IntervalsRef.current[i]);
-            DataEmittersRef.current[i].emit(
-              prepareBaseStipe(staticLight.baseStripe)
-            );
-            return;
-
-          default:
-            break;
-        }
-
-        IntervalsRef.current[i] = setInterval(() => {
-          if (EffectsRef.current[i]) {
-            DataEmittersRef.current[i].emit(EffectsRef.current[i].render());
-          }
-        }, 110);
-      });
+    if (taskCode === "chaser") {
+      ManagerRef.current.setConfigs(configs);
     }
+
+    ManagerRef.current.setDebouncedConfigs(configs);
+
+    if (configs) form.setValues(configs[selectedDevice]);
   }, [configs, selectedDevice]);
 
   if (!configs) {
