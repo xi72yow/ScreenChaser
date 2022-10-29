@@ -96,7 +96,9 @@ export function StatsGrid({ data }: StatsGridProps) {
         </Group>
 
         <Text size="xs" color="dimmed" mt={7}>
-          Compared to the last 3 seconds
+          {stat.icon === "bolt"
+            ? "actual Power consumtion"
+            : "packageloss over lifetime"}
         </Text>
       </Paper>
     );
