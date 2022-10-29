@@ -24,7 +24,7 @@ if (isProd) {
 
   // zoom
   mainWindow.webContents
-    .setVisualZoomLevelLimits(1, 5)
+    .setVisualZoomLevelLimits(1, 3)
     .then(() => {})
     .catch((err) => console.log(err));
 
@@ -32,14 +32,14 @@ if (isProd) {
     var currentZoom = mainWindow.webContents.getZoomFactor();
 
     if (zoomDirection === "in") {
-      if (mainWindow.webContents.zoomFactor < 5.0) {
+      if (mainWindow.webContents.zoomFactor < 3.0) {
         mainWindow.webContents.zoomFactor = currentZoom + 0.2;
       }
     }
     if (zoomDirection === "out") {
-      if (mainWindow.webContents.zoomFactor - 0.2 > 1.0) {
+      if (mainWindow.webContents.zoomFactor - 0.2 > 0.0) {
         mainWindow.webContents.zoomFactor = currentZoom - 0.2;
-      } else mainWindow.webContents.zoomFactor = 1.1;
+      } else mainWindow.webContents.zoomFactor = 0.1;
     }
   });
 
@@ -56,16 +56,6 @@ if (isProd) {
       types: ["window", "screen"],
     });
     return sources;
-    /* .then(async (sources) => {
-        return sources;
-        /*       for (const source of sources) {
-          if (source.name === "GitHub Desktop") {
-            mainWindow.webContents.send("SET_SOURCE", source.id);
-            return;
-          }
-        } 
-      }); */
-    //const result = await somePromise(...args);
   });
 })();
 
