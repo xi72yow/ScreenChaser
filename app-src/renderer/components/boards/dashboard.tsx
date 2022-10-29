@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Badge,
   Box,
@@ -6,6 +6,7 @@ import {
   Group,
   Paper,
   SimpleGrid,
+  Skeleton,
   Text,
 } from "@mantine/core";
 import {
@@ -17,6 +18,8 @@ import {
   IconArrowDownRight,
   IconPackage,
 } from "@tabler/icons";
+import { randomId, useHash, useInterval } from "@mantine/hooks";
+import { ipcRenderer } from "electron";
 
 const useStyles = createStyles((theme) => ({
   root: {
@@ -110,27 +113,53 @@ export function StatsGrid({ data }: StatsGridProps) {
   );
 }
 
-interface DashboardProps {
-  data: { details: any; title: string; task: string }[];
-}
+interface DashboardProps {}
 
-export default function Dashboard({ data }: DashboardProps) {
+export default function Dashboard({}: DashboardProps) {
+  const [hash, setHash] = useHash();
+  const dashBoardData = useRef<{ details: any; title: string; task: string }[]>(
+    []
+  );
+
+  const interval = useInterval(() => {
+    ipcRenderer.invoke("GET_STATS").then((dashboardData) => {
+      dashBoardData.current = dashboardData;
+      setHash(randomId());
+    });
+  }, 3000);
+
+  useEffect(() => {
+    interval.start();
+    return interval.stop;
+  }, []);
+
   return (
-    <>
-      {data &&
-        data.map((item) => (
-          <Box key={item.title}>
-            <Group position="apart">
-              <Text size="xl" mt={4} mb={1} weight={900}>
-                {item.title}:
-              </Text>
-              <Badge color={item.task ? "lime" : "grape"} size="sm">
-                {item.task || "nothing to do"}
-              </Badge>
-            </Group>
-            <StatsGrid data={item.details} />
-          </Box>
-        ))}
-    </>
+    <Box key={hash}>
+      {dashBoardData.current.map((item) => (
+        <Box key={item.title}>
+          <Group position="apart">
+            <Text size="xl" mt={4} mb={1} weight={900}>
+              {item.title}:
+            </Text>
+            <Badge color={item.task ? "lime" : "grape"} size="sm">
+              {item.task || "nothing to do"}
+            </Badge>
+          </Group>
+          <StatsGrid data={item.details} />
+        </Box>
+      ))}
+      {dashBoardData.current.length === 0 && (
+        <Box>
+          <Group position="apart" m={9}>
+            <Skeleton height={20} mt={8} width="25%" radius="xl" />
+            <Skeleton height={20} mt={8} width="5%" radius="xl" />
+          </Group>
+          <Group position="center" m={9} mt={15}>
+            <Skeleton height={130} mt={8} width="40%" radius="md" />
+            <Skeleton height={130} mt={8} width="40%" radius="md" />
+          </Group>
+        </Box>
+      )}
+    </Box>
   );
 }

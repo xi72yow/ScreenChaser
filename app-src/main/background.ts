@@ -1,8 +1,13 @@
 import { app, desktopCapturer, ipcMain } from "electron";
 import serve from "electron-serve";
 import { createWindow } from "./helpers";
+import Manager from "./helpers/effects_build/manager/manager";
 
 const isProd: boolean = process.env.NODE_ENV === "production";
+
+const ChaserManager = new Manager();
+
+let LastChaserState = undefined;
 
 if (isProd) {
   serve({ directory: "app" });
@@ -56,6 +61,64 @@ if (isProd) {
       types: ["window", "screen"],
     });
     return sources;
+  });
+
+  ipcMain.handle("GET_STATS", async (event, ...args) => {
+    if (!ChaserManager) return undefined;
+    const MappedData = ChaserManager.emitters.map(
+      (dataEmitter, index, array) => {
+        const data = dataEmitter.getHealth();
+        return {
+          title: dataEmitter.getIp(),
+          task: ChaserManager.runningEffects[index]
+            ? ChaserManager.runningEffects[index].getIdentifier()
+            : null,
+          details: [
+            {
+              title: "Power:",
+              value: data.power,
+              icon: "bolt",
+              diff: LastChaserState
+                ? (data.power / LastChaserState[index].details[0]?.value) *
+                    100 -
+                  100
+                : 100,
+            },
+            {
+              title: "Package Loss:",
+              value: data.packageloss,
+              icon: "package",
+              diff: LastChaserState
+                ? (data.packageloss /
+                    LastChaserState[index].details[1]?.value) *
+                    100 -
+                  100
+                : 100,
+            },
+          ],
+        };
+      }
+    );
+
+    LastChaserState = MappedData;
+
+    return MappedData;
+  });
+
+  ipcMain.on("CHANGE_CONFIG_DEBOUNCED", (event, args) => {
+    ChaserManager.setDebouncedConfigs(args);
+  });
+
+  ipcMain.on("CHANGE_CONFIG", (event, args) => {
+    ChaserManager.setConfigs(args);
+  });
+
+  ipcMain.on("LIGHTS_OFF", (event, args) => {
+    ChaserManager.lightsOff();
+  });
+
+  ipcMain.on("LIGHTS_ON", (event, args) => {
+    ChaserManager.startAll();
   });
 })();
 

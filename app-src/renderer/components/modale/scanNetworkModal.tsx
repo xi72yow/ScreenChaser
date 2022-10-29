@@ -172,6 +172,7 @@ export default function ScanNetworkModal({}: scanNetworkModalProps) {
           setOpen(false);
         }}
         title="Device Configuration"
+        overflow="inside"
       >
         <Table sx={{ marginBottom: "1.5rem" }}>
           <thead>

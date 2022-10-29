@@ -3,88 +3,106 @@ import {
   ActionIcon,
   useMantineColorScheme,
   useMantineTheme,
+  Tooltip,
 } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import {
   IconSun,
   IconMoonStars,
   IconPower,
-  IconInfoCircle,
+  IconPlayerPlay,
+  IconHelp,
 } from "@tabler/icons";
-import React from "react";
+import React, { useState } from "react";
+import HelpModal from "../modale/helpModal";
 
-type Props = { setLightsOff: any };
+type Props = { setLightsOff: any; lightsOff: boolean };
 
-export default function GlobalSettings({ setLightsOff }: Props) {
+export default function GlobalSettings({ setLightsOff, lightsOff }: Props) {
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
   const theme = useMantineTheme();
+  const [open, setOpen] = useState(false);
 
   return (
     <Group position="center" my="xl" sx={{ paddingLeft: theme.spacing.md }}>
-      {/*       <ActionIcon
-        onClick={() => {}}
-        size="lg"
-        sx={(theme) => ({
-          backgroundColor:
-            theme.colorScheme === "dark"
-              ? theme.colors.dark[6]
-              : theme.colors.gray[0],
-          color: theme.colors.gray[5],
-        })}
-      >
-        <IconInfoCircle size={18} />
-      </ActionIcon> */}
-      <ActionIcon
-        onClick={() => toggleColorScheme()}
-        size="lg"
-        sx={(theme) => ({
-          backgroundColor:
-            theme.colorScheme === "dark"
-              ? theme.colors.dark[6]
-              : theme.colors.gray[0],
-          color:
-            theme.colorScheme === "dark"
-              ? theme.colors.yellow[4]
-              : theme.colors.blue[6],
-        })}
-      >
-        {colorScheme === "dark" ? (
-          <IconSun size={18} />
-        ) : (
-          <IconMoonStars size={18} />
-        )}
-      </ActionIcon>
-      <ActionIcon
-        onClick={() => {
-          setLightsOff((bool) => {
-            return !bool;
-          });
-          showNotification({
-            title: "Chaser Notification",
-            message:
-              "Signal to turn off the device has been sent. Click to repeat.",
-            color: "red",
-            icon: <IconPower size={18} />,
-            onClick: () => {
-              setLightsOff((bool) => {
-                return !bool;
+      <HelpModal open={open} setOpen={setOpen}></HelpModal>
+      <Tooltip label="Help">
+        <ActionIcon
+          onClick={() => {
+            setOpen(true);
+          }}
+          size="lg"
+          sx={(theme) => ({
+            backgroundColor:
+              theme.colorScheme === "dark"
+                ? theme.colors.dark[6]
+                : theme.colors.gray[0],
+            color:
+              theme.colorScheme === "dark"
+                ? theme.colors.gray[3]
+                : theme.colors.gray[9],
+          })}
+        >
+          <IconHelp size={18} />
+        </ActionIcon>
+      </Tooltip>
+      <Tooltip label="Toggle Dark Mode">
+        <ActionIcon
+          onClick={() => toggleColorScheme()}
+          size="lg"
+          sx={(theme) => ({
+            backgroundColor:
+              theme.colorScheme === "dark"
+                ? theme.colors.dark[6]
+                : theme.colors.gray[0],
+            color:
+              theme.colorScheme === "dark"
+                ? theme.colors.yellow[4]
+                : theme.colors.blue[6],
+          })}
+        >
+          {colorScheme === "dark" ? (
+            <IconSun size={18} />
+          ) : (
+            <IconMoonStars size={18} />
+          )}
+        </ActionIcon>
+      </Tooltip>
+      <Tooltip label={lightsOff ? "Lights On" : "Lights Off"}>
+        <ActionIcon
+          onClick={() => {
+            setLightsOff((bool) => {
+              return !bool;
+            });
+            if (lightsOff)
+              showNotification({
+                title: "Chaser Notification",
+                message: "The Chasers continues to work.",
+                color: "green",
+                icon: <IconPlayerPlay size={18} />,
+                sx: { cursor: "pointer" },
               });
-            },
-
-            sx: { cursor: "pointer" },
-          });
-        }}
-        size="lg"
-        sx={(theme) => ({
-          backgroundColor:
-            theme.colorScheme === "dark"
-              ? theme.colors.dark[6]
-              : theme.colors.gray[0],
-          color: theme.colors.red[5],
-        })}
-      >
-        <IconPower size={18} />
-      </ActionIcon>
+            else
+              showNotification({
+                title: "Chaser Notification",
+                message: "Signal to turn off the device has been sent. ",
+                color: "red",
+                icon: <IconPower size={18} />,
+                sx: { cursor: "pointer" },
+              });
+          }}
+          size="lg"
+          sx={(theme) => ({
+            backgroundColor:
+              theme.colorScheme === "dark"
+                ? theme.colors.dark[6]
+                : theme.colors.gray[0],
+            color: lightsOff ? theme.colors.green[5] : theme.colors.red[5],
+          })}
+        >
+          {lightsOff ? <IconPlayerPlay size={18} /> : <IconPower size={18} />}
+        </ActionIcon>
+      </Tooltip>
     </Group>
   );
 }

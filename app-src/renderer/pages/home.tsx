@@ -38,57 +38,17 @@ import Toolbar from "../components/toolbar/toolbar";
 import DataEmitter from "../components/effects_build/network/dataEmitter";
 import StaticLightForm from "../components/forms/staticLightForm";
 import Manager from "../components/effects_build/manager/manager";
+import { ipcRenderer } from "electron";
 
 function App() {
   const [selectedDevice, setSelectedDevice] = React.useState<any>(0);
   const [taskCode, setTaskCode] = React.useState("dashboard");
-  const ManagerRef = useRef<any>(new Manager());
-  const [dashBoardData, setDashBoardData] = useState(null);
 
   const [lightsOff, setLightsOff] = useState(false);
 
   const configs = useLiveQuery(async () => {
     return await db.configs.toArray();
   });
-
-  const interval = useInterval(
-    () =>
-      setDashBoardData((dashBoardDataLast) => {
-        return ManagerRef.current.emitters.map((dataEmitter, index, array) => {
-          const data = dataEmitter.getHealth();
-          return {
-            title: dataEmitter.getIp(),
-            task: ManagerRef.current.runningEffects[index]
-              ? ManagerRef.current.runningEffects[index].getIdentifier()
-              : null,
-            details: [
-              {
-                title: "Power:",
-                value: data.power,
-                icon: "bolt",
-                diff: dashBoardDataLast
-                  ? (data.power / dashBoardDataLast[index].details[0]?.value) *
-                      100 -
-                    100
-                  : 100,
-              },
-              {
-                title: "Package Loss:",
-                value: data.packageloss,
-                icon: "package",
-                diff: dashBoardDataLast
-                  ? (data.packageloss /
-                      dashBoardDataLast[index].details[1]?.value) *
-                      100 -
-                    100
-                  : 100,
-              },
-            ],
-          };
-        });
-      }),
-    3000
-  );
 
   const form = useForm({ initialValues: { ...initilalValues } });
 
@@ -97,25 +57,17 @@ function App() {
   }, [form]);
 
   useEffect(() => {
-    if (taskCode === "dashboard") {
-      interval.start();
-    } else {
-      interval.stop();
-    }
-  }, [taskCode]);
-
-  useEffect(() => {
     if (configs) {
-      ManagerRef.current.lightsOff();
+      if (lightsOff) ipcRenderer.send("LIGHTS_OFF");
+      else ipcRenderer.send("LIGHTS_ON");
     }
   }, [lightsOff]);
 
   useEffect(() => {
     if (taskCode === "chaser") {
-      ManagerRef.current.setConfigs(configs);
+      ipcRenderer.send("CHANGE_CONFIG", configs);
     }
-
-    ManagerRef.current.setDebouncedConfigs(configs);
+    ipcRenderer.send("CHANGE_CONFIG_DEBOUNCED", configs);
 
     if (configs) form.setValues(configs[selectedDevice]);
   }, [configs, selectedDevice]);
@@ -146,6 +98,7 @@ function App() {
           taskCode={taskCode}
           selectedDevice={selectedDevice}
           setLightsOff={setLightsOff}
+          lightsOff={lightsOff}
         ></Toolbar>
       }
       styles={(theme) => ({
@@ -160,7 +113,7 @@ function App() {
       {(() => {
         switch (taskCode) {
           case "dashboard":
-            return <Dashboard data={dashBoardData}></Dashboard>;
+            return <Dashboard></Dashboard>;
           case "meteorRain":
             return (
               <MeteorRainForm

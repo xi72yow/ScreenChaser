@@ -38,7 +38,7 @@ const useStyles = createStyles((theme) => ({
   },
 
   footer: {
-   /*  paddingLeft: theme.spacing.md,
+    /*  paddingLeft: theme.spacing.md,
     paddingRight: theme.spacing.md, */
     borderTop: `1px solid ${
       theme.colorScheme === "dark" ? theme.colors.dark[4] : theme.colors.gray[3]

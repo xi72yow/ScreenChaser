@@ -9,7 +9,7 @@
   "url": "https://xi72yow.de",
   "scripts": {
     "dev": "nextron",
-    "cp": "cd .. && rm -rf ./app-src/renderer/components/effects_build && cp -R ./effects ./app-src/renderer/components/effects_build",
+    "cp": "cd .. && rm -rf ./app-src/renderer/components/effects_build && rm -rf ./app-src/main/helpers/effects_build && cp -R ./effects ./app-src/renderer/components/effects_build && cp -R ./effects ./app-src/main/helpers/effects_build",
     "build": "npx next build ./renderer && nextron build",
     "postinstall": "electron-builder install-app-deps"
   },

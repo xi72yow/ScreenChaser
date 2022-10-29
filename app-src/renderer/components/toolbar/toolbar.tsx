@@ -12,6 +12,7 @@ type ToolbarProps = {
   setLightsOff: any;
   configs: Array<ConfigInterface>;
   form: any;
+  lightsOff: boolean;
 };
 
 export default function Toolbar({
@@ -20,6 +21,7 @@ export default function Toolbar({
   selectedDevice,
   configs,
   setLightsOff,
+  lightsOff,
 }: ToolbarProps) {
   const { classes } = useStyles();
 
@@ -40,7 +42,10 @@ export default function Toolbar({
           paddingRight: "1rem",
         }}
       >
-        <GlobalSettings setLightsOff={setLightsOff}></GlobalSettings>
+        <GlobalSettings
+          lightsOff={lightsOff}
+          setLightsOff={setLightsOff}
+        ></GlobalSettings>
       </Group>
       <Group
         sx={{
