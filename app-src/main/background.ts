@@ -20,6 +20,29 @@ if (isProd) {
 
   mainWindow.setMenuBarVisibility(false);
 
+  mainWindow.webContents.setZoomFactor(1.0);
+
+  // zoom
+  mainWindow.webContents
+    .setVisualZoomLevelLimits(1, 5)
+    .then(() => {})
+    .catch((err) => console.log(err));
+
+  mainWindow.webContents.on("zoom-changed", (event, zoomDirection) => {
+    var currentZoom = mainWindow.webContents.getZoomFactor();
+
+    if (zoomDirection === "in") {
+      if (mainWindow.webContents.zoomFactor < 5.0) {
+        mainWindow.webContents.zoomFactor = currentZoom + 0.2;
+      }
+    }
+    if (zoomDirection === "out") {
+      if (mainWindow.webContents.zoomFactor - 0.2 > 1.0) {
+        mainWindow.webContents.zoomFactor = currentZoom - 0.2;
+      } else mainWindow.webContents.zoomFactor = 1.1;
+    }
+  });
+
   if (isProd) {
     await mainWindow.loadURL("app://./home.html");
   } else {
