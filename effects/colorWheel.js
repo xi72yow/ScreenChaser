@@ -1,5 +1,5 @@
-const setAll = require("./basics/setAll");
-const setPixel = require("./basics/setPixel");
+import setAll from "./basics/setAll.js";
+import setPixel from "./basics/setPixel.js";
 
 class ColorWheel {
   /**
@@ -49,4 +49,4 @@ class ColorWheel {
   }
 }
 
-module.exports = ColorWheel;
+export default ColorWheel;

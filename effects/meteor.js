@@ -1,8 +1,8 @@
-const random = require("./basics/random");
-const setAll = require("./basics/setAll");
-const setPixel = require("./basics/setPixel");
-const { hsvToRgb, rgbToHsv } = require("./basics/convertHsvRgb");
-const { hexToRgb } = require("./basics/convertRgbHex");
+import random from "./basics/random.js";
+import setAll from "./basics/setAll.js";
+import setPixel from "./basics/setPixel.js";
+import { hsvToRgb, rgbToHsv } from "./basics/convertHsvRgb.js";
+import { hexToRgb } from "./basics/convertRgbHex.js";
 
 class MeteorRain {
   constructor(options) {
@@ -84,4 +84,4 @@ class MeteorRain {
   }
 }
 
-module.exports = MeteorRain;
+export default MeteorRain;

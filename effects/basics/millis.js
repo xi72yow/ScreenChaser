@@ -4,7 +4,7 @@
  * @return {Interger} millis
  */
 function millis() {
-    return Date.now();
+  return Date.now();
 }
 
-module.exports = millis
+export default millis;

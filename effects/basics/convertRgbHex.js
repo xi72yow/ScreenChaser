@@ -32,4 +32,4 @@ function hexToRgb(hex) {
       };
 }
 
-module.exports = { rgbToHex, hexToRgb };
+export { rgbToHex, hexToRgb };

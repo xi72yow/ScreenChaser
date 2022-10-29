@@ -1,14 +1,15 @@
-const MeteorRain = require("./meteor");
-const DataEmitter = require("./network/dataEmitter");
-const BouncingBalls = require("./bouncingBalls");
-const FireFlame = require("./fireFlame");
-const ColorWheel = require("./colorWheel");
-const FrostyPike = require("./frostyPike");
-const DyingLights = require("./dyingLights");
-const Snake = require("./snake");
+import MeteorRain from "./meteor.js";
+import DataEmitter from "./network/dataEmitter.js";
+import BouncingBalls from "./bouncingBalls.js";
+import FireFlame from "./fireFlame.js";
+import ColorWheel from "./colorWheel.js";
+import FrostyPike from "./frostyPike.js";
+import DyingLights from "./dyingLights.js";
+import Snake from "./snake.js";
 
-const setAll = require("./basics/setAll");
-const setPixel = require("./basics/setPixel");
+import setAll from "./basics/setAll.js";
+import setPixel from "./basics/setPixel.js";
+
 let count = 0;
 function createExampleStripe(neopixelCount) {
   const stripe = setAll(0, 0, 0);

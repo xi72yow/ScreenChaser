@@ -1,13 +1,13 @@
-const DataEmitter = require("../network/dataEmitter");
-const MeteorRain = require("../meteor");
-const BouncingBalls = require("../bouncingBalls");
-const FireFlame = require("../fireFlame");
-const ColorWheel = require("../colorWheel");
-const FrostyPike = require("../frostyPike");
-const DyingLights = require("../dyingLights");
-const Snake = require("../snake");
-const { hexToRgb } = require("../basics/convertRgbHex");
-const setAll = require("../basics/setAll");
+import DataEmitter from "../network/dataEmitter.js";
+import MeteorRain from "../meteor.js";
+import BouncingBalls from "../bouncingBalls.js";
+import FireFlame from "../fireFlame.js";
+import ColorWheel from "../colorWheel.js";
+import FrostyPike from "../frostyPike.js";
+import DyingLights from "../dyingLights.js";
+import Snake from "../snake.js";
+import { hexToRgb } from "../basics/convertRgbHex.js";
+import setAll from "../basics/setAll.js";
 
 class Manager {
   constructor(options) {
@@ -202,4 +202,4 @@ class Manager {
   }
 }
 
-module.exports = Manager;
+export default Manager;

@@ -1,7 +1,7 @@
-const random = require("./basics/random");
-const setAll = require("./basics/setAll");
-const setPixel = require("./basics/setPixel");
-const { hsvToRgb, rgbToHsv } = require("./basics/convertHsvRgb");
+import random from "./basics/random.js";
+import setAll from "./basics/setAll.js";
+import setPixel from "./basics/setPixel.js";
+import { hsvToRgb, rgbToHsv } from "./basics/convertHsvRgb.js";
 
 class Snake {
   constructor(options) {
@@ -123,4 +123,4 @@ class Snake {
   }
 }
 
-module.exports = Snake;
+export default Snake;

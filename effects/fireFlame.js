@@ -1,6 +1,6 @@
-const random = require("./basics/random");
-const setAll = require("./basics/setAll");
-const setPixel = require("./basics/setPixel");
+import random from "./basics/random.js";
+import setAll from "./basics/setAll.js";
+import setPixel from "./basics/setPixel.js";
 
 class FireFlame {
   constructor(options) {
@@ -72,4 +72,4 @@ class FireFlame {
   }
 }
 
-module.exports = FireFlame;
+export default FireFlame;

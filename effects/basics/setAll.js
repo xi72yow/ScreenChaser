@@ -1,4 +1,4 @@
-const { rgbToHex } = require("./convertRgbHex");
+import { rgbToHex } from "./convertRgbHex.js";
 /**
  *
  * @param {byte} r 8Bit color
@@ -15,4 +15,4 @@ function setAll(r, g, b, neopixelCount) {
   return stripe;
 }
 
-module.exports = setAll;
+export default setAll;

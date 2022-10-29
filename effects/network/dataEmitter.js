@@ -1,7 +1,7 @@
-const dgram = require("dgram");
-const os = require("os");
-const { hexToRgb } = require("../basics/convertRgbHex");
-const events = require("events");
+import dgram from "dgram";
+import os from "os";
+import { hexToRgb } from "../basics/convertRgbHex.js";
+import events from "events";
 
 class DataEmitter {
   constructor(DEBUG = false, ipaddr = "") {
@@ -273,4 +273,5 @@ class DataEmitter {
   DataEmitterForIP.logSlaves();
 }
 main(); */
-module.exports = DataEmitter;
+
+export default DataEmitter;

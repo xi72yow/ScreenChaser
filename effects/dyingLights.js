@@ -1,7 +1,7 @@
-const setAll = require("./basics/setAll");
-const setPixel = require("./basics/setPixel");
-const random = require("./basics/random");
-const { hsvToRgb, rgbToHsv } = require("./basics/convertHsvRgb");
+import setAll from "./basics/setAll.js";
+import setPixel from "./basics/setPixel.js";
+import random from "./basics/random.js";
+import { hsvToRgb, rgbToHsv } from "./basics/convertHsvRgb.js";
 
 class DyingLights {
   constructor(options) {
@@ -72,4 +72,4 @@ class DyingLights {
   }
 }
 
-module.exports = DyingLights;
+export default DyingLights;

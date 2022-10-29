@@ -1,6 +1,6 @@
-const setPixel = require("./basics/setPixel");
-const random = require("./basics/random");
-const setAll = require("./basics/setAll");
+import setPixel from "./basics/setPixel.js";
+import random from "./basics/random.js";
+import setAll from "./basics/setAll.js";
 
 class FrostyPike {
   constructor(options) {
@@ -29,4 +29,4 @@ class FrostyPike {
   }
 }
 
-module.exports = FrostyPike;
+export default FrostyPike;

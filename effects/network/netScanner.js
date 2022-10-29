@@ -1,7 +1,7 @@
-const dgram = require("dgram");
-const os = require("os");
-const events = require("events");
-const fetch = require("node-fetch");
+import dgram from "dgram";
+import os from "os";
+import events from "events";
+import fetch from "node-fetch";
 
 class NetScanner {
   constructor(id, name, ip, port, protocol, status, result) {
@@ -202,4 +202,4 @@ class NetScanner {
   DataEmitterForIP.logSlaves();
 }
 main(); */
-module.exports = NetScanner;
+export default NetScanner;

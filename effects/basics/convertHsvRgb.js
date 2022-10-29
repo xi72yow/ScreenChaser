@@ -114,4 +114,4 @@ function rgbToHsv(rgbRef) {
   };
 }
 
-module.exports = { hsvToRgb, rgbToHsv };
+export { hsvToRgb, rgbToHsv };

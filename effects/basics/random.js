@@ -5,7 +5,7 @@
  * @return {Interger} num between 0 and max
  */
 function random(max) {
-    return Math.random() * max | 0;
+  return (Math.random() * max) | 0;
 }
 
-module.exports = random
+export default random;
