@@ -16,6 +16,7 @@ class Manager {
     this.emitters = [];
     this.configs = [];
     this.debounce = null;
+    this.framerate = 9.8;
   }
 
   prepareBaseStipe(stripeFromUi) {
@@ -166,11 +167,26 @@ class Manager {
         break;
     }
 
+    this.start(index);
+  }
+
+  startAll() {
+    this.runningEffects.forEach((effect, index) => {
+      this.start(index);
+    });
+  }
+
+  start(index) {
     const that = this;
-    if (this.runningEffects[index] !== null)
+    if (this.runningEffects[index] !== null) {
       this.intervals[index] = setInterval(() => {
         that.emitters[index].emit(that.runningEffects[index].render());
-      }, 100);
+      }, this.calculateMillis());
+    }
+  }
+
+  calculateMillis() {
+    return parseInt(1000 / this.framerate);
   }
 
   stopAll() {
