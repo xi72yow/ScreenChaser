@@ -176,6 +176,14 @@ class Manager {
     });
   }
 
+  sendChasingStripe(stripe) {
+    this.configs.findIndex((conf, index, array) => {
+      if (conf.task.taskCode === "chaser") {
+        this.emitters[index].emit(stripe);
+      }
+    });
+  }
+
   start(index) {
     const that = this;
     if (this.runningEffects[index] !== null) {

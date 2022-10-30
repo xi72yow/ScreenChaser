@@ -1,13 +1,22 @@
-import { app, desktopCapturer, ipcMain } from "electron";
+import {
+  app,
+  BrowserWindow,
+  contextBridge,
+  desktopCapturer,
+  ipcMain,
+  ipcRenderer,
+} from "electron";
 import serve from "electron-serve";
-import { createWindow } from "./helpers";
+import { createWindow, StatCalculator } from "./helpers";
 import Manager from "./helpers/effects_build/manager/manager";
 
 const isProd: boolean = process.env.NODE_ENV === "production";
 
 const ChaserManager = new Manager();
 
-let LastChaserState = undefined;
+const ChaserStatCalculator = new StatCalculator({
+  Manager: ChaserManager,
+});
 
 if (isProd) {
   serve({ directory: "app" });
@@ -63,53 +72,17 @@ if (isProd) {
     return sources;
   });
 
-  ipcMain.handle("GET_STATS", async (event, ...args) => {
-    if (!ChaserManager) return undefined;
-    const MappedData = ChaserManager.emitters.map(
-      (dataEmitter, index, array) => {
-        const data = dataEmitter.getHealth();
-        return {
-          title: dataEmitter.getIp(),
-          task: ChaserManager.runningEffects[index]
-            ? ChaserManager.runningEffects[index].getIdentifier()
-            : null,
-          details: [
-            {
-              title: "Power:",
-              value: data.power,
-              icon: "bolt",
-              diff: LastChaserState
-                ? (data.power / LastChaserState[index].details[0]?.value) *
-                    100 -
-                  100
-                : 100,
-            },
-            {
-              title: "Package Loss:",
-              value: data.packageloss,
-              icon: "package",
-              diff: LastChaserState
-                ? (data.packageloss /
-                    LastChaserState[index].details[1]?.value) *
-                    100 -
-                  100
-                : 100,
-            },
-          ],
-        };
-      }
-    );
-
-    LastChaserState = MappedData;
-
-    return MappedData;
+  ipcMain.handle("GET_STATS", () => {
+    return ChaserStatCalculator.calculateStats();
   });
 
   ipcMain.on("CHANGE_CONFIG_DEBOUNCED", (event, args) => {
+    console.log("CHANGE_CONFIG_DEBOUNCED");
     ChaserManager.setDebouncedConfigs(args);
   });
 
   ipcMain.on("CHANGE_CONFIG", (event, args) => {
+    console.log("CHANGE_CONFIG");
     ChaserManager.setConfigs(args);
   });
 
@@ -119,6 +92,42 @@ if (isProd) {
 
   ipcMain.on("LIGHTS_ON", (event, args) => {
     ChaserManager.startAll();
+  });
+
+  let selected = {};
+  let chaserWindow: BrowserWindow;
+
+  ipcMain.on("CHASER:ON", async (event, args) => {
+    chaserWindow = new BrowserWindow({
+      webPreferences: {
+        nodeIntegration: true,
+        contextIsolation: false,
+      },
+      frame: false,
+      transparent: true,
+      width: 1,
+      height: 1,
+    });
+
+    if (isProd) {
+      await chaserWindow.loadURL("app://./chaserhack.html");
+    } else {
+      const port = process.argv[2];
+      await chaserWindow.loadURL(`http://localhost:${port}/chaserhack`);
+      chaserWindow.webContents.openDevTools();
+    }
+  });
+
+  ipcMain.on("CHASER:OFF", async (event, args) => {
+    if (chaserWindow) {
+      chaserWindow.close();
+    }
+    await chaserWindow.close();
+    chaserWindow = null;
+  });
+
+  ipcMain.on("CHASER:SEND_STRIPE", (event, args) => {
+    ChaserManager.sendChasingStripe(args);
   });
 })();
 
