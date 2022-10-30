@@ -65,6 +65,10 @@ if (isProd) {
     mainWindow.webContents.openDevTools();
   }
 
+  mainWindow.on("closed", () => {
+    app.quit();
+  });
+
   ipcMain.handle("GET_SOURCES", async (event, ...args) => {
     const sources = await desktopCapturer.getSources({
       types: ["window", "screen"],
@@ -103,8 +107,8 @@ if (isProd) {
         nodeIntegration: true,
         contextIsolation: false,
       },
-      frame: false,
-      transparent: true,
+      frame: !isProd,
+      transparent: isProd,
       width: 1,
       height: 1,
     });
