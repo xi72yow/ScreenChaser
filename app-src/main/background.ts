@@ -1,14 +1,11 @@
-import {
-  app,
-  BrowserWindow,
-  contextBridge,
-  desktopCapturer,
-  ipcMain,
-  ipcRenderer,
-} from "electron";
+import { app, BrowserWindow, desktopCapturer, dialog, ipcMain } from "electron";
+import * as fs from "fs";
+import * as util from "util";
 import serve from "electron-serve";
 import { createWindow, StatCalculator } from "./helpers";
 import Manager from "./helpers/effects_build/manager/manager";
+
+const writeFile = util.promisify(fs.writeFile);
 
 const isProd: boolean = process.env.NODE_ENV === "production";
 
@@ -133,6 +130,26 @@ if (isProd) {
 
   ipcMain.on("CHASER:SEND_STRIPE", (event, stripe, ip) => {
     ChaserManager.sendChasingStripe(stripe, ip);
+  });
+
+  ipcMain.handle("APP:SAVE_CONFIG", async function (event, configs) {
+    const filename = await dialog.showSaveDialog(
+      BrowserWindow.getFocusedWindow(),
+      {
+        title: "Download to File…",
+        defaultPath: "sc_config.json",
+        filters: [{ name: "json", extensions: ["json"] }],
+      }
+    );
+    if (filename.canceled) return "canceled";
+
+    try {
+      await writeFile(filename.filePath, JSON.stringify(configs, null, "\t"));
+      return "saved";
+    } catch (error) {
+      console.log("🚀 ~ file: background.ts ~ line 151 ~ error", error);
+      return "failed";
+    }
   });
 })();
 

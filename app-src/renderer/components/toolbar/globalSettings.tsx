@@ -4,6 +4,10 @@ import {
   useMantineColorScheme,
   useMantineTheme,
   Tooltip,
+  Menu,
+  Button,
+  Dialog,
+  Text,
 } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import {
@@ -12,8 +16,18 @@ import {
   IconPower,
   IconPlayerPlay,
   IconHelp,
+  IconArrowsLeftRight,
+  IconMessageCircle,
+  IconPhoto,
+  IconSearch,
+  IconSettings,
+  IconTrash,
+  IconFileDownload,
 } from "@tabler/icons";
+import { useLiveQuery } from "dexie-react-hooks";
+import { ipcRenderer } from "electron";
 import React, { useState } from "react";
+import { db } from "../database/db";
 import HelpModal from "../modale/helpModal";
 
 type Props = { setLightsOff: any; lightsOff: boolean };
@@ -22,52 +36,19 @@ export default function GlobalSettings({ setLightsOff, lightsOff }: Props) {
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
   const theme = useMantineTheme();
   const [open, setOpen] = useState(false);
+  const [openConfirm, setOpenConfirm] = useState(false);
+
+  const configs = useLiveQuery(
+    async () => {
+      return await db.configs.toArray();
+    },
+    null,
+    []
+  );
 
   return (
     <Group position="center" my="xl" sx={{ paddingLeft: theme.spacing.md }}>
       <HelpModal open={open} setOpen={setOpen}></HelpModal>
-      <Tooltip label="Help">
-        <ActionIcon
-          onClick={() => {
-            setOpen(true);
-          }}
-          size="lg"
-          sx={(theme) => ({
-            backgroundColor:
-              theme.colorScheme === "dark"
-                ? theme.colors.dark[6]
-                : theme.colors.gray[0],
-            color:
-              theme.colorScheme === "dark"
-                ? theme.colors.gray[3]
-                : theme.colors.gray[9],
-          })}
-        >
-          <IconHelp size={18} />
-        </ActionIcon>
-      </Tooltip>
-      <Tooltip label="Toggle Dark Mode">
-        <ActionIcon
-          onClick={() => toggleColorScheme()}
-          size="lg"
-          sx={(theme) => ({
-            backgroundColor:
-              theme.colorScheme === "dark"
-                ? theme.colors.dark[6]
-                : theme.colors.gray[0],
-            color:
-              theme.colorScheme === "dark"
-                ? theme.colors.yellow[4]
-                : theme.colors.blue[6],
-          })}
-        >
-          {colorScheme === "dark" ? (
-            <IconSun size={18} />
-          ) : (
-            <IconMoonStars size={18} />
-          )}
-        </ActionIcon>
-      </Tooltip>
       <Tooltip label={lightsOff ? "Lights On" : "Lights Off"}>
         <ActionIcon
           onClick={() => {
@@ -103,6 +84,113 @@ export default function GlobalSettings({ setLightsOff, lightsOff }: Props) {
           {lightsOff ? <IconPlayerPlay size={18} /> : <IconPower size={18} />}
         </ActionIcon>
       </Tooltip>
+      <Menu shadow="md" width={200}>
+        <Menu.Target>
+          <Tooltip label="Settings">
+            <ActionIcon
+              size="lg"
+              sx={(theme) => ({
+                backgroundColor:
+                  theme.colorScheme === "dark"
+                    ? theme.colors.dark[6]
+                    : theme.colors.gray[0],
+                color:
+                  theme.colorScheme === "dark"
+                    ? theme.colors.gray[3]
+                    : theme.colors.gray[9],
+              })}
+            >
+              <IconSettings size={18} />
+            </ActionIcon>
+          </Tooltip>
+        </Menu.Target>
+
+        <Menu.Dropdown
+          ml={8}
+          sx={{
+            backgroundColor:
+              colorScheme === "dark"
+                ? theme.colors.dark[5]
+                : theme.colors.gray[2],
+          }}
+        >
+          <Menu.Label>Application</Menu.Label>
+          <Menu.Item
+            icon={
+              colorScheme === "dark" ? (
+                <IconSun size={18} />
+              ) : (
+                <IconMoonStars size={18} />
+              )
+            }
+            color={
+              theme.colorScheme === "dark"
+                ? theme.colors.yellow[4]
+                : theme.colors.blue[6]
+            }
+            onClick={() => toggleColorScheme()}
+          >
+            Toggle Theme
+          </Menu.Item>
+          <Menu.Item
+            icon={<IconFileDownload size={18} />}
+            onClick={() => {
+              ipcRenderer.invoke("APP:SAVE_CONFIG", configs).then((res) => {
+                showNotification({
+                  title: "Chaser Notification",
+                  message: "Configuration has been " + res + ".",
+                });
+              });
+            }}
+          >
+            Save Configuration
+          </Menu.Item>
+          <Menu.Item
+            icon={<IconHelp size={18} />}
+            onClick={() => {
+              setOpen(true);
+            }}
+          >
+            FAQ
+          </Menu.Item>
+          <Menu.Divider />
+          <Menu.Label>Danger zone</Menu.Label>
+          <Menu.Item
+            color="red"
+            icon={<IconTrash size={18} />}
+            onClick={() => {
+              setOpenConfirm(true);
+            }}
+          >
+            Delete Configurations
+          </Menu.Item>
+        </Menu.Dropdown>
+      </Menu>
+      <Dialog
+        opened={openConfirm}
+        withCloseButton
+        onClose={() => setOpenConfirm(false)}
+        size="lg"
+        radius="md"
+      >
+        <Text size="sm" style={{ marginBottom: 10 }} weight={500}>
+          Are you sure you want to delete all configurations?
+        </Text>
+
+        <Group align="flex-end">
+          <Button onClick={() => setOpenConfirm(false)}>No</Button>
+          <Button
+            color={"red"}
+            onClick={() => {
+              db.delete();
+              location.reload();
+              setOpenConfirm(false);
+            }}
+          >
+            Yes
+          </Button>
+        </Group>
+      </Dialog>
     </Group>
   );
 }

@@ -188,7 +188,6 @@ class Manager {
   start(index) {
     const that = this;
     if (this.runningEffects[index] !== null) {
-      if (configs[index].task.taskCode === "chaser") return;
       this.intervals[index] = setInterval(() => {
         that.emitters[index].emit(that.runningEffects[index].render());
       }, this.calculateMillis());

@@ -5,6 +5,7 @@ import {
   Accordion,
   createStyles,
   Modal,
+  Kbd,
 } from "@mantine/core";
 
 const useStyles = createStyles((theme) => ({
@@ -47,14 +48,16 @@ export default function HelpModal({ open, setOpen }: HelpModalProps) {
     >
       <Container size="sm" className={classes.wrapper}>
         <Accordion variant="separated">
-          <Accordion.Item className={classes.item} value="reset-password">
+          <Accordion.Item className={classes.item} value="ui-scale">
             <Accordion.Control>
               How can I scale the User Interface?
             </Accordion.Control>
             <Accordion.Panel>
-              The user interface can be scaled by holding ctrl and scrolling the
-              mouse wheel.{" "}
+              The user interface can be scaled by holding <Kbd>ctrl</Kbd> and
+              scrolling the mouse wheel.{" "}
             </Accordion.Panel>
+          </Accordion.Item>
+          <Accordion.Item className={classes.item} value="led-setup">
             <Accordion.Control>Wich LED setup can I use?</Accordion.Control>
             <Accordion.Panel>
               Currently calculates the Script only color values for a Stripe at
