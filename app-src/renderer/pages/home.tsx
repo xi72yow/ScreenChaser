@@ -39,6 +39,7 @@ import DataEmitter from "../components/effects_build/network/dataEmitter";
 import StaticLightForm from "../components/forms/staticLightForm";
 import Manager from "../components/effects_build/manager/manager";
 import { ipcRenderer } from "electron";
+import { setTimeout } from "timers";
 
 function App() {
   const [selectedDevice, setSelectedDevice] = React.useState<any>(0);
@@ -63,8 +64,21 @@ function App() {
 
   useEffect(() => {
     if (configs) {
-      if (lightsOff) ipcRenderer.send("LIGHTS_OFF");
-      else ipcRenderer.send("LIGHTS_ON");
+      if (lightsOff) {
+        if (chaserRunning.current) {
+          ipcRenderer.send("CHASER:OFF");
+          chaserRunning.current = false;
+          setTimeout(() => {
+            ipcRenderer.send("LIGHTS_OFF");
+          }, 1000);
+        } else ipcRenderer.send("LIGHTS_OFF");
+      } else {
+        ipcRenderer.send("LIGHTS_ON");
+        if (!chaserRunning.current) {
+          ipcRenderer.send("CHASER:ON");
+          chaserRunning.current = true;
+        }
+      }
     }
   }, [lightsOff]);
 
@@ -72,9 +86,14 @@ function App() {
     if (
       configs.filter((config) => config.task.taskCode === "chaser").length > 0
     ) {
-      if (!chaserRunning.current) ipcRenderer.send("CHASER:ON");
-      chaserRunning.current = true;
-    } else ipcRenderer.send("CHASER:OFF");
+      if (!chaserRunning.current) {
+        ipcRenderer.send("CHASER:ON");
+        chaserRunning.current = true;
+      }
+    } else {
+      ipcRenderer.send("CHASER:OFF");
+      chaserRunning.current = false;
+    }
 
     if (taskCode === "chaser") {
       ipcRenderer.send("CHANGE_CONFIG", configs);

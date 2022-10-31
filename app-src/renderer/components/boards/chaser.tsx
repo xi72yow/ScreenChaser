@@ -66,9 +66,7 @@ export default function Chaser({ form, selectedDevice }: ChaserProps) {
   }, [selected]);
 
   useEffect(() => {
-    if (selected?.id !== "") {
-      setVideoSource(selected.id);
-    }
+    setVideoSource(selected.id);
   }, []);
 
   async function setVideoSource(sourceId) {
@@ -80,7 +78,7 @@ export default function Chaser({ form, selectedDevice }: ChaserProps) {
           mandatory: {
             chromeMediaSource: "desktop",
             chromeMediaSourceId: sourceId,
-            minWidth: 1280,
+            maxWidth: 400,
           },
         },
       });

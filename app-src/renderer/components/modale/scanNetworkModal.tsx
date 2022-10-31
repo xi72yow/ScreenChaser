@@ -57,10 +57,20 @@ function DeviceRow({ device, configs, i }) {
             type="number"
             value={configs[i].device.neoPixelCount}
             onChange={(e) => {
+              const neoPixelCount = parseInt(e.currentTarget.value) || "";
+
+              if (neoPixelCount < 0 || neoPixelCount > 780) {
+                showNotification({
+                  title: "Chaser Notification",
+                  message: "NeoPixelCount count must be between 0 and 780",
+                  color: "red",
+                });
+                return;
+              }
               updateConfig(i + 1, {
                 device: {
                   ...configs[i].device,
-                  neoPixelCount: parseInt(e.currentTarget.value) || "",
+                  neoPixelCount,
                 },
               });
             }}

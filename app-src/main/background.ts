@@ -72,6 +72,7 @@ if (isProd) {
   ipcMain.handle("GET_SOURCES", async (event, ...args) => {
     const sources = await desktopCapturer.getSources({
       types: ["window", "screen"],
+      thumbnailSize: { width: 400, height: 400 },
     });
     return sources;
   });
@@ -125,9 +126,8 @@ if (isProd) {
 
   ipcMain.on("CHASER:OFF", async (event, args) => {
     if (chaserWindow) {
-      chaserWindow.close();
+      await chaserWindow.close();
     }
-    await chaserWindow.close();
     chaserWindow = null;
   });
 

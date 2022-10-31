@@ -38,7 +38,9 @@ class StatCalculator {
             icon: "package",
             diff:
               this.lastStats.length !== 0
-                ? (data.power / that.lastStats[i].details[1]?.value) * 100 - 100
+                ? (data.packageloss / that.lastStats[i].details[1]?.value) *
+                    100 -
+                  100
                 : 0,
           },
         ],

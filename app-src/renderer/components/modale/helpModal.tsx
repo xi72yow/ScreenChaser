@@ -55,6 +55,11 @@ export default function HelpModal({ open, setOpen }: HelpModalProps) {
               The user interface can be scaled by holding ctrl and scrolling the
               mouse wheel.{" "}
             </Accordion.Panel>
+            <Accordion.Control>Wich LED setup can I use?</Accordion.Control>
+            <Accordion.Panel>
+              Currently calculates the Script only color values for a Stripe at
+              the bottom of the screen/window.{" "}
+            </Accordion.Panel>
           </Accordion.Item>
         </Accordion>
       </Container>

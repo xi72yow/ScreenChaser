@@ -8,6 +8,8 @@ import setAll from "../components/effects_build/basics/setAll";
 
 type Props = {};
 
+const isProd: boolean = process.env.NODE_ENV === "production";
+
 function Next() {
   const caserIntervals = useRef([]);
   const caserErros = useRef(0);
@@ -38,7 +40,6 @@ function Next() {
 
   async function setVideoSource(sourceId, neoPixelCount, ip) {
     try {
-      const width = neoPixelCount ? neoPixelCount : 100;
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: false,
         video: {
@@ -46,7 +47,7 @@ function Next() {
           mandatory: {
             chromeMediaSource: "desktop",
             chromeMediaSourceId: sourceId,
-            maxWidth: width,
+            maxWidth: 400,
           },
         },
       });
@@ -55,6 +56,11 @@ function Next() {
       handleError(e);
     }
   }
+
+  const getColorIndicesForCoord = (x, y, width) => {
+    const red = y * (width * 4) + x * 4;
+    return [red, red + 1, red + 2, red + 3];
+  };
 
   function processCtxData(neoPixelCount, ip) {
     try {
@@ -66,61 +72,48 @@ function Next() {
       /* @ts-ignore */
       const height = video.videoHeight;
 
-      if (width === 0 || height === 0) return setAll(0, 0, 0, neoPixelCount);
+      const scale = neoPixelCount / 400;
+      const scaledWidth = width * scale;
+      const scaledHeight = height * scale;
 
-      // set the canvas to the dimensions of the video feed
+      // scale the canvas to the dimensions of the neopixels
       /* @ts-ignore */
-      canvas.width = width;
+      canvas.width = scaledWidth;
       /* @ts-ignore */
-      canvas.height = height;
+      canvas.height = scaledHeight;
 
-      // make the snapshot
+      // if current setupt NOT matches the neopixel count, skip
+      if (
+        /* @ts-ignore */
+        canvas.width === 0 ||
+        /* @ts-ignore */
+        canvas.height === 0 ||
+        !canvas ||
+        !video ||
+        neoPixelCount === ""
+      )
+        return setAll(0, 0, 0, neoPixelCount);
+
+      //clculate the stripe
       /* @ts-ignore */
       let ctx = canvas.getContext("2d");
-      ctx.drawImage(video, 0, 0, width, height);
-      let frame = ctx.getImageData(0, 0, width, height);
 
-      //interresting pixels at the top and bottom
-      const averagePixelHeight = (0.2 * height) | 0;
-      const averagePixelWidth = width / neoPixelCount;
-      const importentTestPixel = averagePixelHeight * width;
+      ctx.drawImage(video, 0, 0, scaledWidth, scaledHeight);
 
-      //console.log("Weite je neopix: " + averagePixelWidth)
-      //console.log("importentTestPixel: " + importentTestPixel)
-
-      const neopixels = new Array(neoPixelCount * 4).fill(0);
-      // for the top of the screen
-      //for (let i = 0; i < importentTestPixel / 4; i++)
-      // for the bottom of the screen
-      for (
-        let i = frame.data.length / 4 - importentTestPixel;
-        i < frame.data.length / 4;
-        i = i + 15
-      ) {
-        let currentNeoPix = ((i % width) / averagePixelWidth) | 0;
-
-        let r = frame.data[i * 4 + 0];
-        neopixels[currentNeoPix * 4 + 0] = neopixels[currentNeoPix * 4 + 0] + r;
-
-        let g = frame.data[i * 4 + 1];
-        neopixels[currentNeoPix * 4 + 1] = neopixels[currentNeoPix * 4 + 1] + g;
-
-        let b = frame.data[i * 4 + 2];
-        neopixels[currentNeoPix * 4 + 2] = neopixels[currentNeoPix * 4 + 2] + b;
-
-        // pixel counter for average neopixel do not need alpha
-        neopixels[currentNeoPix * 4 + 3] = neopixels[currentNeoPix * 4 + 3] + 1;
-      }
+      let frame = ctx.getImageData(0, 0, scaledWidth, scaledHeight);
 
       let stripe = [];
 
       for (let i = 0; i < neoPixelCount; i++) {
-        let count = neopixels[i * 4 + 3];
-        stripe[i] =
-          rgbToHex((neopixels[i * 4 + 0] / count) | 0) +
-          rgbToHex((neopixels[i * 4 + 1] / count) | 0) +
-          rgbToHex((neopixels[i * 4 + 2] / count) | 0);
+        const [redIndex, greenIndex, blueIndex, alphaIndex] =
+          getColorIndicesForCoord(i, frame.height - 1, frame.width);
+        stripe.push(
+          rgbToHex(frame.data[redIndex]) +
+            rgbToHex(frame.data[greenIndex]) +
+            rgbToHex(frame.data[blueIndex])
+        );
       }
+
       return stripe;
     } catch (e) {
       handleError(e);
@@ -151,6 +144,8 @@ function Next() {
   );
 
   function startCasers() {
+    caserIntervals.current.forEach((interval) => clearInterval(interval));
+
     if (configs) {
       configs
         .filter((config) => config.task.taskCode === "chaser")
@@ -189,7 +184,7 @@ function Next() {
             <canvas
               id={"canvas" + config.device.ip.replaceAll(".", "")}
               width={config.device.neoPixelCount}
-              hidden
+              hidden={isProd}
             ></canvas>
           </div>
         ))}
