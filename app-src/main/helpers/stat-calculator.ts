@@ -10,13 +10,18 @@ class StatCalculator {
     const that = this;
     let stats = [];
     for (let i = 0; i < this.Manager.emitters.length; i++) {
+      const config = this.Manager.configs[i];
       const emitter = this.Manager.emitters[i];
       const effect = this.Manager.runningEffects[i];
       const data = emitter.getHealth();
 
       stats.push({
         title: emitter.getIp(),
-        task: effect ? effect.getIdentifier() : null,
+        task: effect
+          ? effect.getIdentifier()
+          : config.task.taskCode === "chaser"
+          ? "chaser"
+          : null,
         details: [
           {
             title: "Power:",

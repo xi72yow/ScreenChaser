@@ -176,10 +176,10 @@ class Manager {
     });
   }
 
-  sendChasingStripe(stripe) {
+  sendChasingStripe(stripe, ip) {
     this.configs.findIndex((conf, index, array) => {
-      if (conf.task.taskCode === "chaser") {
-        this.emitters[index].emit(stripe);
+      if (conf.device.ip === ip) {
+        if (conf.task.taskCode === "chaser") this.emitters[index].emit(stripe);
       }
     });
   }

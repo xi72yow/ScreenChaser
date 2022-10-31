@@ -43,12 +43,17 @@ import { ipcRenderer } from "electron";
 function App() {
   const [selectedDevice, setSelectedDevice] = React.useState<any>(0);
   const [taskCode, setTaskCode] = React.useState("dashboard");
+  const chaserRunning = useRef(false);
 
   const [lightsOff, setLightsOff] = useState(false);
 
-  const configs = useLiveQuery(async () => {
-    return await db.configs.toArray();
-  });
+  const configs = useLiveQuery(
+    async () => {
+      return await db.configs.toArray();
+    },
+    null,
+    []
+  );
 
   const form = useForm({ initialValues: { ...initilalValues } });
 
@@ -64,6 +69,13 @@ function App() {
   }, [lightsOff]);
 
   useEffect(() => {
+    if (
+      configs.filter((config) => config.task.taskCode === "chaser").length > 0
+    ) {
+      if (!chaserRunning.current) ipcRenderer.send("CHASER:ON");
+      chaserRunning.current = true;
+    } else ipcRenderer.send("CHASER:OFF");
+
     if (taskCode === "chaser") {
       ipcRenderer.send("CHANGE_CONFIG", configs);
     }

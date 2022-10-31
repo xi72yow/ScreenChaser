@@ -56,7 +56,7 @@ export default function Toolbar({
         }}
       >
         <Group>
-          {taskCode !== "dashboard" && taskCode !== "chaser" && (
+          {taskCode !== "dashboard" && (
             <Button
               onClick={() => {
                 const currentFormConfig = form.values[taskCode];

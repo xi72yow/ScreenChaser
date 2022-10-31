@@ -7,7 +7,7 @@ import { rgbToHex } from "../components/effects_build/basics/convertRgbHex";
 type Props = {};
 
 function Next() {
-  const caserInterval = useRef(null);
+  const caserIntervals = useRef([]);
 
   function deepEqual(object1, object2) {
     const keys1 = Object.keys(object1);
@@ -33,7 +33,7 @@ function Next() {
     return object != null && typeof object === "object";
   }
 
-  async function setVideoSource(sourceId, neoPixelCount) {
+  async function setVideoSource(sourceId, neoPixelCount, ip) {
     try {
       const width = neoPixelCount ? neoPixelCount : 100;
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -47,16 +47,16 @@ function Next() {
           },
         },
       });
-      handleStream(stream);
+      handleStream(stream, ip);
     } catch (e) {
       handleError(e);
     }
   }
 
-  function processCtxData(neoPixelCount) {
+  function processCtxData(neoPixelCount, ip) {
     try {
-      const canvas = document.getElementById("chaser_canvas");
-      const video = document.getElementById("chaser_video");
+      const canvas = document.getElementById("canvas" + ip);
+      const video = document.getElementById("video" + ip);
 
       /* @ts-ignore */
       const width = video.videoWidth;
@@ -109,7 +109,7 @@ function Next() {
 
       let stripe = [];
 
-      for (let i = 0; i < 113; i++) {
+      for (let i = 0; i < neoPixelCount; i++) {
         let count = neopixels[i * 4 + 3];
         stripe[i] =
           rgbToHex((neopixels[i * 4 + 0] / count) | 0) +
@@ -122,39 +122,71 @@ function Next() {
     }
   }
 
-  function handleStream(stream) {
-    const video = document.querySelector("video");
+  function handleStream(stream, id: any) {
+    const video: HTMLVideoElement = document.querySelector(id);
     video.srcObject = stream;
     video.onloadedmetadata = (e) => video.play();
   }
 
   function handleError(e) {
     console.log("🚀 ~ file: chaserhack.tsx ~ line 106 ~ handleError ~ e", e);
-    clearInterval(caserInterval.current);
+    caserIntervals.current.forEach((interval) => clearInterval(interval));
   }
 
-  const configs = useLiveQuery(async () => {
-    return await db.configs.toArray();
-  });
+  const configs = useLiveQuery(
+    async () => {
+      return await db.configs.toArray();
+    },
+    null,
+    []
+  );
 
   useEffect(() => {
+    console.log(configs);
     if (configs) {
-      //todo: chasing for multiple sources and devices
-      const config = configs[0];
+      configs
+        .filter((config) => config.task.taskCode === "chaser")
+        .forEach((config, i) => {
+          console.log(config.chaser.sourceId);
+          setTimeout(() => {
+            setVideoSource(
+              config.chaser.sourceId,
+              config.device.neoPixelCount,
+              "#" + "video" + config.device.ip.replaceAll(".", "")
+            );
 
-      setVideoSource(config.chaser.sourceId, config.device.neoPixelCount);
-
-      caserInterval.current = setInterval(() => {
-        const stripe = processCtxData(config.device.neoPixelCount);
-        ipcRenderer.send("CHASER:SEND_STRIPE", stripe);
-      }, 100);
+            caserIntervals.current.push(
+              setInterval(() => {
+                const stripe = processCtxData(
+                  config.device.neoPixelCount,
+                  config.device.ip.replaceAll(".", "")
+                );
+                ipcRenderer.send(
+                  "CHASER:SEND_STRIPE",
+                  stripe,
+                  config.device.ip
+                );
+              }, 110)
+            );
+          }, i * 100);
+        });
     }
   }, [configs]);
 
   return (
     <div>
-      <video id="chaser_video"></video>
-      <canvas id="chaser_canvas" hidden></canvas>
+      {configs
+        .filter((config) => config.task.taskCode === "chaser")
+        .map((config) => (
+          <div key={config.device.ip + "div"}>
+            <video id={"video" + config.device.ip.replaceAll(".", "")}></video>
+            <canvas
+              id={"canvas" + config.device.ip.replaceAll(".", "")}
+              width={config.device.neoPixelCount}
+              hidden
+            ></canvas>
+          </div>
+        ))}
     </div>
   );
 }

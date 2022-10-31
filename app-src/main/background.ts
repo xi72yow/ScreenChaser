@@ -99,9 +99,10 @@ if (isProd) {
   });
 
   let selected = {};
-  let chaserWindow: BrowserWindow;
+  let chaserWindow: BrowserWindow = null;
 
   ipcMain.on("CHASER:ON", async (event, args) => {
+    if (chaserWindow) return;
     chaserWindow = new BrowserWindow({
       webPreferences: {
         nodeIntegration: true,
@@ -109,8 +110,8 @@ if (isProd) {
       },
       frame: !isProd,
       transparent: isProd,
-      width: 1,
-      height: 1,
+      width: isProd ? 1 : 800,
+      height: isProd ? 1 : 600,
     });
 
     if (isProd) {
@@ -130,8 +131,8 @@ if (isProd) {
     chaserWindow = null;
   });
 
-  ipcMain.on("CHASER:SEND_STRIPE", (event, args) => {
-    ChaserManager.sendChasingStripe(args);
+  ipcMain.on("CHASER:SEND_STRIPE", (event, stripe, ip) => {
+    ChaserManager.sendChasingStripe(stripe, ip);
   });
 })();
 

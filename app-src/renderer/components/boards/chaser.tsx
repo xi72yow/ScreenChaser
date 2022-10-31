@@ -62,25 +62,13 @@ export default function Chaser({ form, selectedDevice }: ChaserProps) {
     form.setFieldValue("chaser.id", selected?.id || "");
     form.setFieldValue("chaser.name", selected?.name || "");
     console.log("message", selected);
-    updateConfig(selectedDevice + 1, {
-      task: { taskCode: "chaser" },
-      chaser: {
-        sourceId: selected?.id,
-        name: selected?.name,
-      },
-    });
     //ipcRenderer.send("CHASER:", selected);
   }, [selected]);
 
   useEffect(() => {
     if (selected?.id !== "") {
       setVideoSource(selected.id);
-      ipcRenderer.send("CHASER:ON", selected);
     }
-
-    return () => {
-      ipcRenderer.send("CHASER:OFF");
-    };
   }, []);
 
   async function setVideoSource(sourceId) {
@@ -92,7 +80,7 @@ export default function Chaser({ form, selectedDevice }: ChaserProps) {
           mandatory: {
             chromeMediaSource: "desktop",
             chromeMediaSourceId: sourceId,
-            maxWidth: 720,
+            minWidth: 1280,
           },
         },
       });
