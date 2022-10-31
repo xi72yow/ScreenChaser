@@ -154,6 +154,7 @@ class Manager {
         break;
 
       case "chaser":
+        this.runningEffects[index] = null;
         return;
 
       case "staticLight":
@@ -187,6 +188,7 @@ class Manager {
   start(index) {
     const that = this;
     if (this.runningEffects[index] !== null) {
+      if (configs[index].task.taskCode === "chaser") return;
       this.intervals[index] = setInterval(() => {
         that.emitters[index].emit(that.runningEffects[index].render());
       }, this.calculateMillis());
