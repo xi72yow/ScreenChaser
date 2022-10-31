@@ -59,7 +59,7 @@ export default function Chaser({ form, selectedDevice }: ChaserProps) {
   const [opened, setOpened] = useState(false);
 
   useEffect(() => {
-    form.setFieldValue("chaser.id", selected?.id || "");
+    form.setFieldValue("chaser.sourceId", selected?.id || "");
     form.setFieldValue("chaser.name", selected?.name || "");
     console.log("message", selected);
     //ipcRenderer.send("CHASER:", selected);

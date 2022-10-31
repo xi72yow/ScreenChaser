@@ -1,13 +1,16 @@
 import { useLiveQuery } from "dexie-react-hooks";
 import { ipcRenderer } from "electron";
 import React, { useEffect, useRef } from "react";
+import Chaser from "../components/boards/chaser";
 import { db } from "../components/database/db";
 import { rgbToHex } from "../components/effects_build/basics/convertRgbHex";
+import setAll from "../components/effects_build/basics/setAll";
 
 type Props = {};
 
 function Next() {
   const caserIntervals = useRef([]);
+  const caserErros = useRef(0);
 
   function deepEqual(object1, object2) {
     const keys1 = Object.keys(object1);
@@ -62,6 +65,8 @@ function Next() {
       const width = video.videoWidth;
       /* @ts-ignore */
       const height = video.videoHeight;
+
+      if (width === 0 || height === 0) return setAll(0, 0, 0, neoPixelCount);
 
       // set the canvas to the dimensions of the video feed
       /* @ts-ignore */
@@ -131,6 +136,10 @@ function Next() {
   function handleError(e) {
     console.log("🚀 ~ file: chaserhack.tsx ~ line 106 ~ handleError ~ e", e);
     caserIntervals.current.forEach((interval) => clearInterval(interval));
+    setTimeout(() => {
+      startCasers();
+    }, caserErros.current * 100);
+    caserErros.current++;
   }
 
   const configs = useLiveQuery(
@@ -141,36 +150,33 @@ function Next() {
     []
   );
 
-  useEffect(() => {
-    console.log(configs);
+  function startCasers() {
     if (configs) {
       configs
         .filter((config) => config.task.taskCode === "chaser")
         .forEach((config, i) => {
           console.log(config.chaser.sourceId);
-          setTimeout(() => {
-            setVideoSource(
-              config.chaser.sourceId,
-              config.device.neoPixelCount,
-              "#" + "video" + config.device.ip.replaceAll(".", "")
-            );
-
-            caserIntervals.current.push(
-              setInterval(() => {
-                const stripe = processCtxData(
-                  config.device.neoPixelCount,
-                  config.device.ip.replaceAll(".", "")
-                );
-                ipcRenderer.send(
-                  "CHASER:SEND_STRIPE",
-                  stripe,
-                  config.device.ip
-                );
-              }, 110)
-            );
-          }, i * 100);
+          setVideoSource(
+            config.chaser.sourceId,
+            config.device.neoPixelCount,
+            "#" + "video" + config.device.ip.replaceAll(".", "")
+          );
+          caserIntervals.current.push(
+            setInterval(() => {
+              const stripe = processCtxData(
+                config.device.neoPixelCount,
+                config.device.ip.replaceAll(".", "")
+              );
+              ipcRenderer.send("CHASER:SEND_STRIPE", stripe, config.device.ip);
+            }, 110)
+          );
         });
     }
+  }
+
+  useEffect(() => {
+    console.log(configs);
+    startCasers();
   }, [configs]);
 
   return (
