@@ -2,9 +2,9 @@ import Dexie, { Table } from "dexie";
 
 export const initilalValues = {
   meteorRain: {
-    meteorSize: 10,
+    meteorSize: 2,
     meteorTrailDecay: 64,
-    meteorRandomDecay: 7,
+    meteorRandomDecay: 10,
     rainbow: false,
     meteorColor: "#9B03FF",
   },

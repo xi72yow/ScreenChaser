@@ -30,11 +30,20 @@ class MeteorRain {
 
   fadeToBlack(pixel, stripe, fadeValue) {
     const oldColor = stripe[pixel];
-    let { r, g, b } = hexToRgb(oldColor);
+    let rgb = hexToRgb(oldColor);
 
-    r = r - fadeValue <= fadeValue ? 0 : r - fadeValue;
-    g = r - fadeValue <= fadeValue ? 0 : g - fadeValue;
-    b = r - fadeValue <= fadeValue ? 0 : b - fadeValue;
+    let hsv = rgbToHsv(rgb);
+
+    hsv.v = hsv.v - fadeValue;
+
+    hsv.h = hsv.h + 10;
+
+    if (hsv.v < 0) {
+      hsv.v = 0;
+    }
+
+    const { r, g, b } = hsvToRgb(hsv);
+
     return setPixel(pixel, stripe, r, g, b);
   }
 
@@ -42,9 +51,12 @@ class MeteorRain {
     this.count++;
     // fade brightness all LEDs one step
     for (let j = 0; j < this.neopixelCount; j++) {
-      if (!this.meteorRandomDecay || random(10) > 5) {
-        this.stripe = this.fadeToBlack(j, this.stripe, this.meteorTrailDecay);
-      }
+      if (random(10) > 5)
+        this.stripe = this.fadeToBlack(
+          j,
+          this.stripe,
+          this.meteorTrailDecay / 1000 + this.meteorRandomDecay / 1000
+        );
     }
     // draw meteor
     for (let k = 0; k < this.meteorSize; k++) {
@@ -70,9 +82,8 @@ class MeteorRain {
       }
     }
 
-    //reset animation
-    if (this.count > this.neopixelCount * 2) {
-      this.stripe = setAll(0, 0, 0, this.neopixelCount);
+    //restart animation
+    if (this.count > this.neopixelCount + this.meteorSize) {
       this.count = 0;
     }
 
