@@ -74,8 +74,13 @@ function App() {
       } else {
         ipcRenderer.send("LIGHTS_ON");
         if (!chaserRunning.current) {
-          ipcRenderer.send("CHASER:ON");
-          chaserRunning.current = true;
+          if (
+            configs.filter((config) => config.task.taskCode === "chaser")
+              .length > 0
+          ) {
+            ipcRenderer.send("CHASER:ON");
+            chaserRunning.current = true;
+          }
         }
       }
     }

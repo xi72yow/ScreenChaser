@@ -25,7 +25,7 @@ if (isProd) {
   await app.whenReady();
 
   const mainWindow = createWindow("main", {
-    width: 800,
+    width: 1200,
     height: 700,
   });
 
@@ -124,8 +124,8 @@ if (isProd) {
   ipcMain.on("CHASER:OFF", async (event, args) => {
     if (chaserWindow) {
       await chaserWindow.close();
+      chaserWindow = null;
     }
-    chaserWindow = null;
   });
 
   ipcMain.on("CHASER:SEND_STRIPE", (event, stripe, ip) => {
