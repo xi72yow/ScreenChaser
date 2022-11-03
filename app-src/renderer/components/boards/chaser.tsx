@@ -5,7 +5,7 @@ import {
   Text,
   Button,
   Group,
-  Image,
+  Image as MantineImage,
   Box,
   Modal,
   Col,
@@ -17,10 +17,9 @@ import styled from "@emotion/styled";
 import { useElementSize } from "@mantine/hooks";
 import { showNotification } from "@mantine/notifications";
 
-import { updateConfig } from "../database/db";
-
-const PreviewImage = styled(Image)`
+const PreviewImage = styled(MantineImage)`
   cursor: pointer;
+  overflow: hidden;
   border: 2px solid rgba(0, 0, 0, 0);
   &:hover {
     border: 2px solid #9b03ff;
@@ -125,8 +124,8 @@ export default function Chaser({ form, selectedDevice }: ChaserProps) {
         >
           <PreviewImage
             radius="md"
-            src={item.thumbnail.toDataURL()}
-            width={"100%"}
+            src={item.thumbnail?.toDataURL()}
+            height={100}
             alt={item.name + "_thumbnail"}
           />
           <Text
@@ -204,15 +203,57 @@ export default function Chaser({ form, selectedDevice }: ChaserProps) {
         fullWidth
         leftIcon={<IconChevronDown size={18} stroke={1.5} />}
         onClick={() => {
-          ipcRenderer.invoke("GET_SOURCES").then((sources) => {
+          ipcRenderer.invoke("GET_SOURCES").then(async (sources) => {
             console.log("result", sources);
-            setSources(sources);
-            setOpened(true);
+            const sourcesScreen = sources.filter((source, index, array) => {
+              return source.id.includes("screen");
+            });
+            const canvas = document.querySelector("#canvas-desktop-thumbnail");
+            //@ts-ignore
+            canvas.width = 0;
+            //@ts-ignore
+            canvas.height = 225;
+            sourcesScreen.forEach(async (source) => {
+              const thumbnailSize = source.thumbnail.getSize();
+              //@ts-ignore
+              const lastWidth = canvas.width;
+
+              //@ts-ignore
+              canvas.width = canvas.width + thumbnailSize.width;
+
+              async function setImage(thumbnail: any) {
+                return new Promise(async (resolve, reject) => {
+                  const image = new Image();
+                  image.onload = () => {
+                    resolve(image);
+                  };
+                  image.src = await thumbnail.toDataURL();
+                });
+              }
+              canvas
+                //@ts-ignore
+                .getContext("2d")
+                .drawImage(await setImage(source.thumbnail), lastWidth, 0);
+
+              setSources([
+                {
+                  id: "",
+                  name: "Whole Desktop",
+                  thumbnail: canvas,
+                },
+                ...sources,
+              ]);
+              setOpened(true);
+            });
           });
         }}
       >
         {selected?.name || "Choose Video Source"}
       </Button>
+      <canvas
+        id="canvas-desktop-thumbnail"
+        style={{ display: "none" }}
+      ></canvas>
     </>
   );
 }
