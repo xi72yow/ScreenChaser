@@ -11,7 +11,7 @@ export const initilalValues = {
   bouncingBalls: {
     ballMode: "random",
     mirrored: false,
-    tail: false,
+    tail: 10,
     ballCount: 3,
     baseStripe: [],
   },
@@ -69,7 +69,7 @@ export interface MeteorRainInterface {
 export interface BouncingBallsInterface {
   ballMode: string;
   mirrored: boolean;
-  tail: boolean;
+  tail: number;
   ballCount: number;
   baseStripe: string[];
 }

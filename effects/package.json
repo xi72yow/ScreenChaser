@@ -5,5 +5,11 @@
     "version": "1.0.0",
     "main": "effectTest.js",
     "type": "module",
-    "dependencies": {}
+    "scripts": {
+        "dev": "nodemon effectTest.js"
+    },
+    "dependencies": {},
+    "devDependencies": {
+        "nodemon": "^2.0.20"
+    }
 }

@@ -13,7 +13,7 @@ export default function BouncingBallsForm({ form }: BouncingBallsProps) {
   return (
     <React.Fragment>
       <Select
-        data={["random", "rainbow", "single"]}
+        data={["random", "fixed"]}
         label="Ball Mode"
         form={form}
         path="bouncingBalls.ballMode"
@@ -25,12 +25,12 @@ export default function BouncingBallsForm({ form }: BouncingBallsProps) {
         path="bouncingBalls.mirrored"
         defaultValue={form.values.bouncingBalls?.mirrored || false}
       />
-      <Checkbox
-        label="Tail?"
+      <QuantityInput
         form={form}
         path="bouncingBalls.tail"
-        defaultValue={form.values.bouncingBalls?.tail || false}
-      />
+        label="Tail"
+        defaultValue={form.values.bouncingBalls?.tail || 10}
+      ></QuantityInput>
       <QuantityInput
         form={form}
         path="bouncingBalls.ballCount"

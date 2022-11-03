@@ -96,7 +96,6 @@ if (isProd) {
     ChaserManager.startAll();
   });
 
-  let selected = {};
   let chaserWindow: BrowserWindow = null;
 
   ipcMain.on("CHASER:ON", async (event, args) => {

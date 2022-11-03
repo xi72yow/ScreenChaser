@@ -39,7 +39,7 @@ const FrostyPikeEffect = new FrostyPike(createExampleStripe(120), 5, 120); */
   rainbow: true,
 }); */
 
-const MeteorRainEffect = new MeteorRain({
+/* const MeteorRainEffect = new MeteorRain({
   red: 155,
   green: 3,
   blue: 255,
@@ -48,6 +48,15 @@ const MeteorRainEffect = new MeteorRain({
   meteorRandomDecay: 10,
   rainbow: false,
   neopixelCount: 120,
+}); */
+
+const BouncingBallsEffect = new BouncingBalls({
+  ballMode: "fixed",
+  mirrored: true,
+  tail: 10,
+  ballCount: 2,
+  neopixelCount: 114,
+  baseStripe: null,
 });
 
 async function main() {
@@ -59,7 +68,7 @@ async function main() {
       DataEmitterForIP.logHealth();
       DataEmitterForIP.logMaxPower();
     }
-    DataEmitterForIP.emit(MeteorRainEffect.render());
+    DataEmitterForIP.emit(BouncingBallsEffect.render());
   }, 110);
 }
 

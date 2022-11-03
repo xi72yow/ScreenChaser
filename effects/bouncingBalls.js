@@ -2,11 +2,26 @@ import random from "./basics/random.js";
 import setAll from "./basics/setAll.js";
 import setPixel from "./basics/setPixel.js";
 import millis from "./basics/millis.js";
+import { hexToRgb } from "./basics/convertRgbHex.js";
+import { rgbToHsv, hsvToRgb } from "./basics/convertHsvRgb.js";
 
 class BauncingBalls {
   constructor(options) {
     const { ballMode, mirrored, tail, ballCount, neopixelCount, baseStripe } =
       options;
+    this.myColors = [
+      { r: 255, g: 187, b: 0 },
+      { r: 175, g: 0, b: 105 },
+      { r: 255, g: 0, b: 0 },
+      { r: 0, g: 255, b: 0 },
+      { r: 0, g: 0, b: 255 },
+      { r: 255, g: 255, b: 0 },
+      { r: 255, g: 0, b: 255 },
+      { r: 0, g: 255, b: 255 },
+      { r: 255, g: 255, b: 255 },
+      { r: 0, g: 0, b: 0 },
+    ];
+    this.ballMode = ballMode;
     this.mirrored = mirrored;
     this.tail = tail;
     this.speed = 3; //slows down the animation
@@ -31,7 +46,19 @@ class BauncingBalls {
       this.position[i] = 0;
       this.impactVelocity[i] = this.impactVelocityStart;
       this.timeSinceLastBounce[i] = 0;
-      this.ballColors[i] = { r: random(255), g: random(255), b: random(255) };
+      switch (this.ballMode) {
+        case "fixed":
+          this.ballColors[i] = this.myColors[i];
+          break;
+
+        default:
+          this.ballColors[i] = {
+            r: random(255),
+            g: random(255),
+            b: random(255),
+          };
+          break;
+      }
       this.dampening[i] = 0.9 - i / ballCount ** 2;
     }
   }
@@ -57,7 +84,16 @@ class BauncingBalls {
         (this.height[i] * (this.neopixelCount - 1)) / this.startHeight
       );
     }
-    this.stripe = [...this.baseStripe];
+
+    if (this.tail > 0) {
+      for (let i = 0; i < this.neopixelCount; i++) {
+        this.stripe = this.fadeToBlack(
+          i,
+          this.stripe,
+          0.05 + random(this.tail) / 100
+        );
+      }
+    } else this.stripe = [...this.baseStripe];
 
     for (let i = 0; i < this.ballCount; i++) {
       this.stripe = setPixel(
@@ -79,6 +115,23 @@ class BauncingBalls {
     }
 
     return this.stripe;
+  }
+
+  fadeToBlack(pixel, stripe, fadeValue) {
+    const oldColor = stripe[pixel];
+    let rgb = hexToRgb(oldColor);
+
+    let hsv = rgbToHsv(rgb);
+
+    hsv.v = hsv.v - fadeValue;
+
+    if (hsv.v < 0) {
+      hsv.v = 0;
+    }
+
+    const { r, g, b } = hsvToRgb(hsv);
+
+    return setPixel(pixel, stripe, r, g, b);
   }
 
   getStripe() {
