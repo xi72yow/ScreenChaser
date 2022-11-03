@@ -44,6 +44,7 @@
   "devDependencies": {
     "@types/node": "^16.11.7",
     "@types/react": "^18.0.8",
+    "commit-and-tag-version": "^10.1.0",
     "electron": "^20.1.0",
     "electron-builder": "^23.3.3",
     "next": "^12.2.5",

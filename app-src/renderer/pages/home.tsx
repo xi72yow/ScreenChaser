@@ -35,11 +35,10 @@ import {
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, initilalValues } from "../components/database/db";
 import Toolbar from "../components/toolbar/toolbar";
-import DataEmitter from "../components/effects_build/network/dataEmitter";
 import StaticLightForm from "../components/forms/staticLightForm";
-import Manager from "../components/effects_build/manager/manager";
 import { ipcRenderer } from "electron";
 import { setTimeout } from "timers";
+import ConfirmationContextProvider from "../components/hooks/confirm";
 
 function App() {
   const [selectedDevice, setSelectedDevice] = React.useState<any>(0);
@@ -268,7 +267,9 @@ function Next() {
       >
         <NotificationsProvider position="top-center">
           <ModalsProvider>
-            <App />
+            <ConfirmationContextProvider>
+              <App />
+            </ConfirmationContextProvider>
           </ModalsProvider>
         </NotificationsProvider>
       </MantineProvider>

@@ -28,6 +28,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { ipcRenderer } from "electron";
 import React, { useState } from "react";
 import { db } from "../database/db";
+import { useConfirm } from "../hooks/confirm";
 import HelpModal from "../modale/helpModal";
 
 type Props = { setLightsOff: any; lightsOff: boolean };
@@ -36,6 +37,9 @@ export default function GlobalSettings({ setLightsOff, lightsOff }: Props) {
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
   const theme = useMantineTheme();
   const [open, setOpen] = useState(false);
+
+  const confirm = useConfirm();
+
   const [openConfirm, setOpenConfirm] = useState(false);
 
   const configs = useLiveQuery(
@@ -159,38 +163,24 @@ export default function GlobalSettings({ setLightsOff, lightsOff }: Props) {
             color="red"
             icon={<IconTrash size={18} />}
             onClick={() => {
-              setOpenConfirm(true);
+              confirm
+                .showConfirmation(
+                  "Are you sure you want to delete all configurations?",
+                  true
+                )
+                .then((res) => {
+                  if (res) {
+                    db.delete();
+                    location.reload();
+                    setOpenConfirm(false);
+                  }
+                });
             }}
           >
             Delete Configurations
           </Menu.Item>
         </Menu.Dropdown>
       </Menu>
-      <Dialog
-        opened={openConfirm}
-        withCloseButton
-        onClose={() => setOpenConfirm(false)}
-        size="lg"
-        radius="md"
-      >
-        <Text size="sm" style={{ marginBottom: 10 }} weight={500}>
-          Are you sure you want to delete all configurations?
-        </Text>
-
-        <Group align="flex-end">
-          <Button onClick={() => setOpenConfirm(false)}>No</Button>
-          <Button
-            color={"red"}
-            onClick={() => {
-              db.delete();
-              location.reload();
-              setOpenConfirm(false);
-            }}
-          >
-            Yes
-          </Button>
-        </Group>
-      </Dialog>
     </Group>
   );
 }
