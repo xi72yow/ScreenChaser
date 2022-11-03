@@ -1,9 +1,13 @@
 import { useLiveQuery } from "dexie-react-hooks";
 import { ipcRenderer } from "electron";
 import React, { useEffect, useRef } from "react";
-import Chaser from "../components/boards/chaser";
 import { db } from "../components/database/db";
 import { rgbToHex } from "../components/effects_build/basics/convertRgbHex";
+import {
+  hsvToRgb,
+  rgbToHsv,
+} from "../components/effects_build/basics/convertHsvRgb";
+
 import setAll from "../components/effects_build/basics/setAll";
 
 type Props = {};
@@ -11,31 +15,73 @@ type Props = {};
 const isProd: boolean = process.env.NODE_ENV === "production";
 
 function Next() {
-  const caserIntervals = useRef([]);
+  const chaserIntervals = useRef([]);
+
   const caserErros = useRef(0);
 
-  function deepEqual(object1, object2) {
-    const keys1 = Object.keys(object1);
-    const keys2 = Object.keys(object2);
-    if (keys1.length !== keys2.length) {
-      return false;
-    }
-    for (const key of keys1) {
-      const val1 = object1[key];
-      const val2 = object2[key];
-      const areObjects = isObject(val1) && isObject(val2);
-      if (
-        (areObjects && !deepEqual(val1, val2)) ||
-        (!areObjects && val1 !== val2)
-      ) {
-        return false;
-      }
-    }
-    return true;
-  }
+  async function setAudioSource(neoPixelCount, ip) {
+    const audioCtx = new window.AudioContext();
 
-  function isObject(object) {
-    return object != null && typeof object === "object";
+    let audioSource = null;
+    let analyser = null;
+    navigator.mediaDevices
+      .enumerateDevices()
+      .then((devices) => {
+        devices.forEach((device) => {
+          console.log(
+            `${device.kind}: ${device.label} id = ${device.deviceId}`
+          );
+        });
+      })
+      .catch((err) => {
+        console.error(`${err.name}: ${err.message}`);
+      });
+
+    const audio = await navigator.mediaDevices.getUserMedia({
+      audio: true,
+      video: {
+        mandatory: {
+          chromeMediaSource: "desktop",
+          chromeMediaSourceId: "",
+          maxWidth: 25,
+        },
+      },
+    });
+    console.log(
+      "🚀 ~ file: chaserhack.tsx ~ line 37 ~ setAudioSource ~ audio",
+      audio
+    );
+
+    audioSource = audioCtx.createMediaStreamSource(audio);
+
+    analyser = audioCtx.createAnalyser();
+    audioSource.connect(analyser);
+
+    analyser.fftSize = getSmallestPowerofTwo(neoPixelCount);
+    const bufferLength = neoPixelCount;
+    const dataArray = new Uint8Array(bufferLength);
+    analyser.getByteFrequencyData(dataArray);
+
+    chaserIntervals.current.push(
+      setInterval(() => {
+        const stripe = [];
+        analyser.getByteFrequencyData(dataArray);
+
+        dataArray.forEach((value, index) => {
+          // the analytic visualizer
+          const red =
+            (index * value) / 10 < 255 ? ((index * value) / 10) | 0 : 255;
+          const green = index * 4 < 255 ? index * 4 : 255;
+          const blue = value / 4 - 12 < 0 ? 0 : (value / 4 - 12) | 0;
+          const hsv = rgbToHsv({ r: red, g: green, b: blue });
+          const rgb = hsvToRgb({ ...hsv, v: value / 255 });
+
+          stripe.push(rgbToHex(rgb.r) + rgbToHex(rgb.g) + rgbToHex(rgb.b));
+        });
+
+        ipcRenderer.send("CHASER:SEND_STRIPE", stripe, ip);
+      }, 110)
+    );
   }
 
   async function setVideoSource(sourceId, neoPixelCount, ip) {
@@ -128,7 +174,7 @@ function Next() {
 
   function handleError(e) {
     console.log("🚀 ~ file: chaserhack.tsx ~ line 106 ~ handleError ~ e", e);
-    caserIntervals.current.forEach((interval) => clearInterval(interval));
+    chaserIntervals.current.forEach((interval) => clearInterval(interval));
     setTimeout(() => {
       startCasers();
     }, caserErros.current * 100);
@@ -143,28 +189,41 @@ function Next() {
     []
   );
 
+  function getSmallestPowerofTwo(number) {
+    if (number > Math.pow(2, Math.floor(Math.log(number) / Math.log(2))))
+      return Math.pow(2, Math.floor(Math.log(number) / Math.log(2)) + 1);
+    else return Math.pow(2, Math.floor(Math.log(number) / Math.log(2)));
+  }
+
   function startCasers() {
-    caserIntervals.current.forEach((interval) => clearInterval(interval));
+    chaserIntervals.current.forEach((interval) => clearInterval(interval));
 
     if (configs) {
       configs
         .filter((config) => config.task.taskCode === "chaser")
         .forEach((config, i) => {
-          console.log(config.chaser.sourceId);
-          setVideoSource(
-            config.chaser.sourceId,
-            config.device.neoPixelCount,
-            "#" + "video" + config.device.ip.replaceAll(".", "")
-          );
-          caserIntervals.current.push(
-            setInterval(() => {
-              const stripe = processCtxData(
-                config.device.neoPixelCount,
-                config.device.ip.replaceAll(".", "")
-              );
-              ipcRenderer.send("CHASER:SEND_STRIPE", stripe, config.device.ip);
-            }, 110)
-          );
+          if (config.chaser.sourceId === "default") {
+            setAudioSource(config.device.neoPixelCount, config.device.ip);
+          } else {
+            setVideoSource(
+              config.chaser.sourceId,
+              config.device.neoPixelCount,
+              "#" + "video" + config.device.ip.replaceAll(".", "")
+            );
+            chaserIntervals.current.push(
+              setInterval(() => {
+                const stripe = processCtxData(
+                  config.device.neoPixelCount,
+                  config.device.ip.replaceAll(".", "")
+                );
+                ipcRenderer.send(
+                  "CHASER:SEND_STRIPE",
+                  stripe,
+                  config.device.ip
+                );
+              }, 110)
+            );
+          }
         });
     }
   }
@@ -177,7 +236,11 @@ function Next() {
   return (
     <div>
       {configs
-        .filter((config) => config.task.taskCode === "chaser")
+        .filter(
+          (config) =>
+            config.task.taskCode === "chaser" &&
+            config.chaser.sourceId !== "default"
+        )
         .map((config) => (
           <div key={config.device.ip + "div"}>
             <video id={"video" + config.device.ip.replaceAll(".", "")}></video>

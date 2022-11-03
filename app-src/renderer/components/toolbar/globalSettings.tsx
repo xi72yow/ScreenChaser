@@ -5,9 +5,6 @@ import {
   useMantineTheme,
   Tooltip,
   Menu,
-  Button,
-  Dialog,
-  Text,
 } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import {
@@ -16,10 +13,6 @@ import {
   IconPower,
   IconPlayerPlay,
   IconHelp,
-  IconArrowsLeftRight,
-  IconMessageCircle,
-  IconPhoto,
-  IconSearch,
   IconSettings,
   IconTrash,
   IconFileDownload,
@@ -39,8 +32,6 @@ export default function GlobalSettings({ setLightsOff, lightsOff }: Props) {
   const [open, setOpen] = useState(false);
 
   const confirm = useConfirm();
-
-  const [openConfirm, setOpenConfirm] = useState(false);
 
   const configs = useLiveQuery(
     async () => {
@@ -172,7 +163,6 @@ export default function GlobalSettings({ setLightsOff, lightsOff }: Props) {
                   if (res) {
                     db.delete();
                     location.reload();
-                    setOpenConfirm(false);
                   }
                 });
             }}

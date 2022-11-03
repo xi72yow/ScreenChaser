@@ -1,16 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
-import {
-  AppShell,
-  Button,
-  ColorScheme,
-  ColorSchemeProvider,
-  ScrollArea,
-  Text,
-} from "@mantine/core";
+import { AppShell, ColorScheme, ColorSchemeProvider } from "@mantine/core";
 import NavbarNested from "../components/navbar/navbar";
 import HeaderApp from "../components/header/header";
 import MeteorRainForm from "../components/forms/meteorRainForm";
-import { IconBulb, IconDatabase } from "@tabler/icons";
 import { MantineProvider } from "@mantine/core";
 import { NotificationsProvider } from "@mantine/notifications";
 import { showNotification } from "@mantine/notifications";
@@ -25,12 +17,7 @@ import DyingLightsForm from "../components/forms/dyingLightsForm";
 import SnakeForm from "../components/forms/snakeForm";
 import Dashboard from "../components/boards/dashboard";
 import Chaser from "../components/boards/chaser";
-import {
-  useHotkeys,
-  useInterval,
-  useLocalStorage,
-  useSetState,
-} from "@mantine/hooks";
+import { useHotkeys, useLocalStorage } from "@mantine/hooks";
 
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, initilalValues } from "../components/database/db";
@@ -108,7 +95,7 @@ function App() {
 
   return (
     <AppShell
-      padding="md"
+      padding={0}
       navbar={
         <NavbarNested
           taskCode={taskCode}

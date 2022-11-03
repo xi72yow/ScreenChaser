@@ -11,13 +11,15 @@ import {
   Col,
   Grid,
   ScrollArea,
+  Tabs,
+  SegmentedControl,
 } from "@mantine/core";
 import { IconChevronDown, IconCpu } from "@tabler/icons";
 import styled from "@emotion/styled";
 import { useElementSize } from "@mantine/hooks";
 import { showNotification } from "@mantine/notifications";
-
-import { updateConfig } from "../database/db";
+import VideoChaser from "./video";
+import AudioChaser from "./audio";
 
 const PreviewImage = styled(Image)`
   cursor: pointer;
@@ -26,21 +28,6 @@ const PreviewImage = styled(Image)`
     border: 2px solid #9b03ff;
     border-radius: 8px;
   }
-`;
-
-const Holder = styled.div<{ width: number }>`
-  background: #222;
-  width: ${({ width }) => (width ? `${width * 0.25}px` : "100%")};
-  height: 50px;
-`;
-
-//@ts-ignore
-const Stand = styled.div<{ width: number }>`
-  background: #333;
-  border-top-left-radius: 0.5em;
-  border-top-right-radius: 0.5em;
-  width: ${({ width }) => (width ? `${width * 0.5}px` : "100%")};
-  height: 20px;
 `;
 
 interface ChaserProps {
@@ -57,6 +44,9 @@ export default function Chaser({ form, selectedDevice }: ChaserProps) {
   });
   const [sources, setSources] = useState([]);
   const [opened, setOpened] = useState(false);
+  const [selectedTab, setSelectedTab] = useState(
+    form.values.chaser.sourceId !== "default" ? "video" : "audio"
+  );
 
   useEffect(() => {
     form.setFieldValue("chaser.sourceId", selected?.id || "");
@@ -64,48 +54,6 @@ export default function Chaser({ form, selectedDevice }: ChaserProps) {
     console.log("message", selected);
     //ipcRenderer.send("CHASER:", selected);
   }, [selected]);
-
-  useEffect(() => {
-    setVideoSource(selected.id);
-  }, []);
-
-  async function setVideoSource(sourceId) {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: false,
-        video: {
-          //@ts-ignore
-          mandatory: {
-            chromeMediaSource: "desktop",
-            chromeMediaSourceId: sourceId,
-            maxWidth: 400,
-          },
-        },
-      });
-      handleStream(stream);
-    } catch (e) {
-      showNotification({
-        title: "Chaser Error",
-        message: JSON.stringify(e),
-        color: "red",
-      });
-      handleError(e);
-    }
-  }
-
-  function handleStream(stream) {
-    const video = document.querySelector("video");
-    video.srcObject = stream;
-    video.onloadedmetadata = (e) => video.play();
-  }
-
-  function handleError(e) {
-    showNotification({
-      title: "Chaser Error",
-      message: JSON.stringify(e),
-      color: "red",
-    });
-  }
 
   const items = sources.map((item) => {
     return (
@@ -115,7 +63,6 @@ export default function Chaser({ form, selectedDevice }: ChaserProps) {
         onClick={() => {
           setSelected(item);
           setOpened(false);
-          setVideoSource(item.id);
         }}
       >
         <Group
@@ -161,58 +108,40 @@ export default function Chaser({ form, selectedDevice }: ChaserProps) {
           <Grid sx={{ marginRight: "1rem" }}>{items}</Grid>
         </ScrollArea>
       </Modal>
-      <Box ref={refSize}>
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            marginBottom: "1em",
-          }}
-        >
-          <Box>
-            <div
-              style={{
-                width: width * 0.7 + "px",
-                height: ((width * 0.7) / 16) * 9 + "px",
-                border: "solid 18px #333",
-                borderRadius: ".5em",
-                backgroundColor: "#000",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                overflow: "hidden",
-              }}
-            >
-              <video
-                id="chaser_video"
-                style={{
-                  height: ((width * 0.7) / 16) * 9 - 30 + "px",
-                  float: "right",
-                }}
-              ></video>
-            </div>
-            <Box sx={{ display: "flex", justifyContent: "center" }}>
-              <Holder width={width * 0.7}></Holder>
-            </Box>
-            <Box sx={{ display: "flex", justifyContent: "center" }}>
-              <Stand width={width * 0.7}></Stand>
-            </Box>
-          </Box>
-        </Box>
-      </Box>
-      <Button
+      <SegmentedControl
         fullWidth
-        leftIcon={<IconChevronDown size={18} stroke={1.5} />}
-        onClick={() => {
-          ipcRenderer.invoke("GET_SOURCES").then((sources) => {
-            console.log("result", sources);
-            setSources(sources);
-            setOpened(true);
-          });
+        defaultValue={
+          form.values.chaser.sourceId !== "default" ? "video" : "audio"
+        }
+        onChange={(value) => {
+          console.log(
+            "🚀 ~ file: chaser.tsx ~ line 131 ~ Chaser ~ value",
+            value
+          );
+          if (value === "audio")
+            setSelected({ id: "default", name: "Desktop Audio" });
+          else
+            setSelected({
+              id: "",
+              name: "Desktop Video",
+            });
+          setSelectedTab(value);
         }}
-      >
-        {selected?.name || "Choose Video Source"}
-      </Button>
+        data={[
+          { value: "video", label: "Video" },
+          { value: "audio", label: "Audio" },
+        ]}
+      />
+      <Box sx={{ padding: "1rem" }}>
+        {selectedTab === "video" && (
+          <VideoChaser
+            selected={selected}
+            setSources={setSources}
+            setOpened={setOpened}
+          ></VideoChaser>
+        )}
+        {selectedTab === "audio" && <AudioChaser></AudioChaser>}
+      </Box>
     </>
   );
 }

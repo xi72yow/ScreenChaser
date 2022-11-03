@@ -1,5 +1,10 @@
 import { Navbar, ScrollArea } from "@mantine/core";
-import { IconGauge, IconFlame, IconBulb, IconDeviceTv } from "@tabler/icons";
+import {
+  IconGauge,
+  IconFlame,
+  IconBulb,
+  IconSquareLetterC,
+} from "@tabler/icons";
 import LinksGroup from "./navbarLinksGroup";
 import useStyles from "../styles/styles";
 import React from "react";
@@ -30,7 +35,7 @@ const menue = [
   },
   {
     label: "Chaser",
-    icon: IconDeviceTv,
+    icon: IconSquareLetterC,
     taskCode: "chaser",
   },
 ];

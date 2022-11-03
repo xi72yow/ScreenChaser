@@ -1,7 +1,6 @@
 import React from "react";
 import {
   Container,
-  Title,
   Accordion,
   createStyles,
   Modal,
