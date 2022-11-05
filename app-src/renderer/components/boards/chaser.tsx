@@ -106,47 +106,50 @@ export default function Chaser({ form, selectedDevice }: ChaserProps) {
     });
   }
 
-  const items = sources.map((item) => {
-    return (
-      <Col
-        span={6}
-        key={item.id}
-        onClick={() => {
-          setSelected(item);
-          setOpened(false);
-          setVideoSource(item.id);
-        }}
-      >
+  const arrayInHalf = (array) => [
+    array.slice(0, Math.ceil(array.length / 2)),
+    array.slice(Math.ceil(array.length / 2)),
+  ];
+
+  const items = arrayInHalf(sources).map((half) =>
+    half.map((item) => {
+      return (
         <Group
-          sx={{
-            display: "flex",
+          key={item.id}
+          onClick={() => {
+            setSelected(item);
+            setOpened(false);
+            setVideoSource(item.id);
           }}
+          style={{ paddingTop: 5 }}
         >
-          <PreviewImage
-            radius="md"
-            src={item.thumbnail?.toDataURL()}
-            height={100}
-            alt={item.name + "_thumbnail"}
-          />
-          <Text
-            size="xs"
-            sx={{
-              textOverflow: "ellipsis",
-              width: 200,
-              display: "inline-block",
-              overflow: "hidden",
-              whiteSpace: "nowrap",
-            }}
-            transform="uppercase"
-            weight={700}
-            color="dimmed"
-          >
-            {item.name || "No name"}
-          </Text>
+          <Box sx={{ maxWidth: "98%" }}>
+            <PreviewImage
+              radius="md"
+              src={item.thumbnail?.toDataURL()}
+              alt={item.name + "_thumbnail"}
+            />
+            <Text
+              size="xs"
+              sx={{
+                textOverflow: "ellipsis",
+                width: 150,
+                display: "inline-block",
+                overflow: "hidden",
+                whiteSpace: "nowrap",
+                marginTop: 0,
+              }}
+              transform="uppercase"
+              weight={700}
+              color="dimmed"
+            >
+              {item.name || "No name"}
+            </Text>
+          </Box>
         </Group>
-      </Col>
-    );
-  });
+      );
+    })
+  );
 
   return (
     <>
@@ -157,7 +160,10 @@ export default function Chaser({ form, selectedDevice }: ChaserProps) {
         title="Choose Video Source"
       >
         <ScrollArea style={{ height: 300 }}>
-          <Grid sx={{ marginRight: "1rem" }}>{items}</Grid>
+          <Grid gutter="lg" sx={{ marginRight: ".7rem" }}>
+            <Grid.Col span={6}>{items[0]}</Grid.Col>
+            <Grid.Col span={6}>{items[1]}</Grid.Col>
+          </Grid>
         </ScrollArea>
       </Modal>
       <Box ref={refSize}>
