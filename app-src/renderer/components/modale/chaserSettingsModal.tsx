@@ -1,19 +1,31 @@
 import {
   ActionIcon,
+  Box,
   Button,
   Indicator,
   Loader,
   Modal,
+  NativeSelect,
+  PasswordInput,
+  SegmentedControl,
+  Select,
   Table,
   TextInput,
 } from "@mantine/core";
-import { IconRefresh, IconFocus2, IconAccessPoint } from "@tabler/icons";
+import {
+  IconRefresh,
+  IconFocus2,
+  IconAccessPoint,
+  IconSend,
+} from "@tabler/icons";
 import React, { useEffect, useRef, useState } from "react";
 import DataEmitter from "../effects_build/network/dataEmitter.js";
 import setAll from "../effects_build/basics/setAll.js";
 import { showNotification } from "@mantine/notifications";
 import { useLiveQuery } from "dexie-react-hooks";
 import { addConfig, db, updateConfig } from "../database/db";
+import { ipcRenderer } from "electron";
+import { useForm } from "@mantine/form";
 
 interface scanNetworkModalProps {}
 
@@ -83,8 +95,35 @@ function DeviceRow({ device, configs, i }) {
 
 export default function ScanNetworkModal({}: scanNetworkModalProps) {
   const [open, setOpen] = useState(false);
+  const [selectedTab, setSelectedTab] = useState("network");
   const [scanning, setScanning] = useState(false);
   const initialScan = useRef(true);
+
+  const settingsForm = useForm({
+    initialValues: {
+      path: "",
+      password: "",
+      ssid: "",
+    },
+    validate: (values) => ({
+      path: values.path === "" ? "Choose an Serial Port" : null,
+      ssid: values.ssid === "" ? "Please set your W-Lan SSID" : null,
+      password:
+        values.password === "" ? "Please set your W-Lan password" : null,
+    }),
+  });
+
+  const [serialPorts, setSerialPorts] = useState([]);
+
+  useEffect(() => {
+    ipcRenderer.invoke("SERIAL:GET_PORTS").then((ports) => {
+      setSerialPorts(
+        ports.map((port, i) => {
+          return { value: port.path, label: port.path };
+        })
+      );
+    });
+  }, []);
 
   const configs = useLiveQuery(async () => {
     return await db.configs.toArray();
@@ -184,38 +223,97 @@ export default function ScanNetworkModal({}: scanNetworkModalProps) {
         title="Device Configuration"
         overflow="inside"
       >
-        <Table sx={{ marginBottom: "1.5rem" }}>
-          <thead>
-            <tr>
-              <th>Chaser IP</th>
-              <th>Chaser Name</th>
-              <th>Identify Color</th>
-              <th>Neopixel Count</th>
-            </tr>
-          </thead>
-          <tbody>{rows}</tbody>
-        </Table>
-        <Button
-          sx={{ float: "right" }}
-          leftIcon={
-            scanning ? <Loader size="sm" /> : <IconRefresh></IconRefresh>
-          }
-          onClick={() => {
-            scanNetwork();
+        <SegmentedControl
+          fullWidth
+          size="xs"
+          defaultValue={selectedTab}
+          onChange={(value) => {
+            setSelectedTab(value);
           }}
-          disabled={scanning}
-        >
-          Scan
-        </Button>
-        <Button
-          sx={{ float: "right", marginRight: "0.5rem" }}
-          leftIcon={<IconFocus2></IconFocus2>}
-          onClick={() => {
-            sendIdentifyColor();
-          }}
-        >
-          Send Identify Color
-        </Button>
+          data={[
+            { value: "network", label: "Network" },
+            { value: "credentials", label: "Device" },
+          ]}
+        />
+        <Box sx={{ marginBottom: "1.5rem", marginTop: "1rem" }}>
+          {selectedTab === "network" && (
+            <div>
+              <Table>
+                <thead>
+                  <tr>
+                    <th>Chaser IP</th>
+                    <th>Chaser Name</th>
+                    <th>Identify Color</th>
+                    <th>Neopixel Count</th>
+                  </tr>
+                </thead>
+                <tbody>{rows}</tbody>
+              </Table>
+              <Button
+                sx={{ float: "right" }}
+                leftIcon={
+                  scanning ? <Loader size="sm" /> : <IconRefresh></IconRefresh>
+                }
+                onClick={() => {
+                  scanNetwork();
+                }}
+                disabled={scanning}
+              >
+                Scan
+              </Button>
+              <Button
+                sx={{ float: "right", marginRight: "0.5rem" }}
+                leftIcon={<IconFocus2></IconFocus2>}
+                onClick={() => {
+                  sendIdentifyColor();
+                }}
+              >
+                Send Identify Color
+              </Button>
+            </div>
+          )}
+          {selectedTab === "credentials" && (
+            <form
+              onSubmit={settingsForm.onSubmit((values) => {
+                ipcRenderer.send("SERIAL:EMIT", values);
+                showNotification({
+                  title: "Chaser Notification",
+                  message: `Sent credentials to Chaser, see blinking LED-Indicator.`,
+                });
+              })}
+            >
+              <Select
+                label="Serial Port"
+                description="Choose the Serial Port of your Chaser, usually /dev/ttyUSB0."
+                placeholder="Pick one"
+                {...settingsForm.getInputProps("path")}
+                nothingFound="No options"
+                clearable
+                searchable
+                data={serialPorts}
+              />
+
+              <TextInput
+                placeholder="My-WLAN"
+                description="This is name of your WLAN"
+                label="W-Lan SSID"
+                {...settingsForm.getInputProps("ssid")}
+              />
+              <PasswordInput
+                placeholder="Password"
+                label="Your W-Lan Password"
+                {...settingsForm.getInputProps("password")}
+              />
+              <Button
+                type="submit"
+                sx={{ float: "right", marginTop: "1.5rem" }}
+                leftIcon={<IconSend></IconSend>}
+              >
+                Send Credentials
+              </Button>
+            </form>
+          )}
+        </Box>
       </Modal>
       <Indicator
         dot={scanning}

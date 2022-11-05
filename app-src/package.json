@@ -39,8 +39,7 @@
     "electron-serve": "^1.1.0",
     "electron-store": "^8.1.0",
     "embla-carousel-react": "^7.0.3",
-    "konva": "^8.3.13",
-    "react-konva": "^18.2.3"
+    "serialport": "^10.4.0"
   },
   "devDependencies": {
     "@types/node": "^16.11.7",

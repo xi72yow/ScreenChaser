@@ -1,28 +1,22 @@
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
+#include <ArduinoJson.h>
 #include <Adafruit_NeoPixel.h>
-#include "parsebytes.h"
-#include "wifiSetup.h"
+
+#include <Preferences.h>
+
+Preferences preferences;
 
 #define LED_PIN 14 // the D5 on D1Mini
 #define LED_COUNT 120
 #define BRIGHTNESS 50
 #define CHIPSET WS2812B
 #define COLOR_ORDER GRB
-#define NO_SLEEP
-
 #define DEBUG
-
-// Primary config, or defaults.
-#if __has_include("myconfig.h")
-#include "myconfig.h"
-#else
-#warning "Using Defaults: Copy myconfig.sample.h to myconfig.h and edit that to use your own settings"
-#endif
-
-// Number of known networks in stationList[]
-int stationCount = sizeof(stationList) / sizeof(stationList[0]);
+#define NO_SLEEP
+#define ARDUINOJSON_ENABLE_ARDUINO_STRING 1
+#define WAITING_TIMEOUT 120000
 
 Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 
@@ -30,6 +24,88 @@ WiFiUDP Udp;
 unsigned int localUdpPort = 4210; // local port to listen on
 char incomingPacket[1024];        // buffer for incoming packets
 char replyPacket[] = "check!";    // a reply string to send back
+
+DynamicJsonDocument doc(1024);
+
+// Notification LED
+void flashLED(int flashtime)
+{
+#if defined(LED_BUILTIN) // If we have it; flash it.
+  delay(flashtime);
+  digitalWrite(LED_BUILTIN, 0); // On at full power.
+  delay(flashtime);             // delay
+  digitalWrite(LED_BUILTIN, 1); // turn Off
+#else
+  return; // No notifcation LED, do nothing, no delay
+#endif
+}
+
+void getSettings()
+{
+  unsigned long startWaiting = millis();
+  while (Serial.available() <= 0 && millis() - startWaiting <= WAITING_TIMEOUT)
+  {
+    flashLED(100);
+  }
+  // read the incoming string:
+  String json = Serial.readString();
+
+  DeserializationError error = deserializeJson(doc, json);
+
+  // Test if parsing succeeds.
+  if (error)
+  {
+    Serial.print(F("deserializeJson() failed: "));
+    Serial.println(error.f_str());
+    return;
+  }
+
+  // prints the received data
+  String ssid = doc["ssid"];
+  String password = doc["password"];
+  // neopixelCount      = doc["pixCount"].f_str();
+  preferences.putString("ssid", ssid);
+  preferences.putString("password", password);
+  Serial.println(password);
+  Serial.println(ssid);
+  // ESP.restart();
+}
+
+void connectToNetwork()
+{
+
+  String ssid = preferences.getString("ssid", "");
+  String password = preferences.getString("password", "");
+
+  Serial.println(password);
+  Serial.println(ssid);
+
+  byte i = 0;
+  WiFi.persistent(false);
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid.c_str(), password.c_str());
+  unsigned long startWaiting = millis();
+  while (WiFi.status() != WL_CONNECTED && millis() - startWaiting <= WAITING_TIMEOUT)
+  {
+    flashLED(900);
+    i++;
+    if (i > 9)
+    {
+      getSettings();
+      return;
+    }
+
+    if (WiFi.status() == WL_CONNECTED)
+    {
+      Serial.println("");
+      Serial.print("Connected to ");
+      Serial.println(ssid);
+      Serial.print("IP address: ");
+      Serial.println(WiFi.localIP());
+    }
+    Serial.println("Connect failed. Try again...");
+  }
+}
 
 int getNum(char ch)
 {
@@ -93,37 +169,43 @@ void setup()
   Serial.println();
   pinMode(LED_BUILTIN, OUTPUT);
 
-  wifiSetup(stationList, stationCount);
+  preferences.begin("settings", false);
+
+  String ssid = preferences.getString("ssid", "");
+  String password = preferences.getString("password", "");
+
+  if (ssid == "" || password == "")
+  {
+    Serial.println("No values saved for ssid or password");
+  }
+
+  Serial.printf("Connecting to %s ", ssid);
+  connectToNetwork();
   setupStripe();
 
   Udp.begin(localUdpPort);
-#ifdef DEBUG
   Serial.printf("Now listening at IP %s, UDP port %d\n", WiFi.localIP().toString().c_str(), localUdpPort);
-#endif
 }
 
 void loop()
 {
   if (WiFi.status() != WL_CONNECTED)
   {
-    wifiSetup(stationList, stationCount);
+    delay(10);
+    connectToNetwork();
   }
 
   int packetSize = Udp.parsePacket();
   if (packetSize)
   {
-// receive incoming UDP packets
-#ifdef DEBUG
+    // receive incoming UDP packets
     Serial.printf("Received %d bytes from %s, port %d\n", packetSize, Udp.remoteIP().toString().c_str(), Udp.remotePort());
-#endif
     int len = Udp.read(incomingPacket, 512);
     if (len > 0)
     {
       incomingPacket[len] = 0;
     }
-#ifdef DEBUG
     Serial.printf("UDP packet contents: %s\n", incomingPacket);
-#endif
     byte stripePart = incomingPacket[0] - '0';
     int startLed = stripePart * 42;
 
@@ -138,10 +220,8 @@ void loop()
     strip.show();
 
     int elements_in_Packet = sizeof(incomingPacket) / sizeof(incomingPacket[0]);
-#ifdef DEBUG
     Serial.printf("char: %c\n", incomingPacket[1]);
     Serial.printf("len: %i\n", elements_in_Packet);
-#endif
 
     // send back a reply, to the IP address and port we got the packet from
     Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());

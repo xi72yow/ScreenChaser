@@ -4,6 +4,7 @@ import * as util from "util";
 import serve from "electron-serve";
 import { createWindow, StatCalculator } from "./helpers";
 import Manager from "./helpers/effects_build/manager/manager";
+import { SerialPort } from "serialport";
 
 const writeFile = util.promisify(fs.writeFile);
 
@@ -149,6 +150,24 @@ if (isProd) {
       console.log("🚀 ~ file: background.ts ~ line 151 ~ error", error);
       return "failed";
     }
+  });
+
+  //handle serial ports
+  ipcMain.handle("SERIAL:GET_PORTS", async function (event, configs) {
+    const ports = await SerialPort.list();
+    return ports;
+  });
+
+  //handle serial emit
+  ipcMain.on("SERIAL:EMIT", async function (event, settings) {
+    console.log("🚀 ~ file: background.ts ~ line 163 ~ settings", settings);
+    let sendSetting = { ...settings };
+    const serialport = new SerialPort({
+      path: sendSetting.path,
+      baudRate: 115200,
+    });
+    delete sendSetting.path;
+    serialport.write(JSON.stringify(settings));
   });
 })();
 
