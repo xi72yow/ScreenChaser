@@ -17,7 +17,7 @@ const useStyles = createStyles((theme) => ({
   icon: {
     color:
       theme.colorScheme === "dark"
-        ? theme.colors.dark[3]
+        ? theme.colors.purple[1]
         : theme.colors.gray[4],
   },
 

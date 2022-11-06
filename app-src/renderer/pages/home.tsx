@@ -39,6 +39,7 @@ import StaticLightForm from "../components/forms/staticLightForm";
 import { ipcRenderer } from "electron";
 import { setTimeout } from "timers";
 import ConfirmationContextProvider from "../components/hooks/confirm";
+import colors from "../components/styles/colors";
 
 function App() {
   const [selectedDevice, setSelectedDevice] = React.useState<any>(0);
@@ -215,7 +216,6 @@ function App() {
             return <h1>work in progress</h1>;
         }
       })()}
-
     </AppShell>
   );
 }

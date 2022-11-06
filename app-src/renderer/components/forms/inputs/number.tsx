@@ -5,6 +5,7 @@ import {
   NumberInputHandlers,
   ActionIcon,
   Text,
+  useMantineTheme,
 } from "@mantine/core";
 import { IconPlus, IconMinus } from "@tabler/icons";
 
@@ -71,6 +72,7 @@ export default function QuantityInput({
   sx,
   onChange,
 }: QuantityInputProps) {
+  const theme = useMantineTheme();
   const { classes } = useStyles();
   const handlers = useRef<NumberInputHandlers>(null);
   const [value, setValue] = useState<number | undefined>(defaultValue);
@@ -90,7 +92,15 @@ export default function QuantityInput({
 
   return (
     <React.Fragment>
-      <Text sx={{ fontWeight: 400 }}>{label}</Text>
+      <Text
+        sx={{
+          fontSize: theme.fontSizes.sm,
+          fontWeight: 400,
+          marginTop: "0.5rem",
+        }}
+      >
+        {label}
+      </Text>
 
       <div className={classes.wrapper}>
         <ActionIcon<"button">

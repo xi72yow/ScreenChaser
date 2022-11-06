@@ -19,12 +19,6 @@ export default function BouncingBallsForm({ form }: BouncingBallsProps) {
         path="bouncingBalls.ballMode"
         defaultValue={form.values.bouncingBalls?.ballMode || "random"}
       />
-      <Checkbox
-        label="Mirrored?"
-        form={form}
-        path="bouncingBalls.mirrored"
-        defaultValue={form.values.bouncingBalls?.mirrored || false}
-      />
       <QuantityInput
         form={form}
         path="bouncingBalls.tail"
@@ -37,12 +31,12 @@ export default function BouncingBallsForm({ form }: BouncingBallsProps) {
         label="Ball Count"
         defaultValue={form.values.bouncingBalls?.ballCount || 3}
       ></QuantityInput>
-      {/*     <ColorInput
-        placeholder="Pick color"
-        label="BaseStripe Color"
-        defaultValue="#ff0000"
-        {...form.getInputProps("bouncingBalls.BaseStripe", { type: "color" })}
-      /> */}
+      <Checkbox
+        label="Mirrored?"
+        form={form}
+        path="bouncingBalls.mirrored"
+        defaultValue={form.values.bouncingBalls?.mirrored || false}
+      />
       <BaseStripeInput
         form={form}
         path="bouncingBalls.baseStripe"

@@ -28,7 +28,6 @@ export default function CheckboxInput({
       onChange={(event) => {
         if (form) form.setFieldValue(path, event.currentTarget.value);
       }}
-      defaultValue={defaultValue}
       {...form.getInputProps(path, { type: "select" })}
     />
   );

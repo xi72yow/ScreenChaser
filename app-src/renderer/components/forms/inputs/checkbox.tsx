@@ -14,16 +14,14 @@ export default function CheckboxInput({
   form,
   path,
 }: CheckboxProps) {
-  
   React.useEffect(() => {
     if (form) form.setFieldValue(path, defaultValue);
   }, []);
 
   return (
     <Checkbox
-      sx={{ marginTop: 3, marginBottom: 3 }}
+      sx={{ marginTop: ".8rem", marginBottom: 3 }}
       label={label}
-      defaultChecked={defaultValue}
       onChange={(event) => {
         if (form) form.setFieldValue(path, event.currentTarget.checked);
       }}

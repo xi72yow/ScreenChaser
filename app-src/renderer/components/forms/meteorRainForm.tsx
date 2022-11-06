@@ -2,29 +2,21 @@ import React from "react";
 import { ColorInput } from "@mantine/core";
 import Checkbox from "./inputs/checkbox";
 import QuantityInput from "./inputs/number";
+import useStyles from "../styles/styles";
+import Color from "./inputs/color";
 
 interface MeteorRainFormProps {
   form: any;
 }
 
 export default function MeteorRainForm({ form }: MeteorRainFormProps) {
-  React.useEffect(() => {
-    if (form) {
-      form.setFieldValue(
-        "meteorRain.meteorColor",
-        form.values.meteorRain?.meteorColor || "#9B03FF"
-      );
-    }
-  }, []);
   return (
     <React.Fragment>
-      <ColorInput
-        placeholder="Pick color"
-        label="Meteor Color"
-        onChange={(value) => {
-          form.setFieldValue("meteorRain.meteorColor", value);
-        }}
-        value={form.values.meteorRain.meteorColor}
+      <Color
+        form={form}
+        path={"meteorRain.meteorColor"}
+        label={"Meteor Color"}
+        defaultValue={form.values.meteorRain?.meteorColor}
       />
       <QuantityInput
         form={form}
