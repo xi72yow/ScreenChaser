@@ -1,6 +1,6 @@
 import React from "react";
 import { ActionIcon, ColorInput, createStyles } from "@mantine/core";
-import { IconRefresh } from "@tabler/icons";
+import { IconWand } from "@tabler/icons";
 
 type Props = { form: any; path: string; label?: string; defaultValue: string };
 
@@ -48,7 +48,7 @@ export default function Color({ form, path, label, defaultValue }: Props) {
               form.setFieldValue(path, randomColor());
             }}
           >
-            <IconRefresh size={16} />
+            <IconWand size={16} />
           </ActionIcon>
         }
       />

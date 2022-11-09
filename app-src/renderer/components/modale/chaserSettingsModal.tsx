@@ -115,14 +115,45 @@ export default function ScanNetworkModal({}: scanNetworkModalProps) {
 
   const [serialPorts, setSerialPorts] = useState([]);
 
-  useEffect(() => {
+  function refreshSerialPorts() {
     ipcRenderer.invoke("SERIAL:GET_PORTS").then((ports) => {
-      setSerialPorts(
-        ports.map((port, i) => {
-          return { value: port.path, label: port.path };
-        })
+      const foundPorts = ports.map((port, i) => {
+        return { value: port.path, label: port.path };
+      });
+      let newPorts = [];
+      foundPorts.forEach((port, index, array) => {
+        if (serialPorts.findIndex((p) => p.value === port.value) === -1) {
+          newPorts.push(port);
+        }
+      });
+      console.log(
+        "🚀 ~ file: chaserSettingsModal.tsx ~ line 124 ~ ipcRenderer.invoke ~ newPorts",
+        newPorts
       );
+
+      newPorts = newPorts.filter((v) => v.value.includes("USB"));
+
+      if (newPorts.length > 0) {
+        showNotification({
+          title: "Chaser Notification",
+          message:
+            "Potencial new via USB connected Chaser found: " +
+            newPorts.map((p) => p.value).join(", "),
+          color: "blue",
+        });
+      } else
+        showNotification({
+          title: "Chaser Notification",
+          message: "No potencial new via USB connected Chaser found.",
+          color: "blue",
+        });
+
+      setSerialPorts(foundPorts);
     });
+  }
+
+  useEffect(() => {
+    refreshSerialPorts();
   }, []);
 
   const configs = useLiveQuery(async () => {
@@ -291,6 +322,15 @@ export default function ScanNetworkModal({}: scanNetworkModalProps) {
                 clearable
                 searchable
                 data={serialPorts}
+                rightSection={
+                  <ActionIcon
+                    onClick={() => {
+                      refreshSerialPorts();
+                    }}
+                  >
+                    <IconRefresh size={16} />
+                  </ActionIcon>
+                }
               />
 
               <TextInput
