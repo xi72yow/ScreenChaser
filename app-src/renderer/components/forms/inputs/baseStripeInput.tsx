@@ -1,8 +1,10 @@
-import { Button, ColorPicker, Group, Modal } from "@mantine/core";
+import { AppShell, Button, ColorPicker, Group, Modal } from "@mantine/core";
 import { IconColorPicker, IconPalette, IconTrash } from "@tabler/icons";
 import React, { useState, useRef, useEffect } from "react";
 import BaseStripeCanvas from "./baseStripeCanvas";
+import { Canvas } from "@react-three/fiber";
 import { DropzoneButton } from "./dropzone";
+import BaseStripeCreatorToolbar from "./baseStripe/baseStripeCreatorToolbar";
 
 interface BaseStripeInputProps {
   form: any;
@@ -50,14 +52,25 @@ export default function BaseStripeInput({
         onClose={() => setOpen(false)}
         title="BaseStripe Creator"
       >
-        <BaseStripeCanvas
+        <Canvas
+          style={{ border: "1px solid red", width: "100%", height: "12vh" }}
+        >
+          <ambientLight intensity={0.1} />
+          <directionalLight color="red" position={[0, 0, 5]} />
+          <mesh>
+            <boxGeometry />
+            <meshStandardMaterial />
+          </mesh>
+        </Canvas>
+        <BaseStripeCreatorToolbar></BaseStripeCreatorToolbar>
+
+        {/* <BaseStripeCanvas
           color={color}
           path={path}
           form={form}
           defaultValue={defaultValue}
         ></BaseStripeCanvas>
         <Group sx={{ display: "flex", paddingTop: "0.5rem" }} position="center">
-          {/* <DropzoneButton></DropzoneButton> */}
           <ColorPicker
             format="hex"
             value={color}
@@ -89,7 +102,7 @@ export default function BaseStripeInput({
           >
             Remove Color
           </Button>
-        </Group>
+        </Group> */}
       </Modal>
       <Button
         fullWidth

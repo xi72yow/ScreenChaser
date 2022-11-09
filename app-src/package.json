@@ -32,6 +32,7 @@
     "@mantine/prism": "^5.5.5",
     "@mantine/rte": "^5.5.5",
     "@mantine/spotlight": "^5.5.5",
+    "@react-three/fiber": "^8.9.1",
     "@tabler/icons": "^1.104.0",
     "dayjs": "^1.11.5",
     "dexie": "^3.2.2",
@@ -39,7 +40,8 @@
     "electron-serve": "^1.1.0",
     "electron-store": "^8.1.0",
     "embla-carousel-react": "^7.0.3",
-    "serialport": "^10.4.0"
+    "serialport": "^10.4.0",
+    "three": "^0.146.0"
   },
   "devDependencies": {
     "@types/node": "^16.11.7",
@@ -48,6 +50,7 @@
     "electron": "^20.1.0",
     "electron-builder": "^23.3.3",
     "next": "^12.2.5",
+    "next-transpile-modules": "^10.0.0",
     "nextron": "^8.2.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
