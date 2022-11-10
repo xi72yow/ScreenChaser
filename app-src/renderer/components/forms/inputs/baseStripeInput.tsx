@@ -108,8 +108,8 @@ export default function BaseStripeInput({
   useHotkeys([
     ["A", () => setCameraPosX(cameraPosX + 1)],
     ["D", () => setCameraPosX(cameraPosX - 1)],
-    ["Q", () => cameraPosZ > 4 && setCameraPosZ(cameraPosZ - 1)],
-    ["E", () => cameraPosZ < 30 && setCameraPosZ(cameraPosZ + 1)],
+    ["W", () => cameraPosZ > 4 && setCameraPosZ(cameraPosZ - 1)],
+    ["S", () => cameraPosZ < 30 && setCameraPosZ(cameraPosZ + 1)],
   ]);
 
   function handleClose() {

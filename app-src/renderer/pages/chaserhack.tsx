@@ -11,7 +11,6 @@ const isProd: boolean = process.env.NODE_ENV === "production";
 
 function Next() {
   const caserIntervals = useRef([]);
-  const caserErros = useRef(0);
   const chasedRow = useRef(1);
   const lastBlackCheck = useRef(0);
 
@@ -142,10 +141,6 @@ function Next() {
   function handleError(e) {
     console.log("🚀 ~ file: chaserhack.tsx ~ line 106 ~ handleError ~ e", e);
     caserIntervals.current.forEach((interval) => clearInterval(interval));
-    setTimeout(() => {
-      startCasers();
-    }, caserErros.current * 100);
-    caserErros.current++;
   }
 
   const configs = useLiveQuery(
