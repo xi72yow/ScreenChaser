@@ -185,6 +185,10 @@ class DataEmitter {
       if (this.ipaddr === "") {
         this.SCAN_NETWORK = true;
         const scanning = await this.scanNetwork();
+        const chasers = scanning.find((xSlave) => xSlave.type === "led");
+        if (!chasers) {
+          reject("no chaser found");
+        }
         this.ipaddr = scanning.find((xSlave) => xSlave.type === "led").ip;
         console.log(`ipaddr is set to: ${this.ipaddr}`);
       } else {

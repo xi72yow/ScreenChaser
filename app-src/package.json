@@ -32,6 +32,7 @@
     "@mantine/prism": "^5.5.5",
     "@mantine/rte": "^5.5.5",
     "@mantine/spotlight": "^5.5.5",
+    "@react-three/drei": "^9.40.0",
     "@react-three/fiber": "^8.9.1",
     "@tabler/icons": "^1.104.0",
     "dayjs": "^1.11.5",
