@@ -29,7 +29,8 @@ class StatCalculator {
             icon: "bolt",
             diff:
               this.lastStats.length !== 0
-                ? (data.power / that.lastStats[i].details[0]?.value) * 100 - 100
+                ? that.lastStats[i] &&
+                  (data.power / that.lastStats[i].details[0]?.value) * 100 - 100
                 : 0,
           },
           {

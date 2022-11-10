@@ -1,7 +1,6 @@
 import { useLiveQuery } from "dexie-react-hooks";
 import { ipcRenderer } from "electron";
 import React, { useEffect, useRef } from "react";
-import Chaser from "../components/boards/chaser";
 import { db } from "../components/database/db";
 import { rgbToHex } from "../components/effects_build/basics/convertRgbHex";
 import setAll from "../components/effects_build/basics/setAll";
@@ -13,30 +12,8 @@ const isProd: boolean = process.env.NODE_ENV === "production";
 function Next() {
   const caserIntervals = useRef([]);
   const caserErros = useRef(0);
-
-  function deepEqual(object1, object2) {
-    const keys1 = Object.keys(object1);
-    const keys2 = Object.keys(object2);
-    if (keys1.length !== keys2.length) {
-      return false;
-    }
-    for (const key of keys1) {
-      const val1 = object1[key];
-      const val2 = object2[key];
-      const areObjects = isObject(val1) && isObject(val2);
-      if (
-        (areObjects && !deepEqual(val1, val2)) ||
-        (!areObjects && val1 !== val2)
-      ) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  function isObject(object) {
-    return object != null && typeof object === "object";
-  }
+  const chasedRow = useRef(1);
+  const lastBlackCheck = useRef(0);
 
   async function setVideoSource(sourceId, neoPixelCount, ip) {
     try {
@@ -106,7 +83,11 @@ function Next() {
 
       for (let i = 0; i < neoPixelCount; i++) {
         const [redIndex, greenIndex, blueIndex, alphaIndex] =
-          getColorIndicesForCoord(i, frame.height - 1, frame.width);
+          getColorIndicesForCoord(
+            i,
+            frame.height - chasedRow.current,
+            frame.width
+          );
         stripe.push(
           rgbToHex(frame.data[redIndex]) +
             rgbToHex(frame.data[greenIndex]) +
@@ -114,10 +95,42 @@ function Next() {
         );
       }
 
+      if (Date.now() - lastBlackCheck.current > 10000) {
+        chasedRow.current = checkBlackBar(frame, neoPixelCount);
+        lastBlackCheck.current = Date.now();
+      }
+
       return stripe;
     } catch (e) {
       handleError(e);
     }
+  }
+
+  //check for black bar at the bottom of the frame
+  function checkBlackBar(frame, neopixelCount) {
+    const reducedArr = [];
+    //if the last row is black, return true
+    for (let k = (frame.height / 4) | 0; k > 1; k--) {
+      let averageColor = 0;
+      for (let i = 0; i < neopixelCount; i++) {
+        const [redIndex, greenIndex, blueIndex, alphaIndex] =
+          getColorIndicesForCoord(i, frame.height - k, frame.width);
+        averageColor =
+          averageColor +
+          frame.data[redIndex] +
+          frame.data[greenIndex] +
+          frame.data[blueIndex];
+      }
+      reducedArr.push((averageColor / neopixelCount) * 3);
+    }
+
+    for (let i = reducedArr.length; i > 0; i--) {
+      // here not zero because somtimes there is an logo in the bottom corner
+      if (reducedArr[i] > 2) {
+        return reducedArr.length - i + 2;
+      }
+    }
+    return 1;
   }
 
   function handleStream(stream, id: any) {
@@ -156,15 +169,13 @@ function Next() {
             config.device.neoPixelCount,
             "#" + "video" + config.device.ip.replaceAll(".", "")
           );
-          caserIntervals.current.push(
-            setInterval(() => {
-              const stripe = processCtxData(
-                config.device.neoPixelCount,
-                config.device.ip.replaceAll(".", "")
-              );
-              ipcRenderer.send("CHASER:SEND_STRIPE", stripe, config.device.ip);
-            }, 110)
-          );
+          caserIntervals.current[i] = setInterval(() => {
+            const stripe = processCtxData(
+              config.device.neoPixelCount,
+              config.device.ip.replaceAll(".", "")
+            );
+            ipcRenderer.send("CHASER:SEND_STRIPE", stripe, config.device.ip);
+          }, 110);
         });
     }
   }
