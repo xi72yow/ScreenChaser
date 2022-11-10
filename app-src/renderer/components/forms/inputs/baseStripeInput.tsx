@@ -134,7 +134,7 @@ export default function BaseStripeInput({
             height: 80,
           }}
         >
-          <Canvas>
+          <Canvas frameloop="demand">
             {/* @ts-ignore */}
             <PerspectiveCamera
               makeDefault

@@ -45,7 +45,7 @@ export default function HeaderApp({
           }}
           icon={<IconCpu size={16} color={theme.colors.blue[6]} stroke={1.5} />}
           rightSection={
-            <Text size="xs" transform="uppercase" weight={700} color="dimmed">
+            <Text size="xs" transform="uppercase" weight={700} color="dimmed" ml={8}>
               {device.name || "No name"}
             </Text>
           }
@@ -101,7 +101,7 @@ export default function HeaderApp({
         }}
       >
         <Group>
-          <Menu transition="pop-top-right" position="top-end" width={300}>
+          <Menu transition="pop-top-right" position="top-end">
             <Menu.Target>
               <Button
                 sx={{ height: 40 }}

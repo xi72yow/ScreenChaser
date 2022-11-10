@@ -319,7 +319,6 @@ export default function ScanNetworkModal({}: scanNetworkModalProps) {
                 placeholder="Pick one"
                 {...settingsForm.getInputProps("path")}
                 nothingFound="No options"
-                clearable
                 searchable
                 data={serialPorts}
                 rightSection={
