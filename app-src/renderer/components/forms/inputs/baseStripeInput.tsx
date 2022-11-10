@@ -6,6 +6,7 @@ import { PerspectiveCamera } from "@react-three/drei";
 import { DropzoneButton } from "./dropzone";
 import BaseStripeCreatorToolbar from "./baseStripe/baseStripeCreatorToolbar";
 import { useHotkeys } from "@mantine/hooks";
+import { prepare } from "@react-three/fiber/dist/declarations/src/core/renderer";
 
 interface BaseStripeInputProps {
   form: any;
@@ -62,13 +63,34 @@ function isHexColor(str) {
   return str.match(/^#[0-9A-F]{6}$/i) !== null;
 }
 
+function prepareBaseStripe(defaultValue, neoPixelCount) {
+  let preparedStripe = [...defaultValue];
+  if (preparedStripe.length < neoPixelCount) {
+    for (let i = preparedStripe.length; i < neoPixelCount; i++) {
+      preparedStripe.push("#000000");
+    }
+  } else if (preparedStripe.length > neoPixelCount) {
+    preparedStripe = preparedStripe.slice(0, neoPixelCount);
+  }
+  return preparedStripe;
+}
+
 export default function BaseStripeInput({
   form,
   path,
   defaultValue,
 }: BaseStripeInputProps) {
-  if (isHexColor(defaultValue[0][0])) console.log("multiframes");
-  const [baseStripe, setBaseStripe] = React.useState(defaultValue);
+  //if (isHexColor(defaultValue[0][0])) console.log("multiframes");
+
+  const [baseStripe, setBaseStripe] = React.useState(
+    prepareBaseStripe(defaultValue, form.values.neoPixelCount)
+  );
+
+  useEffect(() => {
+    setBaseStripe(
+      prepareBaseStripe(defaultValue, form.values.device.neoPixelCount)
+    );
+  }, [form.values.device.neoPixelCount]);
 
   const [open, setOpen] = useState(false);
   const [color, setColor] = useState("#9B03FF");
@@ -104,37 +126,36 @@ export default function BaseStripeInput({
         onClose={() => handleClose()}
         title="BaseStripe Creator"
       >
-        <Canvas
-          style={{
-            margin: "auto",
+        <Group
+          position="center"
+          sx={{
             border: "1px solid lightgrey",
             borderRadius: "1rem",
             height: 80,
           }}
-          onScroll={(e) => {
-            console.log(e);
-          }}
         >
-          {/* @ts-ignore */}
-          <PerspectiveCamera
-            makeDefault
-            position={[cameraPosX, 0, cameraPosZ]}
-          />
-          <ambientLight intensity={0.5} color={"#ffffff"} />
-          <directionalLight color="red" position={[0, 0, 5]} />
-          {defaultValue.map((defaultColor, i) => (
-            <LED
-              key={i}
-              index={i}
-              changeColor={changeColorEvent}
-              position={[i * 1.2, 0, 0]}
-              color={color}
-              defaultColor={defaultColor}
-              baseStripe={baseStripe}
-              setBaseStripe={setBaseStripe}
+          <Canvas>
+            {/* @ts-ignore */}
+            <PerspectiveCamera
+              makeDefault
+              position={[cameraPosX, 0, cameraPosZ]}
             />
-          ))}
-        </Canvas>
+            <ambientLight intensity={0.5} color={"#ffffff"} />
+            <directionalLight color="red" position={[0, 0, 5]} />
+            {baseStripe.map((defaultColor, i) => (
+              <LED
+                key={i}
+                index={i}
+                changeColor={changeColorEvent}
+                position={[i * 1.2, 0, 0]}
+                color={color}
+                defaultColor={defaultColor}
+                baseStripe={baseStripe}
+                setBaseStripe={setBaseStripe}
+              />
+            ))}
+          </Canvas>
+        </Group>
         <BaseStripeCreatorToolbar
           path={path}
           form={form}
