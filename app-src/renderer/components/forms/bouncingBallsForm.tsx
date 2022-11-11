@@ -37,11 +37,13 @@ export default function BouncingBallsForm({ form }: BouncingBallsProps) {
         path="bouncingBalls.mirrored"
         defaultValue={form.values.bouncingBalls?.mirrored || false}
       />
-      <BaseStripeInput
-        form={form}
-        path="bouncingBalls.baseStripe"
-        defaultValue={form.values.bouncingBalls?.baseStripe}
-      />
+      {form.values.bouncingBalls?.tail === 0 && (
+        <BaseStripeInput
+          form={form}
+          path="bouncingBalls.baseStripe"
+          defaultValue={form.values.bouncingBalls?.baseStripe}
+        />
+      )}
     </React.Fragment>
   );
 }
