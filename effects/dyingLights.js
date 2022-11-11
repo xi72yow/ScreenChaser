@@ -2,10 +2,14 @@ import setAll from "./basics/setAll.js";
 import setPixel from "./basics/setPixel.js";
 import random from "./basics/random.js";
 import { hsvToRgb, rgbToHsv } from "./basics/convertHsvRgb.js";
+import { hexToRgb } from "./basics/convertRgbHex.js";
 
 class DyingLights {
   constructor(options) {
-    const { neopixelCount, red = 155, green = 3, blue = 255 } = options;
+    const { neopixelCount, lightColor = "#9B03FF" } = options;
+
+    const { r: red, g: green, b: blue } = hexToRgb(lightColor.substring(1));
+
     this.baseStripe = setAll(red, green, blue, neopixelCount);
     this.stripe = setAll(red, green, blue, neopixelCount);
     this.red = red;
