@@ -28,9 +28,8 @@ class StatCalculator {
             value: data.power,
             icon: "bolt",
             diff:
-              this.lastStats.length !== 0
-                ? that.lastStats[i] &&
-                  (data.power / that.lastStats[i].details[0]?.value) * 100 - 100
+              this.lastStats.length !== 0 && that.lastStats[i]
+                ? (data.power / that.lastStats[i].details[0]?.value) * 100 - 100
                 : 0,
           },
           {
@@ -38,11 +37,10 @@ class StatCalculator {
             value: data.packageloss,
             icon: "package",
             diff:
-              this.lastStats.length !== 0
-                ? that.lastStats[i] &&
-                  (data.packageloss / that.lastStats[i].details[1]?.value) *
+              this.lastStats.length !== 0 && that.lastStats[i]
+                ? (data.packageloss / that.lastStats[i].details[1]?.value) *
                     100 -
-                    100
+                  100
                 : 0,
           },
         ],
