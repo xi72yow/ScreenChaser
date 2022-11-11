@@ -45,7 +45,19 @@ export default function HeaderApp({
           }}
           icon={<IconCpu size={16} color={theme.colors.blue[6]} stroke={1.5} />}
           rightSection={
-            <Text size="xs" transform="uppercase" weight={700} color="dimmed" ml={8}>
+            <Text
+              size="xs"
+              transform="uppercase"
+              weight={700}
+              color="dimmed"
+              ml={8}
+              sx={{
+                whiteSpace: "nowrap",
+                maxWidth: "150px",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
               {device.name || "No name"}
             </Text>
           }
@@ -108,11 +120,21 @@ export default function HeaderApp({
                 rightIcon={<IconChevronDown size={18} stroke={1.5} />}
                 pr={12}
               >
-                {`${
-                  configs[selectedDevice]?.device.name
-                    ? configs[selectedDevice]?.device.name
-                    : "New"
-                }@${configs[selectedDevice]?.device.ip}` || "Choose Device"}
+                <Text
+                  sx={{
+                    whiteSpace: "nowrap",
+                    maxWidth: "150px",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  {`${
+                    configs[selectedDevice]?.device.name
+                      ? configs[selectedDevice]?.device.name
+                      : "New"
+                  }` || "Choose Device"}
+                </Text>
+                <Text>{`@${configs[selectedDevice]?.device.ip}` || ""}</Text>
               </Button>
             </Menu.Target>
             <Menu.Dropdown>{items}</Menu.Dropdown>

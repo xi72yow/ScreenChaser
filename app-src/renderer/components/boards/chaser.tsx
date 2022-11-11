@@ -83,11 +83,6 @@ export default function Chaser({ form, selectedDevice }: ChaserProps) {
       });
       handleStream(stream);
     } catch (e) {
-      showNotification({
-        title: "Chaser Error",
-        message: JSON.stringify(e),
-        color: "red",
-      });
       handleError(e);
     }
   }
@@ -101,7 +96,7 @@ export default function Chaser({ form, selectedDevice }: ChaserProps) {
   function handleError(e) {
     showNotification({
       title: "Chaser Error",
-      message: JSON.stringify(e),
+      message: e,
       color: "red",
     });
   }
