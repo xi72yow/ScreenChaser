@@ -11,7 +11,7 @@ const isProd: boolean = process.env.NODE_ENV === "production";
 
 function Next() {
   const caserIntervals = useRef([]);
-  const chasedRow = useRef(1);
+  const chasedRow = useRef([]);
   const lastBlackCheck = useRef(0);
 
   async function setVideoSource(sourceId, neoPixelCount, ip) {
@@ -38,7 +38,7 @@ function Next() {
     return [red, red + 1, red + 2, red + 3];
   };
 
-  function processCtxData(neoPixelCount, ip) {
+  function processCtxData(neoPixelCount, ip, index) {
     try {
       const canvas = document.getElementById("canvas" + ip);
       const video = document.getElementById("video" + ip);
@@ -84,7 +84,7 @@ function Next() {
         const [redIndex, greenIndex, blueIndex, alphaIndex] =
           getColorIndicesForCoord(
             i,
-            frame.height - chasedRow.current,
+            frame.height - chasedRow.current[index],
             frame.width
           );
         stripe.push(
@@ -95,7 +95,7 @@ function Next() {
       }
 
       if (Date.now() - lastBlackCheck.current > 10000) {
-        chasedRow.current = checkBlackBar(frame, neoPixelCount);
+        chasedRow.current[index] = checkBlackBar(frame, neoPixelCount);
         lastBlackCheck.current = Date.now();
       }
 
@@ -126,7 +126,13 @@ function Next() {
     for (let i = reducedArr.length; i > 0; i--) {
       // here not zero because somtimes there is an logo in the bottom corner
       if (reducedArr[i] > 2) {
-        return reducedArr.length - i + 2;
+        const row = reducedArr.length - i + 2;
+        console.log(
+          "🚀 ~ file: chaserhack.tsx ~ line 130 ~ checkBlackBar ~ row",
+          row,
+          frame.height
+        );
+        if (row < frame.height) return reducedArr.length - i + 2;
       }
     }
     return 1;
@@ -164,10 +170,15 @@ function Next() {
             config.device.neoPixelCount,
             "#" + "video" + config.device.ip.replaceAll(".", "")
           );
+
+          chasedRow.current[i] = 1;
           caserIntervals.current[i] = setInterval(() => {
+            const neoPixelCount =
+              config.device.neoPixelCount > 9 ? config.device.neoPixelCount : 10;
             const stripe = processCtxData(
-              config.device.neoPixelCount,
-              config.device.ip.replaceAll(".", "")
+              neoPixelCount,
+              config.device.ip.replaceAll(".", ""),
+              i
             );
             ipcRenderer.send("CHASER:SEND_STRIPE", stripe, config.device.ip);
           }, 110);
