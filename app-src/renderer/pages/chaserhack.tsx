@@ -127,12 +127,7 @@ function Next() {
       // here not zero because somtimes there is an logo in the bottom corner
       if (reducedArr[i] > 2) {
         const row = reducedArr.length - i + 2;
-        console.log(
-          "🚀 ~ file: chaserhack.tsx ~ line 130 ~ checkBlackBar ~ row",
-          row,
-          frame.height
-        );
-        if (row < frame.height) return reducedArr.length - i + 2;
+        if (row < frame.height) return row;
       }
     }
     return 1;
@@ -174,7 +169,9 @@ function Next() {
           chasedRow.current[i] = 1;
           caserIntervals.current[i] = setInterval(() => {
             const neoPixelCount =
-              config.device.neoPixelCount > 9 ? config.device.neoPixelCount : 10;
+              config.device.neoPixelCount > 9
+                ? config.device.neoPixelCount
+                : 10;
             const stripe = processCtxData(
               neoPixelCount,
               config.device.ip.replaceAll(".", ""),
