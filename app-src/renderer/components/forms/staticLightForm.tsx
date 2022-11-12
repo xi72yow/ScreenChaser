@@ -1,5 +1,5 @@
 import React from "react";
-import BaseStripeInput from "./inputs/baseStripeInput";
+import StripeInput from "./inputs/stripeInput";
 
 interface FrostyPikeFormProps {
   form: any;
@@ -8,7 +8,7 @@ interface FrostyPikeFormProps {
 export default function StaticLightForm({ form }: FrostyPikeFormProps) {
   return (
     <React.Fragment>
-      <BaseStripeInput
+      <StripeInput
         form={form}
         path="staticLight.baseStripe"
         defaultValue={form.values.staticLight?.baseStripe}

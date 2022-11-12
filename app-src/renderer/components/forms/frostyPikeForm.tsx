@@ -1,7 +1,7 @@
 import React from "react";
 import { ColorInput } from "@mantine/core";
 import QuantityInput from "./inputs/number";
-import BaseStripeInput from "./inputs/baseStripeInput";
+import StripeInput from "./inputs/stripeInput";
 
 interface FrostyPikeFormProps {
   form: any;
@@ -16,10 +16,10 @@ export default function FrostyPikeForm({ form }: FrostyPikeFormProps) {
         label="Delay"
         defaultValue={form.values.frostyPike?.delay || 10}
       ></QuantityInput>
-      <BaseStripeInput
+      <StripeInput
         form={form}
         path="frostyPike.baseStripe"
-        defaultValue={form.values.frostyPike?.baseStripe}
+        defaultValue={[form.values.frostyPike?.baseStripe]}
       />
     </React.Fragment>
   );

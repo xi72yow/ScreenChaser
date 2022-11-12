@@ -4,6 +4,8 @@ import {
   ColorPicker,
   ColorSwatch,
   Group,
+  Pagination,
+  ScrollArea,
   Tooltip,
   useMantineTheme,
 } from "@mantine/core";
@@ -15,47 +17,50 @@ import {
   IconSquarePlus,
   IconTrash,
 } from "@tabler/icons";
-import React, { useState } from "react";
-
-function FrameSwatch({ activeFrame, setActiveFrame, index }) {
-  const theme = useMantineTheme();
-  return (
-    <Group position="center" spacing="xs">
-      <ColorSwatch
-        component="button"
-        color={
-          activeFrame === index ? theme.colors.grape[6] : theme.colors.gray[5]
-        }
-        onClick={() => setActiveFrame(index)}
-        sx={{ color: "#fff", cursor: "pointer" }}
-      ></ColorSwatch>
-    </Group>
-  );
-}
+import React from "react";
 
 type Props = {
   path: string;
   form: any;
   color: string;
-  baseStripe: any;
   setColor: (color: string) => void;
   swatches: string[];
   setSwatches: any;
   setChangeColorEvent: any;
-  setBaseStripe: any;
+  setFrames: any;
+  setActiveFrame: any;
+  activeFrame: number;
+  frames: any;
+  singleFrame: boolean;
 };
 
-export default function BaseStripeCreatorToolbar({
+export default function StripeCreatorToolbar({
   path,
   form,
   color,
   setColor,
-  baseStripe,
   swatches,
   setSwatches,
   setChangeColorEvent,
-  setBaseStripe,
+  setFrames,
+  activeFrame,
+  setActiveFrame,
+  frames,
+  singleFrame,
 }: Props) {
+  function handleAddFrame(neoPixelCount) {
+    setFrames((prev) => {
+      return [...prev, new Array(neoPixelCount).fill("#000000")];
+    });
+  }
+
+  function handleRemoveFrame() {
+    if (frames.length > 1) {
+      setFrames((prev) => {
+        return [...prev.slice(0, -1)];
+      });
+    }
+  }
   return (
     <Box>
       <Box
@@ -119,8 +124,12 @@ export default function BaseStripeCreatorToolbar({
               size={"xl"}
               variant="outline"
               onClick={() => {
-                setBaseStripe((baseStripe: any) => {
-                  return baseStripe.map(() => color);
+                setFrames((frames: any) => {
+                  const newFrames = [...frames];
+                  newFrames[activeFrame - 1] = frames[activeFrame - 1].map(
+                    () => color
+                  );
+                  return newFrames;
                 });
                 setChangeColorEvent((a) => !a);
               }}
@@ -128,22 +137,34 @@ export default function BaseStripeCreatorToolbar({
               <IconRelationOneToMany />
             </ActionIcon>
           </Tooltip>
-          {/*         <ActionIcon size={"xl"} variant="outline" onClick={() => {}}>
-            <IconSquarePlus />
-          </ActionIcon>
-          <ActionIcon size={"xl"} variant="outline" onClick={() => {}}>
-            <IconSquareMinus />
-          </ActionIcon>
-          <ActionIcon size={"xl"} variant="outline" onClick={() => {}}>
+          {/*       <ActionIcon size={"xl"} variant="outline" onClick={() => {}}>
             <IconPlayerPlay />
           </ActionIcon> */}
         </Box>
       </Box>
-      {/*       <Group sx={{ display: "flex", paddingTop: "0.5rem" }} position="center">
-        {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((index) => (
-          <FrameSwatch key={index} index={index}></FrameSwatch>
-        ))}
-      </Group> */}
+      {!singleFrame && (
+        <Group position="center" spacing="xs">
+          <Tooltip label="Delete last Frame" key={"minus-frame"}>
+            <ActionIcon size={"lg"} onClick={() => handleRemoveFrame()}>
+              <IconSquareMinus />
+            </ActionIcon>
+          </Tooltip>
+          <Pagination
+            page={activeFrame}
+            onChange={setActiveFrame}
+            total={frames.length}
+          />
+
+          <Tooltip label="Add Frame" key={"plus-frame"}>
+            <ActionIcon
+              size={"lg"}
+              onClick={() => handleAddFrame(form.values.device.neoPixelCount)}
+            >
+              <IconSquarePlus />
+            </ActionIcon>
+          </Tooltip>
+        </Group>
+      )}
     </Box>
   );
 }

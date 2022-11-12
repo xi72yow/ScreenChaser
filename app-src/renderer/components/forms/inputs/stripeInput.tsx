@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { PerspectiveCamera } from "@react-three/drei";
 import { DropzoneButton } from "./dropzone";
-import BaseStripeCreatorToolbar from "./baseStripe/baseStripeCreatorToolbar";
+import StripeCreatorToolbar from "./baseStripe/stripeCreatorToolbar";
 import { useHotkeys } from "@mantine/hooks";
 import { prepare } from "@react-three/fiber/dist/declarations/src/core/renderer";
 
@@ -12,6 +12,7 @@ interface BaseStripeInputProps {
   form: any;
   path: string;
   defaultValue: any;
+  singleFrame?: boolean;
 }
 
 function LED(props) {
@@ -19,14 +20,14 @@ function LED(props) {
   const [color, setColor] = useState(props.defaultColor);
 
   useEffect(() => {
-    props.setBaseStripe((prev) => {
-      prev[props.index] = color;
+    props.setFrames((prev) => {
+      prev[props.activeFrame - 1][props.index] = color;
       return prev;
     });
   }, [color]);
 
   useEffect(() => {
-    setColor(props.baseStripe[props.index]);
+    setColor(props.frames[props.activeFrame - 1][props.index]);
   }, [props.changeColor]);
 
   const [hovered, setHover] = useState(false);
@@ -63,7 +64,7 @@ function isHexColor(str) {
   return str.match(/^#[0-9A-F]{6}$/i) !== null;
 }
 
-function prepareBaseStripe(defaultValue, neoPixelCount) {
+function prepareStripe(defaultValue = [], neoPixelCount) {
   let preparedStripe = [...defaultValue];
   if (preparedStripe.length < neoPixelCount) {
     for (let i = preparedStripe.length; i < neoPixelCount; i++) {
@@ -75,22 +76,32 @@ function prepareBaseStripe(defaultValue, neoPixelCount) {
   return preparedStripe;
 }
 
-export default function BaseStripeInput({
+export default function StripeInput({
   form,
   path,
   defaultValue,
+  singleFrame = true,
 }: BaseStripeInputProps) {
-  //if (isHexColor(defaultValue[0][0])) console.log("multiframes");
-
-  const [baseStripe, setBaseStripe] = React.useState(
-    prepareBaseStripe(defaultValue, form.values.neoPixelCount)
+  const [activeFrame, setActiveFrame] = useState(1);
+  const [frames, setFrames] = useState(
+    defaultValue.map((frame) => {
+      return prepareStripe(frame, form.values.neoPixelCount);
+    })
   );
 
   useEffect(() => {
-    setBaseStripe(
-      prepareBaseStripe(defaultValue, form.values.device.neoPixelCount)
-    );
+    setFrames((prev) => {
+      return prev.map((frame, index) => {
+        return prepareStripe(frame, form.values.device.neoPixelCount);
+      });
+    });
+
+    setChangeColorEvent((prev) => !prev);
   }, [form.values.device.neoPixelCount]);
+
+  useEffect(() => {
+    setChangeColorEvent((prev) => !prev);
+  }, [activeFrame]);
 
   const [open, setOpen] = useState(false);
   const [color, setColor] = useState("#9B03FF");
@@ -110,11 +121,23 @@ export default function BaseStripeInput({
     ["D", () => setCameraPosX(cameraPosX - 1)],
     ["W", () => cameraPosZ > 4 && setCameraPosZ(cameraPosZ - 1)],
     ["S", () => cameraPosZ < 30 && setCameraPosZ(cameraPosZ + 1)],
+    [
+      "Q",
+      () => !singleFrame && activeFrame > 1 && setActiveFrame(activeFrame - 1),
+    ],
+    [
+      "E",
+      () =>
+        !singleFrame &&
+        activeFrame < frames.length &&
+        setActiveFrame(activeFrame + 1),
+    ],
   ]);
 
   function handleClose() {
     setOpen(false);
-    form.setFieldValue(path, baseStripe);
+    if (singleFrame) form.setFieldValue(path, frames[activeFrame - 1]);
+    else form.setFieldValue(path, frames);
   }
 
   return (
@@ -124,7 +147,7 @@ export default function BaseStripeInput({
         size={"xl"}
         opened={open}
         onClose={() => handleClose()}
-        title="BaseStripe Creator"
+        title="Stripe Creator"
       >
         <Group
           position="center"
@@ -142,7 +165,7 @@ export default function BaseStripeInput({
             />
             <ambientLight intensity={0.5} color={"#ffffff"} />
             <directionalLight color="red" position={[0, 0, 5]} />
-            {baseStripe.map((defaultColor, i) => (
+            {frames[activeFrame - 1].map((defaultColor, i) => (
               <LED
                 key={i}
                 index={i}
@@ -150,23 +173,27 @@ export default function BaseStripeInput({
                 position={[i * 1.2, 0, 0]}
                 color={color}
                 defaultColor={defaultColor}
-                baseStripe={baseStripe}
-                setBaseStripe={setBaseStripe}
+                activeFrame={activeFrame}
+                frames={frames}
+                setFrames={setFrames}
               />
             ))}
           </Canvas>
         </Group>
-        <BaseStripeCreatorToolbar
+        <StripeCreatorToolbar
           path={path}
           form={form}
-          baseStripe={baseStripe}
           swatches={swatches}
           setSwatches={setSwatches}
           color={color}
           setColor={setColor}
           setChangeColorEvent={setChangeColorEvent}
-          setBaseStripe={setBaseStripe}
-        ></BaseStripeCreatorToolbar>
+          setActiveFrame={setActiveFrame}
+          activeFrame={activeFrame}
+          frames={frames}
+          setFrames={setFrames}
+          singleFrame={singleFrame}
+        ></StripeCreatorToolbar>
       </Modal>
       <Button
         fullWidth

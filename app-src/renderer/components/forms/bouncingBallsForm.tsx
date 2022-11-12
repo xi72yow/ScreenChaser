@@ -3,7 +3,7 @@ import { Button, ColorInput } from "@mantine/core";
 import QuantityInput from "./inputs/number";
 import Checkbox from "./inputs/checkbox";
 import Select from "./inputs/select";
-import BaseStripeInput from "./inputs/baseStripeInput";
+import StripeInput from "./inputs/stripeInput";
 
 interface BouncingBallsProps {
   form: any;
@@ -38,10 +38,10 @@ export default function BouncingBallsForm({ form }: BouncingBallsProps) {
         defaultValue={form.values.bouncingBalls?.mirrored || false}
       />
       {form.values.bouncingBalls?.tail === 0 && (
-        <BaseStripeInput
+        <StripeInput
           form={form}
           path="bouncingBalls.baseStripe"
-          defaultValue={form.values.bouncingBalls?.baseStripe}
+          defaultValue={[form.values.bouncingBalls?.baseStripe]}
         />
       )}
     </React.Fragment>
