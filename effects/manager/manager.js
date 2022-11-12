@@ -159,6 +159,7 @@ class Manager {
 
       case "staticLight":
         const { staticLight } = config;
+        this.runningEffects[index] = null;
         this.emitters[index].emit(
           this.prepareBaseStipe(staticLight.baseStripe)
         );
@@ -191,6 +192,9 @@ class Manager {
       this.intervals[index] = setInterval(() => {
         that.emitters[index].emit(that.runningEffects[index].render());
       }, this.calculateMillis());
+    } else if (this.configs[index].task.taskCode === "staticLight") {
+      const { staticLight } = this.configs[index];
+      this.emitters[index].emit(this.prepareBaseStipe(staticLight.baseStripe));
     }
   }
 
