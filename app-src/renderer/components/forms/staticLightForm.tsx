@@ -11,7 +11,7 @@ export default function StaticLightForm({ form }: FrostyPikeFormProps) {
       <StripeInput
         form={form}
         path="staticLight.baseStripe"
-        defaultValue={form.values.staticLight?.baseStripe}
+        defaultValue={[form.values.staticLight?.baseStripe]}
       />
     </React.Fragment>
   );
