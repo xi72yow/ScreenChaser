@@ -9,7 +9,6 @@ import {
   Badge,
 } from "@mantine/core";
 import { IconChevronDown, IconCpu, IconCpu2 } from "@tabler/icons";
-
 import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import Logo from "../styles/Logo.js";
 import ScanNetworkModal from "../modale/chaserSettingsModal";

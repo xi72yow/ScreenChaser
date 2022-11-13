@@ -2,6 +2,7 @@ import {
   ActionIcon,
   Box,
   Button,
+  Group,
   Indicator,
   Loader,
   Modal,
@@ -126,10 +127,6 @@ export default function ScanNetworkModal({}: scanNetworkModalProps) {
           newPorts.push(port);
         }
       });
-      console.log(
-        "🚀 ~ file: chaserSettingsModal.tsx ~ line 124 ~ ipcRenderer.invoke ~ newPorts",
-        newPorts
-      );
 
       newPorts = newPorts.filter((v) => v.value.includes("USB"));
 
@@ -280,27 +277,33 @@ export default function ScanNetworkModal({}: scanNetworkModalProps) {
                 </thead>
                 <tbody>{rows}</tbody>
               </Table>
-              <Button
-                sx={{ float: "right" }}
-                leftIcon={
-                  scanning ? <Loader size="sm" /> : <IconRefresh></IconRefresh>
-                }
-                onClick={() => {
-                  scanNetwork();
-                }}
-                disabled={scanning}
-              >
-                Scan
-              </Button>
-              <Button
-                sx={{ float: "right", marginRight: "0.5rem" }}
-                leftIcon={<IconFocus2></IconFocus2>}
-                onClick={() => {
-                  sendIdentifyColor();
-                }}
-              >
-                Send Identify Color
-              </Button>
+              <Group position="right" pt={"md"}>
+                <Button
+                  sx={{ float: "right", marginRight: "0.5rem" }}
+                  leftIcon={<IconFocus2></IconFocus2>}
+                  onClick={() => {
+                    sendIdentifyColor();
+                  }}
+                >
+                  Send Identify Color
+                </Button>
+                <Button
+                  sx={{ float: "right" }}
+                  leftIcon={
+                    scanning ? (
+                      <Loader size="sm" />
+                    ) : (
+                      <IconRefresh></IconRefresh>
+                    )
+                  }
+                  onClick={() => {
+                    scanNetwork();
+                  }}
+                  disabled={scanning}
+                >
+                  Scan
+                </Button>
+              </Group>
             </div>
           )}
           {selectedTab === "credentials" && (

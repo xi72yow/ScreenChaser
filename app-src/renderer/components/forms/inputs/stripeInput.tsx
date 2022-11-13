@@ -95,7 +95,6 @@ export default function StripeInput({
         return prepareStripe(frame, form.values.device.neoPixelCount);
       });
     });
-
     setChangeColorEvent((prev) => !prev);
   }, [form.values.device.neoPixelCount]);
 
@@ -167,7 +166,7 @@ export default function StripeInput({
             <directionalLight color="red" position={[0, 0, 5]} />
             {frames[activeFrame - 1].map((defaultColor, i) => (
               <LED
-                key={i}
+                key={i + form.values.device.neoPixelCount + "led"}
                 index={i}
                 changeColor={changeColorEvent}
                 position={[i * 1.2, 0, 0]}

@@ -1,22 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
-import {
-  AppShell,
-  Button,
-  ColorScheme,
-  ColorSchemeProvider,
-  ScrollArea,
-  Text,
-} from "@mantine/core";
+import { AppShell, ColorScheme, ColorSchemeProvider } from "@mantine/core";
 import NavbarNested from "../components/navbar/navbar";
 import HeaderApp from "../components/header/header";
 import MeteorRainForm from "../components/forms/meteorRainForm";
 import { IconBulb, IconDatabase } from "@tabler/icons";
 import { MantineProvider } from "@mantine/core";
 import { NotificationsProvider } from "@mantine/notifications";
-import { showNotification } from "@mantine/notifications";
 import { useForm } from "@mantine/form";
 import { ModalsProvider } from "@mantine/modals";
-import { openConfirmModal } from "@mantine/modals";
 import BouncingBallsForm from "../components/forms/bouncingBallsForm";
 import FireFlameForm from "../components/forms/fireFlameForm";
 import ColorWheelForm from "../components/forms/colorWheelForm";
@@ -239,6 +230,36 @@ function Next() {
     >
       <MantineProvider
         theme={{
+          globalStyles: (theme) => ({
+            "*, *::before, *::after": {
+              boxSizing: "border-box",
+            },
+
+            "::-webkit-scrollbar": {
+              width: "0.5rem",
+              height: "0.5rem",
+            },
+            "::-webkit-scrollbar-track": {
+              backgroundColor:
+                theme.colorScheme === "dark"
+                  ? theme.colors.dark[8]
+                  : theme.colors.gray[0],
+            },
+            "::-webkit-scrollbar-thumb": {
+              borderRadius: theme.radius.sm,
+              backgroundColor:
+                theme.colorScheme === "dark"
+                  ? theme.colors.dark[4]
+                  : theme.colors.gray[3],
+            },
+            "::-webkit-scrollbar-thumb:hover": {
+              backgroundColor:
+                theme.colorScheme === "dark"
+                  ? theme.colors.dark[5]
+                  : theme.colors.gray[2],
+            },
+          }),
+
           colorScheme,
           fontFamily: "Greycliff CF, sans-serif",
           /* colors: {
