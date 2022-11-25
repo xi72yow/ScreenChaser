@@ -6,7 +6,7 @@ import { hexToRgb } from "./basics/convertRgbHex.js";
 
 class Bubbles {
   constructor(options) {
-    const { neopixelCount, maxPix, fadeValue, colors } = options;
+    const { neopixelCount, maxParticles, fadeValue, colors } = options;
 
     this.colors = colors || ["#24D024", "#EA0D0D"];
 
@@ -20,7 +20,7 @@ class Bubbles {
       color: { h: 0, s: 0, v: 0 },
       state: "OFF",
     });
-    this.maxPix = maxPix || 10;
+    this.maxPix = maxParticles || 10;
     this.fadeValue = fadeValue || 10;
 
     this.stripe = setAll(0, 0, 0, neopixelCount);

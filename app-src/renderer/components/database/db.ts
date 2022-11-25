@@ -34,6 +34,7 @@ export const initilalValues = {
     maxSnakeSize: 10,
     appleCount: 3,
   },
+  bubbles: { colors: ["#24D024", "#EA0D0D"], maxParticles: 10, fadeValue: 10 },
   globals: {
     swatches: [
       "#25262b",
@@ -122,6 +123,12 @@ export interface SnakeInterface {
   appleCount: number;
 }
 
+export interface BubblesInterface {
+  maxParticles: number;
+  fadeValue: number;
+  colors: Array<string>;
+}
+
 export interface ConfigInterface {
   id?: number;
   device: DeviceInterface;
@@ -134,6 +141,7 @@ export interface ConfigInterface {
   bouncingBalls: BouncingBallsInterface;
   meteorRain: MeteorRainInterface;
   snake: SnakeInterface;
+  bubbles: BubblesInterface;
   task: TaskInterface;
   staticLight: StaticLightInterface;
 }

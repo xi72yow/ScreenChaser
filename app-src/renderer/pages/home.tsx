@@ -31,6 +31,7 @@ import { ipcRenderer } from "electron";
 import { setTimeout } from "timers";
 import ConfirmationContextProvider from "../components/hooks/confirm";
 import colors from "../components/styles/colors";
+import BubblesForm from "../components/forms/bubblesForm";
 
 function App() {
   const [selectedDevice, setSelectedDevice] = React.useState<any>(0);
@@ -195,6 +196,13 @@ function App() {
                 form={form}
               ></Chaser>
             );
+          case "bubbles":
+            return (
+              <BubblesForm
+                key={selectedDevice + "bubbles"}
+                form={form}
+              ></BubblesForm>
+            );
           case "staticLight":
             return (
               <StaticLightForm
@@ -202,7 +210,6 @@ function App() {
                 form={form}
               ></StaticLightForm>
             );
-
           default:
             return <h1>work in progress</h1>;
         }

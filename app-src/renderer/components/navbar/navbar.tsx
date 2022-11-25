@@ -21,6 +21,7 @@ const menue = [
       { label: "Frosty Pike", taskCode: "frostyPike" },
       { label: "Snake", taskCode: "snake" },
       { label: "Dying Lights", taskCode: "dyingLights" },
+      { label: "Bubbles", taskCode: "bubbles" },
     ],
   },
   {

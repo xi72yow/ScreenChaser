@@ -6,6 +6,7 @@ import ColorWheel from "../colorWheel.js";
 import FrostyPike from "../frostyPike.js";
 import DyingLights from "../dyingLights.js";
 import Snake from "../snake.js";
+import Bubbles from "../bubbles.js";
 import { hexToRgb } from "../basics/convertRgbHex.js";
 import setAll from "../basics/setAll.js";
 
@@ -149,6 +150,14 @@ class Manager {
         const { snake } = config;
         this.runningEffects[index] = new Snake({
           ...snake,
+          neopixelCount,
+        });
+        break;
+
+      case "bubbles":
+        const { bubbles } = config;
+        this.runningEffects[index] = new Bubbles({
+          ...bubbles,
           neopixelCount,
         });
         break;
