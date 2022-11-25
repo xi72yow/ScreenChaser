@@ -11,6 +11,7 @@ import {
 } from "@mantine/core";
 import {
   IconColorPicker,
+  IconCopy,
   IconPlayerPlay,
   IconRelationOneToMany,
   IconSquareMinus,
@@ -18,6 +19,7 @@ import {
   IconTrash,
 } from "@tabler/icons";
 import React from "react";
+import { useConfirm } from "../../../hooks/confirm";
 
 type Props = {
   path: string;
@@ -33,6 +35,15 @@ type Props = {
   frames: any;
   singleFrame: boolean;
 };
+
+const insert = (index, arr, newItem) => [
+  // part of the array before the specified index
+  ...arr.slice(0, index),
+  // inserted item
+  newItem,
+  // part of the array after the specified index
+  ...arr.slice(index),
+];
 
 export default function StripeCreatorToolbar({
   path,
@@ -50,17 +61,42 @@ export default function StripeCreatorToolbar({
 }: Props) {
   function handleAddFrame(neoPixelCount) {
     setFrames((prev) => {
-      return [...prev, new Array(neoPixelCount).fill("#000000")];
+      return insert(
+        activeFrame,
+        prev,
+        new Array(neoPixelCount).fill("#000000")
+      );
     });
+    setActiveFrame((prev) => prev + 1);
+  }
+
+  function handleDupFrame(neoPixelCount) {
+    setFrames((prev) => {
+      return insert(activeFrame, prev, [...prev[activeFrame - 1]]);
+    });
+    setActiveFrame((prev) => prev + 1);
   }
 
   function handleRemoveFrame() {
     if (frames.length > 1) {
       setFrames((prev) => {
-        return [...prev.slice(0, -1)];
+        const newFrames = [...prev];
+        newFrames.splice(activeFrame - 1, 1);
+
+        return [...newFrames];
+      });
+      setActiveFrame((prev) => {
+        if (prev > 1) {
+          return prev - 1;
+        } else {
+          return prev;
+        }
       });
     }
   }
+
+  const confirm = useConfirm();
+
   return (
     <Box>
       <Box
@@ -73,14 +109,14 @@ export default function StripeCreatorToolbar({
           justifyContent: "start",
         }}
       >
-        <Box>
-          <ColorPicker
-            format="hex"
-            value={color}
-            onChange={(value) => setColor(value)}
-            swatches={swatches}
-          />
-        </Box>
+        <ColorPicker
+          fullWidth
+          format="hex"
+          value={color}
+          onChange={(value) => setColor(value)}
+          swatches={swatches}
+          swatchesPerRow={25}
+        />
         <Box
           sx={{
             gap: "1rem",
@@ -144,8 +180,20 @@ export default function StripeCreatorToolbar({
       </Box>
       {!singleFrame && (
         <Group position="center" spacing="xs">
-          <Tooltip label="Delete last Frame" key={"minus-frame"}>
-            <ActionIcon size={"lg"} onClick={() => handleRemoveFrame()}>
+          <Tooltip label="Delete current Frame" key={"minus-frame"}>
+            <ActionIcon
+              size={"lg"}
+              onClick={() => {
+                confirm
+                  .showConfirmation(
+                    "Are you sure you want to delete the current Frame?",
+                    true
+                  )
+                  .then((res) => {
+                    handleRemoveFrame();
+                  });
+              }}
+            >
               <IconSquareMinus />
             </ActionIcon>
           </Tooltip>
@@ -155,12 +203,21 @@ export default function StripeCreatorToolbar({
             total={frames.length}
           />
 
-          <Tooltip label="Add Frame" key={"plus-frame"}>
+          <Tooltip label="Add next Frame" key={"plus-frame"}>
             <ActionIcon
               size={"lg"}
               onClick={() => handleAddFrame(form.values.device.neoPixelCount)}
             >
               <IconSquarePlus />
+            </ActionIcon>
+          </Tooltip>
+
+          <Tooltip label="Duplicate Frame as Next" key={"dup-frame"}>
+            <ActionIcon
+              size={"lg"}
+              onClick={() => handleDupFrame(form.values.device.neoPixelCount)}
+            >
+              <IconCopy />
             </ActionIcon>
           </Tooltip>
         </Group>

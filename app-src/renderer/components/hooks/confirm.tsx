@@ -78,6 +78,7 @@ const ConfirmationContextProvider: React.FC<
 
       {content && (
         <Dialog
+          zIndex={1000}
           opened={show}
           withCloseButton
           onClose={onHide}
