@@ -6,11 +6,14 @@ import ColorWheel from "./colorWheel.js";
 import FrostyPike from "./frostyPike.js";
 import DyingLights from "./dyingLights.js";
 import Snake from "./snake.js";
+import SpaceShuttle from "./spaceShuttle.js";
+import Bubbles from "./bubbles.js";
 
 import setAll from "./basics/setAll.js";
 import setPixel from "./basics/setPixel.js";
 
 let count = 0;
+
 function createExampleStripe(neopixelCount) {
   const stripe = setAll(0, 0, 0);
 
@@ -38,6 +41,23 @@ const FrostyPikeEffect = new FrostyPike(createExampleStripe(120), 5, 120); */
   speed: 1,
   rainbow: true,
 }); */
+
+/* const SpaceShuttleEffect = new SpaceShuttle({
+  neopixelCount: 113,
+  maxSnakeSize: 20,
+  red: 12,
+  green: 255,
+  blue: 0,
+  appleCount: 5,
+  speed: 1,
+  rainbow: true,
+}); */
+
+const ChristmasEffect = new Bubbles({
+  neopixelCount: 114,
+  maxPix: 25,
+  fadeValue: 5,
+});
 
 const MeteorRainEffect = new MeteorRain({
   red: 155,
@@ -68,7 +88,7 @@ async function main() {
       DataEmitterForIP.logHealth();
       DataEmitterForIP.logMaxPower();
     }
-    DataEmitterForIP.emit(MeteorRainEffect.render());
+    DataEmitterForIP.emit(ChristmasEffect.render());
   }, 110);
 }
 

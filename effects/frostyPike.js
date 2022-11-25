@@ -7,7 +7,7 @@ class FrostyPike {
     const { baseStripe, delay, neopixelCount } = options;
     this.count = 0;
     this.baseStripe = baseStripe ? baseStripe : setAll(0, 0, 0, neopixelCount);
-    this.stripe = baseStripe;
+    this.stripe = this.baseStripe;
     this.neopixelCount = neopixelCount;
     this.delay = delay;
     this.delayCount = 0;
