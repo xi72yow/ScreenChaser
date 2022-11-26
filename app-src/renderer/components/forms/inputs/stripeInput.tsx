@@ -47,7 +47,10 @@ export default function StripeInput({
         }}
       >
         <Group ref={scrollRef} sx={{ overflowX: "auto", maxWidth: "90%" }}>
-          <StripeCreatorPreview frames={defaultValue}></StripeCreatorPreview>
+          <StripeCreatorPreview
+            frames={defaultValue}
+            form={form}
+          ></StripeCreatorPreview>
         </Group>
         <StripeCreator
           form={form}

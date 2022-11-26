@@ -1,10 +1,9 @@
 import React, { useRef, useEffect, useState } from "react";
 
-export default function StripeCreatorPreview({ frames }) {
+export default function StripeCreatorPreview({ frames, form }) {
   const canvasRef = useRef(null);
   const [context, setContext] = useState(null);
 
-  const neoPixelCount = frames[0].length;
   const pixelSize = 10;
 
   const renderInterval = useRef(null);
@@ -12,7 +11,7 @@ export default function StripeCreatorPreview({ frames }) {
   const draw = (frameCount) => {
     context.clearRect(0, 0, context.canvas.width, context.canvas.height);
     context.beginPath();
-    for (let i = 0; i < neoPixelCount; i++) {
+    for (let i = 0; i < form.values.device.neoPixelCount; i++) {
       context.fillStyle = frames[frameCount][i];
 
       context.fillRect(i * pixelSize * 1.1, 0, pixelSize, pixelSize);
@@ -55,7 +54,7 @@ export default function StripeCreatorPreview({ frames }) {
   return (
     <canvas
       ref={canvasRef}
-      width={neoPixelCount * pixelSize * 1.1}
+      width={form.values.device.neoPixelCount * pixelSize * 1.1}
       height={pixelSize}
     />
   );
