@@ -1,7 +1,0 @@
-[submodule "esp-src/esp32-cam-webserver"]
-	path = esp-src/esp32-cam-webserver
-	url = https://github.com/easytarget/esp32-cam-webserver
-	branch = master
-[submodule "server/mjpeg-camera"]
-	path = server/mjpeg-camera
-	url = https://github.com/xi72yow/mjpeg-camera.git
