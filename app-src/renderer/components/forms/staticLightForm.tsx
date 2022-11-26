@@ -10,6 +10,7 @@ export default function StaticLightForm({ form }: FrostyPikeFormProps) {
     <React.Fragment>
       <StripeInput
         form={form}
+        label="baseStripe"
         path="staticLight.baseStripe"
         defaultValue={[form.values.staticLight?.baseStripe]}
       />

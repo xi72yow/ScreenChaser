@@ -18,6 +18,7 @@ export default function FrostyPikeForm({ form }: FrostyPikeFormProps) {
       ></QuantityInput>
       <StripeInput
         form={form}
+        label="baseStripe"
         path="frostyPike.baseStripe"
         defaultValue={[form.values.frostyPike?.baseStripe]}
       />
