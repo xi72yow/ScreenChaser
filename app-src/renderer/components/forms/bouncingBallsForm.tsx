@@ -40,6 +40,7 @@ export default function BouncingBallsForm({ form }: BouncingBallsProps) {
       {form.values.bouncingBalls?.tail === 0 && (
         <StripeInput
           form={form}
+          label="baseStripe"
           path="bouncingBalls.baseStripe"
           defaultValue={[form.values.bouncingBalls?.baseStripe]}
         />
