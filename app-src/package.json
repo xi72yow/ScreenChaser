@@ -10,7 +10,7 @@
   "scripts": {
     "dev": "nextron",
     "cp": "cd .. && rm -rf ./app-src/renderer/components/effects_build && rm -rf ./app-src/main/helpers/effects_build && cp -R ./effects ./app-src/renderer/components/effects_build && cp -R ./effects ./app-src/main/helpers/effects_build",
-    "build": "npx next build ./renderer && nextron build",
+    "build": "yarn cp && npx next build ./renderer && nextron build",
     "build:win64": "nextron build --win --x64",
     "postinstall": "electron-builder install-app-deps"
   },
