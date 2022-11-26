@@ -65,14 +65,13 @@ export default function HelpModal({ open, setOpen }: HelpModalProps) {
             </Accordion.Panel>
           </Accordion.Item>
           <Accordion.Item className={classes.item} value="stripe-creator">
-            <Accordion.Control>
-              How can I move the viewport of the Stripe Creator?
-            </Accordion.Control>
+            <Accordion.Control>How the Stripe Creator works?</Accordion.Control>
             <Accordion.Panel>
               To move the viewport of the Stripe Creator use the <Kbd>A</Kbd>{" "}
-              and <Kbd>D</Kbd> keys. To zoom in and out use the <Kbd>W</Kbd> and{" "}
-              <Kbd>S</Kbd> keys. Tipp: Hold <Kbd>ctrl</Kbd> and hover over the
-              LED to set colors faster.
+              and <Kbd>D</Kbd> keys. To zoom in and out use <Kbd>W</Kbd> and{" "}
+              <Kbd>S</Kbd>. Tipp: Hold <Kbd>ctrl</Kbd> and hover over the LED to
+              set colors faster. To save your work simply hit <Kbd>ctrl</Kbd> +{" "}
+              <Kbd>S</Kbd>.
             </Accordion.Panel>
           </Accordion.Item>
         </Accordion>

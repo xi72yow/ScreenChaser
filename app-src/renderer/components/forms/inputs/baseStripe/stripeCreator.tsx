@@ -14,6 +14,7 @@ import { DropzoneButton } from "../dropzone";
 import StripeCreatorToolbar from ".//stripeCreatorToolbar";
 import { useHotkeys } from "@mantine/hooks";
 import { prepare } from "@react-three/fiber/dist/declarations/src/core/renderer";
+import { showNotification } from "@mantine/notifications";
 
 interface BaseStripeInputProps {
   form: any;
@@ -92,14 +93,14 @@ export default function StripeCreator({
   const [activeFrame, setActiveFrame] = useState(1);
   const [frames, setFrames] = useState(
     defaultValue.map((frame) => {
-      return prepareStripe(frame, form.values.neoPixelCount);
+      return prepareStripe(frame, form.values.device.neoPixelCount);
     })
   );
 
   useEffect(() => {
     setFrames(
       defaultValue.map((frame) => {
-        return prepareStripe(frame, form.values.neoPixelCount);
+        return prepareStripe(frame, form.values.device.neoPixelCount);
       })
     );
   }, [defaultValue]);
@@ -146,12 +147,22 @@ export default function StripeCreator({
         activeFrame < frames.length &&
         setActiveFrame(activeFrame + 1),
     ],
+    ["ctrl+S", () => handleSave()],
   ]);
 
   function handleClose() {
     setOpen(false);
+  }
+
+  function handleSave() {
     if (singleFrame) form.setFieldValue(path, frames[activeFrame - 1]);
     else form.setFieldValue(path, frames);
+    showNotification({
+      title: "Stripe Creator Notification",
+      message: "Your work has been saved!",
+      color: "teal",
+      icon: <IconPalette />,
+    });
   }
 
   return (
