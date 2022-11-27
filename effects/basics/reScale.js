@@ -10,7 +10,7 @@ function reScale(currentFrame, newLength, replace = true) {
   const scaling = newLength / currentFrame.length;
   const newWidth = Math.round(currentFrame.length * scaling);
   for (let i = 0; i < newWidth; i++) {
-    const pix = currentFrame[Math.round(i / scaling)];
+    const pix = currentFrame[Math.floor(i / scaling)];
     if (pix) {
       scaledFrame.push(replace ? pix.replace("#", "") : pix);
     } else scaledFrame.push(replace ? "000000" : "#000000");
