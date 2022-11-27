@@ -50,10 +50,15 @@ export default function StripeCreatorPreview({ frames, form }) {
   }, [draw, context, frames]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      width={form.values.device.neoPixelCount * pixelSize * 1.1}
-      height={pixelSize}
-    />
+    <React.Fragment>
+      <canvas
+        ref={canvasRef}
+        width={form.values.device.neoPixelCount * pixelSize * 1.1}
+        height={pixelSize}
+        hidden={frames[0].length !== form.values.device.neoPixelCount}
+      />
+      {frames[0].length !== form.values.device.neoPixelCount &&
+        "You changed the number of pixels. Please confirm with the Creator"}
+    </React.Fragment>
   );
 }
