@@ -1,5 +1,9 @@
 import Dexie, { Table } from "dexie";
 
+//defaut reusable values
+const baseStripe = ["#000000"];
+const frames = [["#000000"]];
+
 export const initilalValues = {
   meteorRain: {
     meteorSize: 2,
@@ -13,7 +17,7 @@ export const initilalValues = {
     mirrored: false,
     tail: 10,
     ballCount: 3,
-    baseStripe: [],
+    baseStripe,
   },
   fireFlame: {
     cooling: 120,
@@ -24,7 +28,7 @@ export const initilalValues = {
   },
   frostyPike: {
     delay: 10,
-    baseStripe: [],
+    baseStripe,
   },
   dyingLights: {
     lightColor: "#9B03FF",
@@ -34,6 +38,7 @@ export const initilalValues = {
     maxSnakeSize: 10,
     appleCount: 3,
   },
+
   bubbles: { colors: ["#24D024", "#EA0D0D"], maxParticles: 10, fadeValue: 10 },
   globals: {
     swatches: [
@@ -54,7 +59,8 @@ export const initilalValues = {
     ],
   },
   chaser: { sourceId: "", name: "" },
-  staticLight: { baseStripe: [] },
+  staticLight: { baseStripe },
+  animation: { frames: frames, fps: 3 },
   device: { name: "", ip: "", neoPixelCount: 42, new: false },
   task: { taskCode: "dashboard" },
 };
@@ -129,6 +135,11 @@ export interface BubblesInterface {
   colors: Array<string>;
 }
 
+export interface AnnimationInterface {
+  frames: Array<Array<string>>;
+  fps: number;
+}
+
 export interface ConfigInterface {
   id?: number;
   device: DeviceInterface;
@@ -144,6 +155,7 @@ export interface ConfigInterface {
   bubbles: BubblesInterface;
   task: TaskInterface;
   staticLight: StaticLightInterface;
+  annimation: AnnimationInterface;
 }
 
 export async function addConfig(param) {

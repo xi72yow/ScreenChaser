@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
+import { reScale } from "../../../effects_build/basics/reScale";
 
 export default function StripeCreatorPreview({ frames, form }) {
   const canvasRef = useRef(null);
@@ -29,20 +30,17 @@ export default function StripeCreatorPreview({ frames, form }) {
 
   useEffect(() => {
     let frameCount = 0;
-    let animationFrameId;
-    let fps = 3;
 
     clearInterval(renderInterval.current);
 
     if (context && frames) {
       const render = () => {
-        if (frameCount === frames.length - 1) {
-          frameCount = 0;
-        } else frameCount++;
-
         renderInterval.current = setInterval(() => {
           draw(frameCount);
-        }, 1000 / fps);
+          if (frameCount === frames.length - 1) {
+            frameCount = 0;
+          } else frameCount++;
+        }, 1000 / form.values.animation?.fps || 1);
       };
       render();
     }

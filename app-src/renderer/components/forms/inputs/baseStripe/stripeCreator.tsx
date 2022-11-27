@@ -15,6 +15,7 @@ import StripeCreatorToolbar from ".//stripeCreatorToolbar";
 import { useHotkeys } from "@mantine/hooks";
 import { prepare } from "@react-three/fiber/dist/declarations/src/core/renderer";
 import { showNotification } from "@mantine/notifications";
+import { reScale } from "../../../effects_build/basics/reScale";
 
 interface BaseStripeInputProps {
   form: any;
@@ -72,16 +73,12 @@ function isHexColor(str) {
   return str.match(/^#[0-9A-F]{6}$/i) !== null;
 }
 
-function prepareStripe(defaultValue = [], neoPixelCount) {
+function prepareStripe(defaultValue, neoPixelCount) {
   let preparedStripe = [...defaultValue];
-  if (preparedStripe.length < neoPixelCount) {
-    for (let i = preparedStripe.length; i < neoPixelCount; i++) {
-      preparedStripe.push("#000000");
-    }
-  } else if (preparedStripe.length > neoPixelCount) {
-    preparedStripe = preparedStripe.slice(0, neoPixelCount);
-  }
-  return preparedStripe;
+  const reScaledStripe = reScale(preparedStripe, neoPixelCount, false);
+  if (reScaledStripe.length > 0)
+    return reScale(preparedStripe, neoPixelCount, false);
+  else return preparedStripe;
 }
 
 export default function StripeCreator({
@@ -112,6 +109,7 @@ export default function StripeCreator({
       });
     });
     setChangeColorEvent((prev) => !prev);
+    handleSave();
   }, [form.values.device.neoPixelCount]);
 
   useEffect(() => {
@@ -147,7 +145,7 @@ export default function StripeCreator({
         activeFrame < frames.length &&
         setActiveFrame(activeFrame + 1),
     ],
-    ["ctrl+S", () => handleSave()],
+    /*  ["ctrl+S", () => handleSave()], */
   ]);
 
   function handleClose() {
@@ -157,12 +155,12 @@ export default function StripeCreator({
   function handleSave() {
     if (singleFrame) form.setFieldValue(path, frames[activeFrame - 1]);
     else form.setFieldValue(path, frames);
-    showNotification({
+    /*     showNotification({
       title: "Stripe Creator Notification",
       message: "Your work has been saved!",
       color: "teal",
       icon: <IconPalette />,
-    });
+    }); */
   }
 
   return (
@@ -171,7 +169,10 @@ export default function StripeCreator({
         centered
         size={"xl"}
         opened={open}
-        onClose={() => handleClose()}
+        onClose={() => {
+          handleSave();
+          handleClose();
+        }}
         title="Stripe Creator"
       >
         <Group

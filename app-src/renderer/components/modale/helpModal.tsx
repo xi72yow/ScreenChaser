@@ -70,8 +70,8 @@ export default function HelpModal({ open, setOpen }: HelpModalProps) {
               To move the viewport of the Stripe Creator use the <Kbd>A</Kbd>{" "}
               and <Kbd>D</Kbd> keys. To zoom in and out use <Kbd>W</Kbd> and{" "}
               <Kbd>S</Kbd>. Tipp: Hold <Kbd>ctrl</Kbd> and hover over the LED to
-              set colors faster. To save your work simply hit <Kbd>ctrl</Kbd> +{" "}
-              <Kbd>S</Kbd>.
+              set colors faster. {/* To save your work simply hit <Kbd>ctrl</Kbd> +{" "}
+              <Kbd>S</Kbd>. */}
             </Accordion.Panel>
           </Accordion.Item>
         </Accordion>

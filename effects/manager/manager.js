@@ -7,6 +7,7 @@ import FrostyPike from "../frostyPike.js";
 import DyingLights from "../dyingLights.js";
 import Snake from "../snake.js";
 import Bubbles from "../bubbles.js";
+import Animation from "../animation.js";
 import { hexToRgb } from "../basics/convertRgbHex.js";
 import setAll from "../basics/setAll.js";
 
@@ -158,6 +159,14 @@ class Manager {
         const { bubbles } = config;
         this.runningEffects[index] = new Bubbles({
           ...bubbles,
+          neopixelCount,
+        });
+        break;
+
+      case "animation":
+        const { animation } = config;
+        this.runningEffects[index] = new Animation({
+          ...animation,
           neopixelCount,
         });
         break;

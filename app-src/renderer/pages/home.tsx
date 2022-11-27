@@ -32,6 +32,7 @@ import { setTimeout } from "timers";
 import ConfirmationContextProvider from "../components/hooks/confirm";
 import colors from "../components/styles/colors";
 import BubblesForm from "../components/forms/bubblesForm";
+import AnimationForm from "../components/forms/animationForm";
 
 function App() {
   const [selectedDevice, setSelectedDevice] = React.useState<any>(0);
@@ -209,6 +210,13 @@ function App() {
                 key={selectedDevice + "staticLight"}
                 form={form}
               ></StaticLightForm>
+            );
+          case "animation":
+            return (
+              <AnimationForm
+                key={selectedDevice + "staticLight"}
+                form={form}
+              ></AnimationForm>
             );
           default:
             return <h1>work in progress</h1>;

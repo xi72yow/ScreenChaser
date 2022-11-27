@@ -1,4 +1,4 @@
-import { Group, useMantineTheme, Text } from "@mantine/core";
+import { Group, Text, useMantineTheme } from "@mantine/core";
 import React from "react";
 import { useHorizontalScroll } from "../helpers/horizontalScroll";
 import StripeCreator from "./baseStripe/stripeCreator";
