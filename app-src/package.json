@@ -1,7 +1,7 @@
 {
   "name": "screenchaser-app",
   "description": "leds are follow me",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "author": "xi72yow <x@xi72yow.de> (https://xi72yow.de)",
   "main": "app/background.js",
   "homepage": "https://github.com/xi72yow/ScreenChaser",
@@ -39,9 +39,9 @@
     "electron-serve": "^1.1.0",
     "electron-store": "^8.1.0",
     "embla-carousel-react": "^7.0.3",
+    "screenchaser-core": "^0.1.0",
     "serialport": "^10.4.0",
-    "three": "^0.146.0",
-    "screenchaser-core": "*"
+    "three": "^0.146.0"
   },
   "devDependencies": {
     "@types/node": "^16.11.7",
