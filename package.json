@@ -8,7 +8,7 @@
     "dev:core": "lerna run dev --scope screenchaser-core",
     "build:app": "lerna run build --scope screenchaser-app",
     "build:core": "lerna run build --scope screenchaser-core",
-    "release": "lerna version --conventional-commits --yes"
+    "release": "lerna version --conventional-commits"
   },
   "workspaces": {
     "packages": [
@@ -22,7 +22,9 @@
       "**/electron",
       "**/electron/**",
       "**/jest",
-      "**/jest/**"
+      "**/jest/**",
+      "**/screenchaser-app/**",
+      "**/screenchaser-cli/**"
     ]
   },
   "devDependencies": {

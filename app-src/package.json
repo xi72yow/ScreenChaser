@@ -9,8 +9,7 @@
   "url": "https://xi72yow.de",
   "scripts": {
     "dev": "nextron",
-    "build": "npx next build ./renderer && nextron build",
-    "build:win64": "nextron build --win --x64",
+    "build": "nextron build",
     "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {

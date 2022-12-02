@@ -6,5 +6,10 @@
     "app-src/",
     "cli-src/",
     "core-src/"
-  ]
+  ],
+  "command": {
+    "version": {
+      "allowBranch": "main"
+    }
+  }
 }

@@ -1,0 +1,90 @@
+name: Release
+on:
+  push:
+    tags:
+      - "screenchaser-app@*"
+
+jobs:
+  release:
+    name: Release Screenchaser
+    runs-on: ubuntu-latest
+    needs: [win-build, linux-build]
+    steps:
+      - name: Download Windows Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: win-build-app
+          path: ./
+      - name: Download Linux Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: lin-build-app
+          path: ./
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          files: |
+            ./*.AppImage
+            ./*.deb
+            ./*.exe
+
+  win-build:
+    name: Windows Build App
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set Node.js 16.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+
+      - name: Run install
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: install # will run `yarn install` command
+
+      - name: Build production bundle
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: build:app # will run `yarn build:app` command
+
+      - name: Upload
+        uses: actions/upload-artifact@v3
+        with:
+          name: win-build-app
+          path: |
+            app-src/dist/*.exe
+
+  linux-build:
+    name: Linux Build App
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set Node.js 16.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+
+      - name: Run install
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: install # will run `yarn install` command
+
+      - name: Build production bundle
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: build:app # will run `yarn build:app` command
+
+      - name: Upload
+        uses: actions/upload-artifact@v3
+        with:
+          name: lin-build-app
+          path: |
+            app-src/dist/*.deb
+            app-src/dist/*.AppImage
