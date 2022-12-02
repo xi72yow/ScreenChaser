@@ -1,33 +1,28 @@
 import {
-  Group,
   ActionIcon,
-  useMantineColorScheme,
-  useMantineTheme,
-  Tooltip,
+  Group,
   Menu,
-  Button,
-  Dialog,
-  Text,
+  Tooltip,
+  useMantineColorScheme,
+  useMantineTheme
 } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import {
-  IconSun,
-  IconMoonStars,
-  IconPower,
-  IconPlayerPlay,
-  IconHelp,
-  IconArrowsLeftRight,
-  IconMessageCircle,
-  IconPhoto,
-  IconSearch,
-  IconSettings,
-  IconTrash,
   IconFileDownload,
+  IconFileUpload,
+  IconHelp,
+  IconMoonStars,
+  IconPlayerPlay,
+  IconPower,
+  IconSettings,
+  IconSun,
+  IconTrash
 } from "@tabler/icons";
 import { useLiveQuery } from "dexie-react-hooks";
 import { ipcRenderer } from "electron";
-import React, { useState } from "react";
+import { useState } from "react";
 import { db } from "../database/db";
+import { isConfigInterface } from "../database/db.guard";
 import { useConfirm } from "../hooks/confirm";
 import HelpModal from "../modale/helpModal";
 
@@ -39,8 +34,6 @@ export default function GlobalSettings({ setLightsOff, lightsOff }: Props) {
   const [open, setOpen] = useState(false);
 
   const confirm = useConfirm();
-
-  const [openConfirm, setOpenConfirm] = useState(false);
 
   const configs = useLiveQuery(
     async () => {
@@ -150,6 +143,54 @@ export default function GlobalSettings({ setLightsOff, lightsOff }: Props) {
             Save Configuration
           </Menu.Item>
           <Menu.Item
+            icon={<IconFileUpload size={18} />}
+            onClick={() => {
+              ipcRenderer.invoke("APP:LOAD_CONFIG", configs).then((res) => {
+                let corruptConfig = false;
+                if (!Array.isArray(res)) {
+                  showNotification({
+                    title: "Chaser Error",
+                    message: "Loading Configuration has been failed.",
+                    color: "red",
+                  });
+                  return;
+                }
+
+                res.forEach((value) => {
+                  console.log(isConfigInterface(value));
+                  if (!isConfigInterface(value)) {
+                    corruptConfig = true;
+                    showNotification({
+                      title: "Chaser Error",
+                      message: `Configuration of ${value?.device?.ip} is corrupt.`,
+                      color: "red",
+                    });
+                  }
+                });
+
+                if (!corruptConfig) {
+                  confirm
+                    .showConfirmation(
+                      "Are you sure you want to load this configuration? This will overwrite your current configuration.",
+                      true
+                    )
+                    .then((ans) => {
+                      if (ans) {
+                        db.configs.clear();
+                        db.configs.bulkAdd(res);
+                        showNotification({
+                          title: "Chaser Notification",
+                          message: "Configuration has been loaded.",
+                        });
+                      }
+                    });
+                }
+              });
+            }}
+          >
+            Load Configuration
+          </Menu.Item>
+          <Menu.Item
             icon={<IconHelp size={18} />}
             onClick={() => {
               setOpen(true);
@@ -172,7 +213,6 @@ export default function GlobalSettings({ setLightsOff, lightsOff }: Props) {
                   if (res) {
                     db.delete();
                     location.reload();
-                    setOpenConfirm(false);
                   }
                 });
             }}

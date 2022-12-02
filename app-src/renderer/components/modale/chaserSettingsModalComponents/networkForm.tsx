@@ -1,18 +1,10 @@
 import {
-  Select,
-  ActionIcon,
-  TextInput,
-  Text,
-  PasswordInput,
-  Button,
-  Divider,
-  NumberInput,
+  Button, NumberInput, Select, TextInput
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { showNotification } from "@mantine/notifications";
-import { IconDeviceFloppy, IconRefresh, IconSend } from "@tabler/icons";
-import { ipcRenderer } from "electron";
-import React, { useEffect, useState } from "react";
+import { IconDeviceFloppy } from "@tabler/icons";
+import { useState } from "react";
 import { updateConfig } from "../../database/db";
 
 type Props = {
@@ -88,6 +80,7 @@ export default function NetworkForm({ configs }: Props) {
       <NumberInput
         label="NeoPixel Count"
         {...form.getInputProps("neoPixelCount")}
+        type="number"
       />
       <Button
         type="submit"

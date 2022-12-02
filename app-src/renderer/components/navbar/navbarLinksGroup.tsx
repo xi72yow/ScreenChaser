@@ -1,19 +1,14 @@
-import { useState } from "react";
 import {
-  Group,
   Box,
   Collapse,
-  ThemeIcon,
-  Text,
-  UnstyledButton,
   createStyles,
+  Group,
+  Text,
+  ThemeIcon,
+  UnstyledButton,
 } from "@mantine/core";
-import {
-  TablerIcon,
-  IconCalendarStats,
-  IconChevronLeft,
-  IconChevronRight,
-} from "@tabler/icons";
+import { useLocalStorage } from "@mantine/hooks";
+import { IconChevronLeft, IconChevronRight, TablerIcon } from "@tabler/icons";
 
 const useStyles = createStyles((theme) => ({
   control: {
@@ -92,7 +87,10 @@ export default function LinksGroup({
 }: LinksGroupProps) {
   const { classes, theme } = useStyles();
   const hasLinks = Array.isArray(links);
-  const [opened, setOpened] = useState(initiallyOpened || false);
+  const [opened, setOpened] = useLocalStorage<boolean>({
+    key: label + "-links-group-opened",
+    defaultValue: initiallyOpened,
+  });
   const ChevronIcon = theme.dir === "ltr" ? IconChevronRight : IconChevronLeft;
   const items = (hasLinks ? links : []).map((link) => (
     <Text<"a">
