@@ -5,12 +5,25 @@ import { hsvToRgb, rgbToHsv } from "./basics/convertHsvRgb.js";
 import { hexToRgb } from "./basics/convertRgbHex.js";
 
 class Bubbles {
-  constructor(options) {
+  colors: string[];
+  colorsHsv: { h: number; s: number; v: number }[];
+  count: number;
+  pixStates: any[];
+  maxPix: number;
+  fadeValue: number;
+  stripe: string[];
+  neopixelCount: number;
+  constructor(options: {
+    neopixelCount: number;
+    maxParticles: number;
+    fadeValue: number;
+    colors?: string[];
+  }) {
     const { neopixelCount, maxParticles, fadeValue, colors } = options;
 
     this.colors = colors || ["#24D024", "#EA0D0D"];
 
-    this.colorsHsv = this.colors.map((color) => {
+    this.colorsHsv = this.colors.map((color: string) => {
       return rgbToHsv(hexToRgb(color));
     });
 
@@ -27,7 +40,7 @@ class Bubbles {
     this.neopixelCount = neopixelCount;
   }
 
-  fadeToBlack(pixel, stripe, fadeValue) {
+  fadeToBlack(pixel: number, stripe: string[], fadeValue: number) {
     const state = this.pixStates[pixel];
     let hsv = state.color;
     this.pixStates[pixel].value = state.value - fadeValue / 100;
@@ -41,7 +54,7 @@ class Bubbles {
     this.stripe = setPixel(pixel, stripe, r, g, b);
   }
 
-  fadeToLight(pixel, stripe, fadeValue) {
+  fadeToLight(pixel: number, stripe: string[], fadeValue: number) {
     const state = this.pixStates[pixel];
     let hsv = state.color;
     this.pixStates[pixel].value = state.value + fadeValue / 100;
@@ -61,7 +74,7 @@ class Bubbles {
     }).length;
   }
 
-  startPixel(pixel) {
+  startPixel(pixel: number) {
     const state = { ...this.pixStates[pixel] };
     if (this.pixStates[pixel].state === "OFF") {
       state.color = this.colorsHsv[random(this.colorsHsv.length)];

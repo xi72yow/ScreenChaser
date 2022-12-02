@@ -7,7 +7,7 @@ import { rgbToHex } from "./convertRgbHex.js";
  * @param {int} neopixelCount num of neopixels
  * @returns {Array} created stripe
  */
-function setAll(r, g, b, neopixelCount) {
+function setAll(r: Number, g: Number, b: Number, neopixelCount: number) {
   let stripe = [];
   for (let index = 0; index < neopixelCount; index++) {
     stripe[index] = rgbToHex(r) + rgbToHex(g) + rgbToHex(b);

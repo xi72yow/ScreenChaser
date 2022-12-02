@@ -20,8 +20,8 @@ import {
   IconSend,
 } from "@tabler/icons";
 import React, { useEffect, useRef, useState } from "react";
-import DataEmitter from "../effects_build/network/dataEmitter.js";
-import setAll from "../effects_build/basics/setAll.js";
+import { DataEmitter } from "screenchaser-core";
+import { setAll } from "screenchaser-core";
 import { showNotification } from "@mantine/notifications";
 import { useLiveQuery } from "dexie-react-hooks";
 import { addConfig, db, updateConfig } from "../database/db";

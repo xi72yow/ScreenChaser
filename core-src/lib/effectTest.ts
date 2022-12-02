@@ -1,21 +1,21 @@
-import MeteorRain from "./meteor.js";
-import DataEmitter from "./network/dataEmitter.js";
-import BouncingBalls from "./bouncingBalls.js";
-import FireFlame from "./fireFlame.js";
-import ColorWheel from "./colorWheel.js";
-import FrostyPike from "./frostyPike.js";
-import DyingLights from "./dyingLights.js";
-import Snake from "./snake.js";
-import SpaceShuttle from "./spaceShuttle.js";
-import Bubbles from "./bubbles.js";
+import MeteorRain from "./meteor";
+import DataEmitter from "./network/dataEmitter";
+import BouncingBalls from "./bouncingBalls";
+import FireFlame from "./fireFlame";
+import ColorWheel from "./colorWheel";
+import FrostyPike from "./frostyPike";
+import DyingLights from "./dyingLights";
+import Snake from "./snake";
+import SpaceShuttle from "./spaceShuttle";
+import Bubbles from "./bubbles";
 
-import setAll from "./basics/setAll.js";
-import setPixel from "./basics/setPixel.js";
+import setAll from "./basics/setAll";
+import setPixel from "./basics/setPixel";
 
 let count = 0;
 
-function createExampleStripe(neopixelCount) {
-  const stripe = setAll(0, 0, 0);
+function createExampleStripe(neopixelCount: number) {
+  const stripe = setAll(0, 0, 0, neopixelCount);
 
   for (let index = 0; index < neopixelCount; index++) {
     if (index < neopixelCount / 2) {
@@ -55,7 +55,7 @@ const FrostyPikeEffect = new FrostyPike(createExampleStripe(120), 5, 120); */
 
 const ChristmasEffect = new Bubbles({
   neopixelCount: 114,
-  maxPix: 25,
+  maxParticles: 25,
   fadeValue: 5,
 });
 

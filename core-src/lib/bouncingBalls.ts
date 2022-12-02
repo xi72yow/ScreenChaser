@@ -6,7 +6,34 @@ import { hexToRgb } from "./basics/convertRgbHex.js";
 import { rgbToHsv, hsvToRgb } from "./basics/convertHsvRgb.js";
 
 class BauncingBalls {
-  constructor(options) {
+  myColors: { r: number; g: number; b: number }[];
+  ballMode: string;
+  mirrored: boolean;
+  tail: number;
+  speed: number;
+  ballCount: number;
+  stripe: string[];
+  baseStripe: string[];
+  gravity: number;
+  startHeight: number;
+  impactVelocityStart: number;
+  height: any[];
+  ballColors: any[];
+  impactVelocity: any[];
+  timeSinceLastBounce: any[];
+  clockTimeSinceLastBounce: any[];
+  dampening: any[];
+  position: any[];
+  neopixelCount: number;
+  StartHeight: any;
+  constructor(options: {
+    ballMode: "random" | "rainbow" | "color";
+    mirrored: boolean;
+    tail: number;
+    ballCount: number;
+    neopixelCount: number;
+    baseStripe: string[];
+  }) {
     const { ballMode, mirrored, tail, ballCount, neopixelCount, baseStripe } =
       options;
     this.myColors = [
@@ -117,7 +144,7 @@ class BauncingBalls {
     return this.stripe;
   }
 
-  fadeToBlack(pixel, stripe, fadeValue) {
+  fadeToBlack(pixel: number, stripe: string[], fadeValue: number) {
     const oldColor = stripe[pixel];
     let rgb = hexToRgb(oldColor);
 

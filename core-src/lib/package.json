@@ -3,13 +3,18 @@
     "description": "description",
     "authors": "author",
     "version": "1.0.0",
-    "main": "effectTest.js",
+    "exports": "./index.js",
     "type": "module",
+    "engines": {
+        "node": ">=14.16"
+    },
     "scripts": {
         "dev": "nodemon effectTest.js"
     },
     "dependencies": {},
     "devDependencies": {
-        "nodemon": "^2.0.20"
+        "nodemon": "^2.0.20",
+        "webpack": "^5.75.0",
+        "webpack-cli": "^5.0.0"
     }
 }

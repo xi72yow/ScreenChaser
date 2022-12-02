@@ -1,18 +1,27 @@
-import random from "./basics/random.js";
-import setAll from "./basics/setAll.js";
-import setPixel from "./basics/setPixel.js";
+import random from "./basics/random";
+import setAll from "./basics/setAll";
+import setPixel from "./basics/setPixel";
 
 class FireFlame {
-  constructor(options) {
+  stripe: string[];
+  heat: any[];
+  cooling: number;
+  sparking: number;
+  neopixelCount: number;
+  constructor(options: {
+    cooling: number;
+    sparking: number;
+    neopixelCount: number;
+  }) {
     const { cooling, sparking, neopixelCount } = options;
-    this.stripe = setAll(0, 0, 0);
+    this.stripe = setAll(0, 0, 0, neopixelCount);
     this.heat = new Array(neopixelCount).fill(0);
     this.cooling = cooling;
     this.sparking = sparking;
     this.neopixelCount = neopixelCount;
   }
 
-  setPixelHeatColor(pixel, temperature) {
+  setPixelHeatColor(pixel: number, temperature: number) {
     // Scale 'heat' down from 0-255 to 0-191
     let t192 = ((temperature / 255.0) * 191) | 0;
 

@@ -1,21 +1,25 @@
-import setAll from "./basics/setAll.js";
-import setPixel from "./basics/setPixel.js";
+import setAll from "./basics/setAll";
+import setPixel from "./basics/setPixel";
 
 class ColorWheel {
+  count: number;
+  stripe: string[];
+  speed: number;
+  neopixelCount: number;
   /**
    *
    * @param {number} speed animation speed
    * @param {number} neopixelCount number of neopixels
    */
-  constructor(options) {
+  constructor(options: { speed: number; neopixelCount: number }) {
     const { speed, neopixelCount } = options;
     this.count = 0;
-    this.stripe = setAll(0, 0, 0);
+    this.stripe = setAll(0, 0, 0, neopixelCount);
     this.speed = speed;
     this.neopixelCount = neopixelCount;
   }
 
-  Wheel(WheelPos) {
+  Wheel(WheelPos: number) {
     WheelPos = 255 - WheelPos;
     if (WheelPos < 85) {
       return { r: 255 - WheelPos * 3, g: 0, b: WheelPos * 3 };

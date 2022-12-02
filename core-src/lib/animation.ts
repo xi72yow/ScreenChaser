@@ -1,11 +1,20 @@
-import { reScale } from "./basics/reScale.js";
+import { reScale } from "./basics/reScale";
 
 class Animation {
-  constructor(options) {
+  count: number;
+  frames: any;
+  neopixelCount: any;
+  fps: number;
+  lastFrameTime: number;
+  constructor(options: {
+    frames: Array<Array<string>>;
+    fps?: number;
+    neopixelCount: any;
+  }) {
     const { frames, fps = 10, neopixelCount } = options;
     this.count = 0;
     this.neopixelCount = neopixelCount;
-    this.frames = frames.map((frame) => {
+    this.frames = frames.map((frame: string[]) => {
       return reScale(frame, neopixelCount);
     });
     this.fps = fps;

@@ -1,10 +1,30 @@
-import random from "./basics/random.js";
-import setAll from "./basics/setAll.js";
-import setPixel from "./basics/setPixel.js";
+import random from "./basics/random";
+import setAll from "./basics/setAll";
+import setPixel from "./basics/setPixel";
 import { hsvToRgb, rgbToHsv } from "./basics/convertHsvRgb.js";
 
 class Snake {
-  constructor(options) {
+  stripe: string[];
+  headColor: { r: number; g: number; b: number; };
+  tailColor: { r: number; g: number; b: number; };
+  apples: number[];
+  poisonAppleIndex: number;
+  speed: number;
+  maxSnakeSize: number;
+  count: number;
+  snakeSize: number;
+  neopixelCount: number;
+  directionHead: number;
+  directionTail: number;
+  rainbow: boolean;
+  headIndex: number;
+  constructor(options: {
+    neopixelCount: number;
+    speed: number;
+    maxSnakeSize: number;
+    appleCount: number;
+    rainbow: boolean;
+  }) {
     const {
       appleCount,
       speed,
@@ -36,7 +56,7 @@ class Snake {
     this.headIndex = 0;
   }
 
-  fadeToBlack(pixel, stripe, fadeValue) {
+  fadeToBlack(pixel: number, stripe: string[], fadeValue: number) {
     const oldColor = stripe[pixel];
     let r = parseInt(oldColor.slice(0, 2), 16);
     let g = parseInt(oldColor.slice(2, 4), 16);

@@ -1,10 +1,23 @@
-import setPixel from "./basics/setPixel.js";
-import random from "./basics/random.js";
-import setAll from "./basics/setAll.js";
-import { hsvToRgb, rgbToHsv } from "./basics/convertHsvRgb.js";
+import setPixel from "./basics/setPixel";
+import random from "./basics/random";
+import setAll from "./basics/setAll";
+import { hsvToRgb, rgbToHsv } from "./basics/convertHsvRgb";
 
 class SpaceShuttle {
-  constructor(options) {
+  neopixelCount: number;
+  count: number;
+  spaseShuttleLength: number;
+  shuttlePos: number;
+  thrust: number;
+  baseStripe: string[];
+  shuttleColor: { r: number; g: number; b: number; };
+  stripe: string[];
+  direction: number;
+  constructor(options: {
+    baseStripe: string[];
+    delay: number;
+    neopixelCount: number;
+  }) {
     const { baseStripe, delay, neopixelCount } = options;
     this.neopixelCount = neopixelCount;
     this.count = 0;
@@ -17,7 +30,7 @@ class SpaceShuttle {
     this.direction = 1;
   }
 
-  fadeToBlack(count) {
+  fadeToBlack(count: number) {
     let hsv = rgbToHsv(this.shuttleColor);
     const fadeValue = (hsv.v - hsv.v * 0.3) / this.thrust;
     hsv.v = hsv.v - fadeValue * count - random(50) / 100;
@@ -27,7 +40,7 @@ class SpaceShuttle {
     return hsvToRgb(hsv);
   }
 
-  renderThrust(index) {
+  renderThrust(index: number) {
     for (let i = 0; i < this.thrust; i++) {
       const { r, g, b } = this.fadeToBlack(i);
       this.stripe = setPixel(
@@ -40,7 +53,7 @@ class SpaceShuttle {
     }
   }
 
-  renderShuttle(index) {
+  renderShuttle(index: number) {
     for (let i = 0; i < this.spaseShuttleLength; i++) {
       this.stripe = setPixel(
         index - i,
@@ -52,7 +65,7 @@ class SpaceShuttle {
     }
   }
 
-  renderSpaceShuttle(index) {
+  renderSpaceShuttle(index: number) {
     this.renderShuttle(index);
     this.renderThrust(index);
   }

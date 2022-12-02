@@ -3,11 +3,8 @@
  * @param {objekt} hsvRef {h:0,s:0,v:0}
  * @returns objekt with rgb values {r:0,g:0,b:0}
  */
-function hsvToRgb(hsvRef) {
-  let hsv = {}; //clone all properties into a objekt with new reference
-  for (let key in hsvRef) {
-    hsv[key] = hsvRef[key];
-  }
+function hsvToRgb(hsvRef: { h: number; s: number; v: number }) {
+  let hsv = { ...hsvRef }; //clone all properties into a objekt with new reference
   if (hsv.h <= 0) {
     hsv.h = 0;
   }
@@ -63,6 +60,13 @@ function hsvToRgb(hsvRef) {
         g: p,
         b: q,
       };
+
+    default:
+      return {
+        r: 0,
+        g: 0,
+        b: 0,
+      };
   }
 }
 /**
@@ -70,11 +74,8 @@ function hsvToRgb(hsvRef) {
  * @param {object} rgbRef {r:0,g:0,b:0}
  * @returns object with hsv values {h:0,s:0,v:0}
  */
-function rgbToHsv(rgbRef) {
-  let rgb = {}; //clone all properties into a objekt with new reference
-  for (let key in rgbRef) {
-    rgb[key] = rgbRef[key];
-  }
+function rgbToHsv(rgbRef: { r: number; g: number; b: number }) {
+  let rgb = { ...rgbRef }; //clone all properties into a objekt with new reference
 
   rgb.r = rgb.r / 255;
   rgb.g = rgb.g / 255;
@@ -103,8 +104,8 @@ function rgbToHsv(rgbRef) {
         h = (rgb.r - rgb.g) / d + 4;
         break;
     }
-
-    h = h / 6;
+    if (h) h = h / 6;
+    else h = 0;
   }
 
   return {

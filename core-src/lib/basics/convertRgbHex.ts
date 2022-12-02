@@ -4,7 +4,7 @@
  * @param rgb {Byte} 8Bit color number
  * @return {String} converted Hex String
  */
-function rgbToHex(rgb) {
+function rgbToHex(rgb: Number) {
   const hex = Number(rgb).toString(16);
   if (hex.length < 2) {
     return `0${hex}`;
@@ -17,7 +17,7 @@ function rgbToHex(rgb) {
  * @param {string} hex rgb hex color number FFFFFF
  * @returns {object} with rgb values {r:255,g:255,b:255}
  */
-function hexToRgb(hex) {
+function hexToRgb(hex: string) {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result
     ? {

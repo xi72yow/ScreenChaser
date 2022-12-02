@@ -18,7 +18,7 @@ class DataEmitter {
 
     this.server.on("error", (err) => {
       console.log(`server error:\n${err.stack}`);
-      server.close();
+      this.server.close();
     });
 
     this.server.on("message", (msg, senderInfo) => {

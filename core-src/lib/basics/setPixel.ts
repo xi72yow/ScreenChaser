@@ -9,7 +9,13 @@ import { rgbToHex } from "./convertRgbHex.js";
  * @param stripe {Array} the current stripe
  * @return {Array} modified stripe
  */
-function setPixel(pixel, stripe, r, g, b) {
+function setPixel(
+  pixel: number,
+  stripe: Array<string>,
+  r: Number,
+  g: Number,
+  b: Number
+) {
   let hexValue = rgbToHex(r) + rgbToHex(g) + rgbToHex(b);
   stripe[pixel] = hexValue;
   return stripe;

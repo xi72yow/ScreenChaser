@@ -2,67 +2,30 @@
   "name": "screenchaser",
   "productName": "ScreenChaser",
   "version": "1.0.0",
-  "description": "My Electron application description",
-  "main": "app-src/index.js",
+  "private": true,
   "scripts": {
-    "start": "electron-forge start",
-    "package": "electron-forge package",
-    "make": "electron-forge make",
-    "publish": "electron-forge publish",
-    "lint": "echo \"No linting configured\""
+    "dev:app": "lerna run dev --scope screenchaser-app",
+    "dev:core": "lerna run dev --scope screenchaser-core",
+    "build:app": "lerna run build --scope screenchaser-app",
+    "build:core": "lerna run build --scope screenchaser-core",
+    "release": "lerna version --conventional-commits --yes"
   },
-  "keywords": [],
-  "author": "jeffd23",
-  "license": "MIT",
-  "config": {
-    "forge": {
-      "packagerConfig": {},
-      "makers": [
-        {
-          "name": "@electron-forge/maker-squirrel",
-          "config": {
-            "name": "tron_forge"
-          }
-        },
-        {
-          "name": "@electron-forge/maker-zip",
-          "platforms": [
-            "darwin"
-          ]
-        },
-        {
-          "name": "@electron-forge/maker-deb",
-          "config": {}
-        },
-        {
-          "name": "@electron-forge/maker-rpm",
-          "config": {}
-        }
-      ]
-    }
-  },
-  "dependencies": {
-    "axios": "^0.27.2",
-    "babylonjs": "^4.2.1",
-    "babylonjs-loaders": "^4.2.1",
-    "broadcast-stream": "^0.2.2",
-    "compression": "^1.7.4",
-    "electron-reload": "^2.0.0-alpha.1",
-    "electron-squirrel-startup": "^1.0.0",
-    "express": "^4.18.1",
-    "forever-monitor": "^3.0.3",
-    "helmet": "^5.0.2",
-    "ip": "^1.1.5",
-    "socket.io": "^4.5.0",
-    "ws": "^7.5.1"
+  "workspaces": {
+    "packages": [
+      "app-src/",
+      "cli-src/",
+      "core-src/"
+    ],
+    "nohoist": [
+      "**/react-native",
+      "**/react-native/**",
+      "**/electron",
+      "**/electron/**",
+      "**/jest",
+      "**/jest/**"
+    ]
   },
   "devDependencies": {
-    "@electron-forge/cli": "^6.0.0-beta.57",
-    "@electron-forge/maker-deb": "^6.0.0-beta.57",
-    "@electron-forge/maker-rpm": "^6.0.0-beta.57",
-    "@electron-forge/maker-squirrel": "^6.0.0-beta.57",
-    "@electron-forge/maker-zip": "^6.0.0-beta.57",
-    "devtron": "^1.4.0",
-    "electron": "^18.2.0"
+    "lerna": "^6.1.0"
   }
 }

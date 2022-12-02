@@ -15,7 +15,7 @@ import StripeCreatorToolbar from ".//stripeCreatorToolbar";
 import { useHotkeys } from "@mantine/hooks";
 import { prepare } from "@react-three/fiber/dist/declarations/src/core/renderer";
 import { showNotification } from "@mantine/notifications";
-import { reScale } from "../../../effects_build/basics/reScale";
+import { reScale } from "screenchaser-core";
 
 interface BaseStripeInputProps {
   form: any;

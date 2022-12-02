@@ -5,7 +5,26 @@ import { hsvToRgb, rgbToHsv } from "./basics/convertHsvRgb.js";
 import { hexToRgb } from "./basics/convertRgbHex.js";
 
 class MeteorRain {
-  constructor(options) {
+  stripe: string[];
+  red: number;
+  green: number;
+  blue: number;
+  meteorSize: number;
+  meteorTrailDecay: number;
+  meteorRandomDecay: number;
+  count: number;
+  neopixelCount: number;
+  rainbow: boolean;
+  constructor(options: {
+    red: number;
+    green: number;
+    blue: number;
+    meteorSize: number;
+    meteorTrailDecay: number;
+    meteorRandomDecay: number;
+    neopixelCount: number;
+    rainbow?: boolean;
+  }) {
     const {
       red,
       green,
@@ -28,7 +47,7 @@ class MeteorRain {
     this.rainbow = rainbow;
   }
 
-  fadeToBlack(pixel, stripe, fadeValue) {
+  fadeToBlack(pixel: number, stripe: string[], fadeValue: number) {
     const oldColor = stripe[pixel];
     let rgb = hexToRgb(oldColor);
 

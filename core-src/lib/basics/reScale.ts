@@ -5,7 +5,11 @@
  * @param {boolean} replace if true, replace # with "", default true
  * @returns {Array} scaled stripe
  */
-function reScale(currentFrame, newLength, replace = true) {
+function reScale(
+  currentFrame: Array<string>,
+  newLength: number,
+  replace: boolean = true
+) {
   const scaledFrame = [];
   const scaling = newLength / currentFrame.length;
   const newWidth = Math.round(currentFrame.length * scaling);

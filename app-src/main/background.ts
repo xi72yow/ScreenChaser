@@ -3,7 +3,7 @@ import * as fs from "fs";
 import * as util from "util";
 import serve from "electron-serve";
 import { createWindow, StatCalculator } from "./helpers";
-import Manager from "./helpers/effects_build/manager/manager";
+import { Manager } from "screenchaser-core";
 import { SerialPort } from "serialport";
 
 const writeFile = util.promisify(fs.writeFile);

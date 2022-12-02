@@ -1,7 +1,7 @@
 {
-  "name": "screen-chaser",
+  "name": "screenchaser-app",
   "description": "leds are follow me",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "author": "xi72yow <x@xi72yow.de> (https://xi72yow.de)",
   "main": "app/background.js",
   "homepage": "https://github.com/xi72yow/ScreenChaser",
@@ -9,7 +9,6 @@
   "url": "https://xi72yow.de",
   "scripts": {
     "dev": "nextron",
-    "cp": "cd .. && rm -rf ./app-src/renderer/components/effects_build && rm -rf ./app-src/main/helpers/effects_build && cp -R ./effects ./app-src/renderer/components/effects_build && cp -R ./effects ./app-src/main/helpers/effects_build",
     "build": "yarn cp && npx next build ./renderer && nextron build",
     "build:win64": "nextron build --win --x64",
     "postinstall": "electron-builder install-app-deps"
@@ -42,7 +41,8 @@
     "electron-store": "^8.1.0",
     "embla-carousel-react": "^7.0.3",
     "serialport": "^10.4.0",
-    "three": "^0.146.0"
+    "three": "^0.146.0",
+    "screenchaser-core": "*"
   },
   "devDependencies": {
     "@types/node": "^16.11.7",
