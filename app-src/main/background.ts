@@ -1,12 +1,13 @@
 import { app, BrowserWindow, desktopCapturer, dialog, ipcMain } from "electron";
-import * as fs from "fs";
-import * as util from "util";
 import serve from "electron-serve";
-import { createWindow, StatCalculator } from "./helpers";
+import * as fs from "fs";
 import { Manager } from "screenchaser-core";
 import { SerialPort } from "serialport";
+import * as util from "util";
+import { createWindow, StatCalculator } from "./helpers";
 
 const writeFile = util.promisify(fs.writeFile);
+const readFile = util.promisify(fs.readFile);
 
 const isProd: boolean = process.env.NODE_ENV === "production";
 
@@ -146,6 +147,29 @@ if (isProd) {
     try {
       await writeFile(filename.filePath, JSON.stringify(configs, null, "\t"));
       return "saved";
+    } catch (error) {
+      console.log("🚀 ~ file: background.ts ~ line 151 ~ error", error);
+      return "failed";
+    }
+  });
+
+  ipcMain.handle("APP:LOAD_CONFIG", async function (event, configs) {
+    const filename = await dialog.showOpenDialog(
+      BrowserWindow.getFocusedWindow(),
+      {
+        title: "Open File…",
+        defaultPath: "sc_config.json",
+        filters: [{ name: "json", extensions: ["json"] }],
+        properties: ["openFile"],
+      }
+    );
+    if (filename.canceled) return "canceled";
+
+    try {
+      const data = await readFile(filename.filePaths[0], "utf8");
+      if (data) {
+        return JSON.parse(data);
+      }
     } catch (error) {
       console.log("🚀 ~ file: background.ts ~ line 151 ~ error", error);
       return "failed";

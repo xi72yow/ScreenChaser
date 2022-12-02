@@ -1,4 +1,4 @@
-import { Dialog, Group, Button, Text } from "@mantine/core";
+import { Button, Dialog, Group, Text } from "@mantine/core";
 import React, { useContext, useRef, useState } from "react";
 
 type UseConfirmShowReturnType = {
@@ -85,7 +85,11 @@ const ConfirmationContextProvider: React.FC<
           size="lg"
           radius="md"
         >
-          <Text size="sm" style={{ marginBottom: 10 }} weight={500}>
+          <Text
+            size="sm"
+            style={{ marginBottom: 10, maxWidth: "95%" }}
+            weight={500}
+          >
             {content.message}
           </Text>
 

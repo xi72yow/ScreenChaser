@@ -135,7 +135,7 @@ export interface BubblesInterface {
   colors: Array<string>;
 }
 
-export interface AnnimationInterface {
+export interface AnimationInterface {
   frames: Array<Array<string>>;
   fps: number;
 }
@@ -155,7 +155,7 @@ export interface ConfigInterface {
   bubbles: BubblesInterface;
   task: TaskInterface;
   staticLight: StaticLightInterface;
-  annimation: AnnimationInterface;
+  animation: AnimationInterface;
 }
 
 export async function addConfig(param) {
