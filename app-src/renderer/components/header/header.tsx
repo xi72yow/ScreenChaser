@@ -14,6 +14,7 @@ import Logo from "../styles/Logo.js";
 import ScanNetworkModal from "../modale/chaserSettingsModal";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "../database/db";
+import packageJson from "../../../package.json";
 
 interface HeaderAppProps {
   setSelectedDevice: Dispatch<SetStateAction<Number>>;
@@ -100,7 +101,7 @@ export default function HeaderApp({
                 : theme.colors.dark[7]
             }
           />
-          <Code sx={{ fontWeight: 700 }}>v1.0.0</Code>
+          <Code sx={{ fontWeight: 700 }}>v{packageJson.version}</Code>
         </Group>
       </Group>
       <Group

@@ -2,8 +2,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { ipcRenderer } from "electron";
 import React, { useEffect, useRef } from "react";
 import { db } from "../components/database/db";
-import { rgbToHex } from "../components/effects_build/basics/convertRgbHex";
-import setAll from "../components/effects_build/basics/setAll";
+import { setAll, rgbToHex } from "screenchaser-core";
 
 type Props = {};
 
