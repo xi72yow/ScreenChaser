@@ -12,7 +12,7 @@ import { hexToRgb } from "../basics/convertRgbHex.js";
 import setAll from "../basics/setAll.js";
 
 class Manager {
-  constructor(options) {
+  constructor() {
     this.intervals = [];
     this.runningEffects = [];
     this.emitters = [];
