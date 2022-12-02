@@ -11,3 +11,4 @@ export { default as Manager } from "./manager/manager.js";
 export { default as DataEmitter } from "./network/dataEmitter.js";
 export { reScale } from "./basics/reScale";
 export { default as setAll } from "./basics/setAll";
+export { rgbToHex } from "./basics/convertRgbHex";
