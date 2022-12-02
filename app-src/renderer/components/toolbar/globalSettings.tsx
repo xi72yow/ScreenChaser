@@ -4,7 +4,7 @@ import {
   Menu,
   Tooltip,
   useMantineColorScheme,
-  useMantineTheme
+  useMantineTheme,
 } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import {
@@ -16,7 +16,7 @@ import {
   IconPower,
   IconSettings,
   IconSun,
-  IconTrash
+  IconTrash,
 } from "@tabler/icons";
 import { useLiveQuery } from "dexie-react-hooks";
 import { ipcRenderer } from "electron";
@@ -130,17 +130,27 @@ export default function GlobalSettings({ setLightsOff, lightsOff }: Props) {
             Toggle Theme
           </Menu.Item>
           <Menu.Item
+            icon={<IconHelp size={18} />}
+            onClick={() => {
+              setOpen(true);
+            }}
+          >
+            FAQ
+          </Menu.Item>
+          <Menu.Divider />
+          <Menu.Label>Configuration</Menu.Label>
+          <Menu.Item
             icon={<IconFileDownload size={18} />}
             onClick={() => {
               ipcRenderer.invoke("APP:SAVE_CONFIG", configs).then((res) => {
                 showNotification({
                   title: "Chaser Notification",
-                  message: "Configuration has been " + res + ".",
+                  message: "Saving Configuration has been " + res + ".",
                 });
               });
             }}
           >
-            Save Configuration
+            Save
           </Menu.Item>
           <Menu.Item
             icon={<IconFileUpload size={18} />}
@@ -150,7 +160,8 @@ export default function GlobalSettings({ setLightsOff, lightsOff }: Props) {
                 if (!Array.isArray(res)) {
                   showNotification({
                     title: "Chaser Error",
-                    message: "Loading Configuration has been failed.",
+                    message:
+                      "Loading Configuration has been failed. The file is corrupted.",
                     color: "red",
                   });
                   return;
@@ -162,8 +173,8 @@ export default function GlobalSettings({ setLightsOff, lightsOff }: Props) {
                     corruptConfig = true;
                     showNotification({
                       title: "Chaser Error",
-                      message: `Configuration of ${value?.device?.ip} is corrupt.`,
-                      color: "red",
+                      message: `Loading Configuration has been failed. Configuration of ${value?.device?.ip} is corrupt.`,
+                      color: "yallow",
                     });
                   }
                 });
@@ -188,15 +199,7 @@ export default function GlobalSettings({ setLightsOff, lightsOff }: Props) {
               });
             }}
           >
-            Load Configuration
-          </Menu.Item>
-          <Menu.Item
-            icon={<IconHelp size={18} />}
-            onClick={() => {
-              setOpen(true);
-            }}
-          >
-            FAQ
+            Load
           </Menu.Item>
           <Menu.Divider />
           <Menu.Label>Danger zone</Menu.Label>

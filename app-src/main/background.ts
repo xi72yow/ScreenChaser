@@ -157,7 +157,7 @@ if (isProd) {
     const filename = await dialog.showOpenDialog(
       BrowserWindow.getFocusedWindow(),
       {
-        title: "Open File…",
+        title: "Open File your ScreenChaser config…",
         defaultPath: "sc_config.json",
         filters: [{ name: "json", extensions: ["json"] }],
         properties: ["openFile"],
