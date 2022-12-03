@@ -1,5 +1,5 @@
 import setPixel from "./basics/setPixel";
-import random from "./basics/random";
+import { random } from "./basics/random";
 import setAll from "./basics/setAll";
 
 class FrostyPike {

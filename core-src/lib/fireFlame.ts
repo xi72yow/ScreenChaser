@@ -1,4 +1,4 @@
-import random from "./basics/random";
+import { random } from "./basics/random";
 import setAll from "./basics/setAll";
 import setPixel from "./basics/setPixel";
 

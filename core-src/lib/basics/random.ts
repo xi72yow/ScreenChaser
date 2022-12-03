@@ -8,4 +8,8 @@ function random(max: number) {
   return (Math.random() * max) | 0;
 }
 
-export default random;
+function randomColor() {
+  return `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+}
+
+export { random, randomColor };

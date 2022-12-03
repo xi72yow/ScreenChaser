@@ -1,5 +1,5 @@
 import setPixel from "./basics/setPixel.js";
-import random from "./basics/random.js";
+import { random } from "./basics/random.js";
 import setAll from "./basics/setAll.js";
 import { hsvToRgb, rgbToHsv } from "./basics/convertHsvRgb.js";
 import { hexToRgb } from "./basics/convertRgbHex.js";
