@@ -1,41 +1,35 @@
-import React, { useEffect, useRef, useState } from "react";
-import { AppShell, ColorScheme, ColorSchemeProvider } from "@mantine/core";
-import NavbarNested from "../components/navbar/navbar";
-import HeaderApp from "../components/header/header";
-import MeteorRainForm from "../components/forms/meteorRainForm";
-import { IconBulb, IconDatabase } from "@tabler/icons";
-import { MantineProvider } from "@mantine/core";
-import { NotificationsProvider } from "@mantine/notifications";
+import { AppShell, ColorScheme, ColorSchemeProvider, MantineProvider } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { ModalsProvider } from "@mantine/modals";
-import BouncingBallsForm from "../components/forms/bouncingBallsForm";
-import FireFlameForm from "../components/forms/fireFlameForm";
-import ColorWheelForm from "../components/forms/colorWheelForm";
-import FrostyPikeForm from "../components/forms/frostyPikeForm";
-import DyingLightsForm from "../components/forms/dyingLightsForm";
-import SnakeForm from "../components/forms/snakeForm";
-import Dashboard from "../components/boards/dashboard";
-import Chaser from "../components/boards/chaser";
 import {
-  useHotkeys,
-  useInterval,
-  useLocalStorage,
-  useSetState,
+  useHotkeys, useLocalStorage
 } from "@mantine/hooks";
+import { ModalsProvider } from "@mantine/modals";
+import { NotificationsProvider } from "@mantine/notifications";
+import React, { useEffect, useRef, useState } from "react";
+import Chaser from "../components/boards/chaser";
+import Dashboard from "../components/boards/dashboard";
+import BouncingBallsForm from "../components/forms/bouncingBallsForm";
+import ColorWheelForm from "../components/forms/colorWheelForm";
+import DyingLightsForm from "../components/forms/dyingLightsForm";
+import FireFlameForm from "../components/forms/fireFlameForm";
+import FrostyPikeForm from "../components/forms/frostyPikeForm";
+import MeteorRainForm from "../components/forms/meteorRainForm";
+import SnakeForm from "../components/forms/snakeForm";
+import HeaderApp from "../components/header/header";
+import NavbarNested from "../components/navbar/navbar";
 
 import { useLiveQuery } from "dexie-react-hooks";
-import { db, initilalValues } from "../components/database/db";
-import Toolbar from "../components/toolbar/toolbar";
-import StaticLightForm from "../components/forms/staticLightForm";
 import { ipcRenderer } from "electron";
 import { setTimeout } from "timers";
-import ConfirmationContextProvider from "../components/hooks/confirm";
-import colors from "../components/styles/colors";
-import BubblesForm from "../components/forms/bubblesForm";
+import { ConfigInterface, db, initilalValues } from "../components/database/db";
 import AnimationForm from "../components/forms/animationForm";
+import BubblesForm from "../components/forms/bubblesForm";
+import StaticLightForm from "../components/forms/staticLightForm";
+import ConfirmationContextProvider from "../components/hooks/confirm";
+import Toolbar from "../components/toolbar/toolbar";
 
 function App() {
-  const [selectedDevice, setSelectedDevice] = React.useState<any>(0);
+  const [selectedDevice, setSelectedDevice] = React.useState<number>(0);
   const [taskCode, setTaskCode] = React.useState("dashboard");
   const chaserRunning = useRef(false);
 
@@ -49,7 +43,9 @@ function App() {
     []
   );
 
-  const form = useForm({ initialValues: { ...initilalValues } });
+  const form = useForm<ConfigInterface>({
+    initialValues: { ...initilalValues },
+  });
 
   useEffect(() => {
     console.log(form.values);

@@ -1,8 +1,10 @@
+import { UseFormReturnType } from "@mantine/form";
 import React from "react";
+import { ConfigInterface } from "../database/db";
 import QuantityInput from "./inputs/number";
 
 interface FireFlameProps {
-  form: any;
+  form: UseFormReturnType<ConfigInterface>;
 }
 
 export default function FireFlameForm({ form }: FireFlameProps) {

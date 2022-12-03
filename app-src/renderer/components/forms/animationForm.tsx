@@ -1,9 +1,11 @@
+import { UseFormReturnType } from "@mantine/form";
 import React from "react";
+import { ConfigInterface } from "../database/db";
 import QuantityInput from "./inputs/number";
 import StripeInput from "./inputs/stripeInput";
 
 interface AnnimationFormProps {
-  form: any;
+  form: UseFormReturnType<ConfigInterface>;
 }
 
 export default function AnnimationForm({ form }: AnnimationFormProps) {

@@ -1,12 +1,13 @@
+import { UseFormReturnType } from "@mantine/form";
 import React from "react";
-import { Button, ColorInput } from "@mantine/core";
-import QuantityInput from "./inputs/number";
+import { ConfigInterface } from "../database/db";
 import Checkbox from "./inputs/checkbox";
+import QuantityInput from "./inputs/number";
 import Select from "./inputs/select";
 import StripeInput from "./inputs/stripeInput";
 
 interface BouncingBallsProps {
-  form: any;
+  form: UseFormReturnType<ConfigInterface>;
 }
 
 export default function BouncingBallsForm({ form }: BouncingBallsProps) {

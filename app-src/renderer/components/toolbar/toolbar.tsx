@@ -1,8 +1,8 @@
-import { ActionIcon, Button, createStyles, Footer, Group } from "@mantine/core";
+import { Button, Footer, Group } from "@mantine/core";
+import { UseFormReturnType } from "@mantine/form";
 import { showNotification } from "@mantine/notifications";
 import { IconBulb } from "@tabler/icons";
-import React from "react";
-import { ConfigInterface, db, updateConfig } from "../database/db";
+import { ConfigInterface, updateConfig } from "../database/db";
 import useStyles from "../styles/styles";
 import GlobalSettings from "./globalSettings";
 
@@ -11,7 +11,7 @@ type ToolbarProps = {
   selectedDevice: number;
   setLightsOff: any;
   configs: Array<ConfigInterface>;
-  form: any;
+  form: UseFormReturnType<ConfigInterface>;
   lightsOff: boolean;
 };
 

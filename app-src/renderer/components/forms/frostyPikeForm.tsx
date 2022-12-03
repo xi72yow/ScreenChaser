@@ -1,10 +1,11 @@
+import { UseFormReturnType } from "@mantine/form";
 import React from "react";
-import { ColorInput } from "@mantine/core";
+import { ConfigInterface } from "../database/db";
 import QuantityInput from "./inputs/number";
 import StripeInput from "./inputs/stripeInput";
 
 interface FrostyPikeFormProps {
-  form: any;
+  form: UseFormReturnType<ConfigInterface>;
 }
 
 export default function FrostyPikeForm({ form }: FrostyPikeFormProps) {

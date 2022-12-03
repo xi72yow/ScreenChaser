@@ -1,21 +1,15 @@
-import React, { useEffect, useState } from "react";
-import { ipcRenderer } from "electron";
-import {
-  useMantineTheme,
-  Text,
-  Button,
-  Group,
-  Image as MantineImage,
-  Box,
-  Modal,
-  Col,
-  Grid,
-  ScrollArea,
-} from "@mantine/core";
-import { IconChevronDown, IconCpu } from "@tabler/icons";
 import styled from "@emotion/styled";
+import {
+  Box, Button, Grid, Group,
+  Image as MantineImage, Modal, ScrollArea, Text, useMantineTheme
+} from "@mantine/core";
+import { UseFormReturnType } from "@mantine/form";
 import { useElementSize } from "@mantine/hooks";
 import { showNotification } from "@mantine/notifications";
+import { IconChevronDown } from "@tabler/icons";
+import { ipcRenderer } from "electron";
+import { useEffect, useState } from "react";
+import { ConfigInterface } from "../database/db";
 
 const PreviewImage = styled(MantineImage)`
   cursor: pointer;
@@ -43,8 +37,8 @@ const Stand = styled.div<{ width: number }>`
 `;
 
 interface ChaserProps {
-  form: any;
-  selectedDevice: any;
+  form: UseFormReturnType<ConfigInterface>;
+  selectedDevice: number;
 }
 
 export default function Chaser({ form, selectedDevice }: ChaserProps) {

@@ -1,8 +1,10 @@
+import { UseFormReturnType } from "@mantine/form";
 import React from "react";
+import { ConfigInterface } from "../database/db";
 import Color from "./inputs/color";
 
 interface DyingLightsFormProps {
-  form: any;
+  form: UseFormReturnType<ConfigInterface>;
 }
 
 export default function DyingLightsForm({ form }: DyingLightsFormProps) {

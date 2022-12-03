@@ -1,26 +1,11 @@
-import {
-  Button,
-  Text,
-  CheckIcon,
-  ColorPicker,
-  ColorSwatch,
-  Grid,
-  Group,
-  Popover,
-  useMantineTheme,
-  ActionIcon,
-  createStyles,
-  Box,
-} from "@mantine/core";
-import Swatches from "./inputs/swatches";
-import { showNotification } from "@mantine/notifications";
-import { IconSquareX, IconEdit } from "@tabler/icons";
-import React, { useEffect, useState } from "react";
-import Color from "./inputs/color";
+import { UseFormReturnType } from "@mantine/form";
+import React from "react";
+import { ConfigInterface } from "../database/db";
 import QuantityInput from "./inputs/number";
+import Swatches from "./inputs/swatches";
 
 interface BubblesFormProps {
-  form: any;
+  form: UseFormReturnType<ConfigInterface>;
 }
 
 const bubbleColors = ["#24D024", "#EA0D0D"];

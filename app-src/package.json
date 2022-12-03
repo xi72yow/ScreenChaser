@@ -10,7 +10,8 @@
   "scripts": {
     "dev": "nextron",
     "build": "nextron build",
-    "postinstall": "electron-builder install-app-deps"
+    "postinstall": "electron-builder install-app-deps",
+    "guard": "npx ts-auto-guard ./renderer/components/database/db.ts --export-all"
   },
   "dependencies": {
     "@electron/remote": "^2.0.8",

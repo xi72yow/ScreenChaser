@@ -1,12 +1,12 @@
+import { UseFormReturnType } from "@mantine/form";
 import React from "react";
-import { ColorInput } from "@mantine/core";
+import { ConfigInterface } from "../database/db";
 import Checkbox from "./inputs/checkbox";
-import QuantityInput from "./inputs/number";
-import useStyles from "../styles/styles";
 import Color from "./inputs/color";
+import QuantityInput from "./inputs/number";
 
 interface MeteorRainFormProps {
-  form: any;
+  form: UseFormReturnType<ConfigInterface>;
 }
 
 export default function MeteorRainForm({ form }: MeteorRainFormProps) {
