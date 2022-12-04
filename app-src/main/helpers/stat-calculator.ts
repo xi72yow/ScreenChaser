@@ -1,5 +1,7 @@
+import { ManagerInterface } from "screenchaser-core";
+
 class StatCalculator {
-  Manager: any;
+  Manager: ManagerInterface;
   lastStats: any[];
   constructor(parameters) {
     this.Manager = parameters.Manager;
@@ -9,10 +11,10 @@ class StatCalculator {
   calculateStats() {
     const that = this;
     let stats = [];
-    for (let i = 0; i < this.Manager.emitters.length; i++) {
-      const config = this.Manager.configs[i];
-      const emitter = this.Manager.emitters[i];
-      const effect = this.Manager.runningEffects[i];
+    for (let i = 0; i < this.Manager.chasers.length; i++) {
+      const config = this.Manager.chasers[i].config;
+      const emitter = this.Manager.chasers[i].emitter;
+      const effect = this.Manager.chasers[i].runningEffect;
       const data = emitter.getHealth();
 
       stats.push({

@@ -1,4 +1,15 @@
 import Dexie, { Table } from "dexie";
+import {
+  DyingLightsInterface,
+  FrostyPikeInterface,
+  ColorWheelInterface,
+  FireFlameInterface,
+  BouncingBallsInterface,
+  SnakeInterface,
+  BubblesInterface,
+  AnimationInterface,
+  MeteorRainInterface,
+} from "screenchaser-core";
 
 //defaut reusable values
 const baseStripe = ["#000000"];
@@ -65,42 +76,8 @@ export const initilalValues = {
   task: { taskCode: "dashboard" },
 };
 
-export interface MeteorRainInterface {
-  meteorSize: number;
-  meteorTrailDecay: number;
-  meteorRandomDecay: number;
-  rainbow: boolean;
-  meteorColor: string;
-}
-
-export interface BouncingBallsInterface {
-  ballMode: string;
-  mirrored: boolean;
-  tail: number;
-  ballCount: number;
-  baseStripe: string[];
-}
-
 export interface StaticLightInterface {
   baseStripe: string[];
-}
-
-export interface FireFlameInterface {
-  cooling: number;
-  sparking: number;
-}
-
-export interface ColorWheelInterface {
-  speed: number;
-}
-
-export interface FrostyPikeInterface {
-  delay: number;
-  baseStripe: string[];
-}
-
-export interface DyingLightsInterface {
-  lightColor: string;
 }
 
 export interface GlobalsInterface {
@@ -121,23 +98,6 @@ export interface DeviceInterface {
 
 export interface TaskInterface {
   taskCode: string;
-}
-
-export interface SnakeInterface {
-  speed: number;
-  maxSnakeSize: number;
-  appleCount: number;
-}
-
-export interface BubblesInterface {
-  maxParticles: number;
-  fadeValue: number;
-  colors: Array<string>;
-}
-
-export interface AnimationInterface {
-  frames: Array<Array<string>>;
-  fps: number;
 }
 
 export interface ConfigInterface {
