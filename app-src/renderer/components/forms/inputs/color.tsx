@@ -1,6 +1,7 @@
 import React from "react";
 import { ActionIcon, ColorInput, createStyles } from "@mantine/core";
 import { IconWand } from "@tabler/icons";
+import { randomColor } from "screenchaser-core";
 
 type Props = { form: any; path: string; label?: string; defaultValue: string };
 
@@ -19,9 +20,6 @@ const useStyles = createStyles((theme) => ({
     padding: `6px ${theme.spacing.xs}px !important`,
   },
 }));
-
-const randomColor = () =>
-  `#${Math.floor(Math.random() * 16777215).toString(16)}`;
 
 export default function Color({ form, path, label, defaultValue }: Props) {
   React.useEffect(() => {

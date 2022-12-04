@@ -1,13 +1,15 @@
 import { Group, Text, useMantineTheme } from "@mantine/core";
+import { UseFormReturnType } from "@mantine/form";
 import React from "react";
+import { ConfigInterface } from "../../database/db";
 import { useHorizontalScroll } from "../helpers/horizontalScroll";
 import StripeCreator from "./baseStripe/stripeCreator";
 import StripeCreatorPreview from "./baseStripe/stripeCreatorPreview";
 
 type Props = {
-  form: any;
+  form: UseFormReturnType<ConfigInterface>;
   path: string;
-  defaultValue: any;
+  defaultValue: Array<Array<string>>;
   singleFrame?: boolean;
   label: string;
 };

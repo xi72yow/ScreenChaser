@@ -1,26 +1,18 @@
-import {
-  ActionIcon,
-  AppShell,
-  Button,
-  ColorPicker,
-  Group,
-  Modal,
-} from "@mantine/core";
-import { IconColorPicker, IconPalette, IconTrash } from "@tabler/icons";
-import React, { useState, useRef, useEffect } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { PerspectiveCamera } from "@react-three/drei";
-import { DropzoneButton } from "../dropzone";
-import StripeCreatorToolbar from ".//stripeCreatorToolbar";
+import { ActionIcon, Group, Modal } from "@mantine/core";
+import { UseFormReturnType } from "@mantine/form";
 import { useHotkeys } from "@mantine/hooks";
-import { prepare } from "@react-three/fiber/dist/declarations/src/core/renderer";
-import { showNotification } from "@mantine/notifications";
+import { PerspectiveCamera } from "@react-three/drei";
+import { Canvas } from "@react-three/fiber";
+import { IconPalette } from "@tabler/icons";
+import React, { useEffect, useRef, useState } from "react";
 import { reScale } from "screenchaser-core";
+import { ConfigInterface } from "../../../database/db";
+import StripeCreatorToolbar from ".//stripeCreatorToolbar";
 
 interface BaseStripeInputProps {
-  form: any;
+  form: UseFormReturnType<ConfigInterface>;
   path: string;
-  defaultValue: any;
+  defaultValue: Array<string> | Array<Array<string>>;
   singleFrame?: boolean;
 }
 
@@ -66,11 +58,6 @@ function LED(props) {
       <meshStandardMaterial color={hovered ? props.color : color} />
     </mesh>
   );
-}
-
-//test hexcolor string
-function isHexColor(str) {
-  return str.match(/^#[0-9A-F]{6}$/i) !== null;
 }
 
 function prepareStripe(defaultValue, neoPixelCount) {
@@ -155,12 +142,6 @@ export default function StripeCreator({
   function handleSave() {
     if (singleFrame) form.setFieldValue(path, frames[activeFrame - 1]);
     else form.setFieldValue(path, frames);
-    /*     showNotification({
-      title: "Stripe Creator Notification",
-      message: "Your work has been saved!",
-      color: "teal",
-      icon: <IconPalette />,
-    }); */
   }
 
   return (

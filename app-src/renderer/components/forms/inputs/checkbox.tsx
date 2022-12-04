@@ -1,10 +1,12 @@
 import { Checkbox } from "@mantine/core";
+import { UseFormReturnType } from "@mantine/form";
 import React from "react";
+import { ConfigInterface } from "../../database/db";
 
 interface CheckboxProps {
   label: string;
   defaultValue?: boolean;
-  form?: any;
+  form?: UseFormReturnType<ConfigInterface>;
   path: string;
 }
 

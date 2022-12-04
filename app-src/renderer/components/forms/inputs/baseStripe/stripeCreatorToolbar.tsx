@@ -9,6 +9,7 @@ import {
   Tooltip,
   useMantineTheme,
 } from "@mantine/core";
+import { UseFormReturnType } from "@mantine/form";
 import {
   IconColorPicker,
   IconCopy,
@@ -19,20 +20,21 @@ import {
   IconTrash,
 } from "@tabler/icons";
 import React from "react";
+import { ConfigInterface } from "../../../database/db";
 import { useConfirm } from "../../../hooks/confirm";
 
 type Props = {
   path: string;
-  form: any;
+  form: UseFormReturnType<ConfigInterface>;
   color: string;
   setColor: (color: string) => void;
-  swatches: string[];
-  setSwatches: any;
-  setChangeColorEvent: any;
-  setFrames: any;
-  setActiveFrame: any;
+  swatches: Array<string>;
+  setSwatches: React.Dispatch<React.SetStateAction<Array<string>>>;
+  setChangeColorEvent: React.Dispatch<React.SetStateAction<boolean>>;
+  setFrames: React.Dispatch<React.SetStateAction<Array<Array<string>>>>;
+  setActiveFrame: React.Dispatch<React.SetStateAction<number>>;
   activeFrame: number;
-  frames: any;
+  frames: Array<Array<string>>;
   singleFrame: boolean;
 };
 

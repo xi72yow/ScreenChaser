@@ -1,13 +1,15 @@
-import React, { useRef, useState } from "react";
 import {
+  ActionIcon,
   createStyles,
   NumberInput,
   NumberInputHandlers,
-  ActionIcon,
   Text,
   useMantineTheme,
 } from "@mantine/core";
-import { IconPlus, IconMinus } from "@tabler/icons";
+import { UseFormReturnType } from "@mantine/form";
+import { IconMinus, IconPlus } from "@tabler/icons";
+import React, { useRef, useState } from "react";
+import { ConfigInterface } from "../../database/db";
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
@@ -56,7 +58,7 @@ interface QuantityInputProps {
   max?: number;
   label?: string;
   defaultValue?: number;
-  form?: any;
+  form?: UseFormReturnType<ConfigInterface>;
   path?: string;
   sx?: any;
   onChange?: (value: number) => void;
@@ -123,7 +125,7 @@ export default function QuantityInput({
           handlersRef={handlers}
           onChange={setValue}
           classNames={{ input: classes.input }}
-          {...form?.getInputProps(path, { type: "number" })}
+          {...form?.getInputProps(path)}
         />
 
         <ActionIcon<"button">

@@ -1,5 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
-import { reScale } from "screenchaser-core";
+import React, { useEffect, useRef, useState } from "react";
 
 export default function StripeCreatorPreview({ frames, form }) {
   const canvasRef = useRef(null);
