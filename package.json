@@ -27,7 +27,10 @@
       "**/screenchaser-app",
       "**/screenchaser-app/**",
       "**/screenchaser-cli/**",
-      "**/screenchaser-cli"
+      "**/screenchaser-cli",
+      "**/ts-node",
+      "**/ts-node/**"
+
 
     ]
   },
