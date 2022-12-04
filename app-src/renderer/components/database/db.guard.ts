@@ -50,7 +50,8 @@ export function isDeviceInterface(obj: unknown): obj is DeviceInterface {
         typeof typedObj["ip"] === "string" &&
         typeof typedObj["name"] === "string" &&
         typeof typedObj["neoPixelCount"] === "number" &&
-        typeof typedObj["new"] === "boolean"
+        typeof typedObj["new"] === "boolean" &&
+        typeof typedObj["exclude"] === "boolean"
     )
 }
 

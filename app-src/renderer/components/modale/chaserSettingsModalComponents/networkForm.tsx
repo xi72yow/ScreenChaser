@@ -1,9 +1,14 @@
 import {
-  Button, NumberInput, Select, TextInput
+  Button,
+  NumberInput,
+  Select,
+  Switch,
+  TextInput,
+  useMantineTheme,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { showNotification } from "@mantine/notifications";
-import { IconDeviceFloppy } from "@tabler/icons";
+import { IconCheck, IconDeviceFloppy, IconX } from "@tabler/icons";
 import { useState } from "react";
 import { updateConfig } from "../../database/db";
 
@@ -13,11 +18,13 @@ type Props = {
 
 export default function NetworkForm({ configs }: Props) {
   const [selectedDevice, setSelectedDevice] = useState("0");
+  const theme = useMantineTheme();
 
   const form = useForm({
     initialValues: {
       name: configs[0].device.name || configs[0].device.name,
       neoPixelCount: configs[0].device.neoPixelCount,
+      exclude: configs[0].device.exclude,
     },
     validate: (values) => ({
       neoPixelCount:
@@ -32,7 +39,7 @@ export default function NetworkForm({ configs }: Props) {
   return (
     <form
       onSubmit={form.onSubmit((values) => {
-        const { neoPixelCount, name } = values;
+        const { neoPixelCount, name, exclude } = values;
         const index = parseInt(selectedDevice);
         console.log(configs[index], index, values);
         updateConfig(index + 1, {
@@ -41,6 +48,7 @@ export default function NetworkForm({ configs }: Props) {
             name,
             neoPixelCount,
             new: false,
+            exclude,
           },
         }).then(() => {
           showNotification({
@@ -63,6 +71,7 @@ export default function NetworkForm({ configs }: Props) {
             "neoPixelCount",
             configs[index].device.neoPixelCount
           );
+          form.setFieldValue("exclude", configs[index].device.exclude);
         }}
         data={configs.map((value, index, array) => {
           return {
@@ -81,6 +90,30 @@ export default function NetworkForm({ configs }: Props) {
         label="NeoPixel Count"
         {...form.getInputProps("neoPixelCount")}
         type="number"
+      />
+      <Switch
+        checked={!form.values.exclude}
+        onChange={(elem) => {
+          form.setFieldValue("exclude", !elem.target.checked);
+        }}
+        color="teal"
+        size="md"
+        label="Control this Chaser?"
+        thumbIcon={
+          !form.values.exclude ? (
+            <IconCheck
+              size={12}
+              color={theme.colors.teal[theme.fn.primaryShade()]}
+              stroke={3}
+            />
+          ) : (
+            <IconX
+              size={12}
+              color={theme.colors.red[theme.fn.primaryShade()]}
+              stroke={3}
+            />
+          )
+        }
       />
       <Button
         type="submit"

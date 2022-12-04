@@ -1,7 +1,7 @@
 import { Button, Footer, Group } from "@mantine/core";
 import { UseFormReturnType } from "@mantine/form";
 import { showNotification } from "@mantine/notifications";
-import { IconBulb } from "@tabler/icons";
+import { IconBulb, IconInfoCircle } from "@tabler/icons";
 import { ConfigInterface, updateConfig } from "../database/db";
 import useStyles from "../styles/styles";
 import GlobalSettings from "./globalSettings";
@@ -65,14 +65,25 @@ export default function Toolbar({
                   [taskCode]: currentFormConfig,
                 });
 
-                showNotification({
-                  title: "Changed task",
-                  message:
-                    "Changing Config for " +
-                    taskCode +
-                    " on Device " +
-                    configs[selectedDevice].device.ip,
-                });
+                if (form.values.device.exclude)
+                  showNotification({
+                    title: "Saved Configuration",
+                    message:
+                      "Saved device settings for " +
+                      form.values.device.ip +
+                      ". This device is excluded from the task. To include it, see Network Tab in settings.",
+                    color: "teal",
+                    icon: <IconInfoCircle />,
+                  });
+                else
+                  showNotification({
+                    title: "Changed task",
+                    message:
+                      "Changing Config for " +
+                      taskCode +
+                      " on Device " +
+                      configs[selectedDevice].device.ip,
+                  });
               }}
               leftIcon={<IconBulb size={14} />}
             >

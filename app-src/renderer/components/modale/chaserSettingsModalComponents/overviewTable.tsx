@@ -35,12 +35,18 @@ function DeviceRow({ device, configs, i, theme }: any) {
         <td>{configs[i].device.neoPixelCount}</td>
         <td>
           <Group position="center" sx={{ width: "42px" }}>
-            <Tooltip label={device.new ? "new" : "ok"}>
+            <Tooltip
+              label={device.new ? "new" : device.exclude ? "excluded" : "ok"}
+            >
               <ColorSwatch
                 component="div"
                 opacity={0.5}
                 color={
-                  device.new ? theme.colors.grape[6] : theme.colors.gray[6]
+                  device.new
+                    ? theme.colors.grape[6]
+                    : device.exclude
+                    ? theme.colors.gray[6]
+                    : theme.colors.green[6]
                 }
                 sx={{ color: "#fff", cursor: "pointer" }}
               ></ColorSwatch>

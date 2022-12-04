@@ -72,7 +72,7 @@ export const initilalValues = {
   chaser: { sourceId: "", name: "" },
   staticLight: { baseStripe },
   animation: { frames: frames, fps: 3 },
-  device: { name: "", ip: "", neoPixelCount: 42, new: false },
+  device: { name: "", ip: "", neoPixelCount: 42, new: false, exclude: false },
   task: { taskCode: "dashboard" },
 };
 
@@ -94,6 +94,7 @@ export interface DeviceInterface {
   name: string;
   neoPixelCount: number;
   new: boolean;
+  exclude: boolean;
 }
 
 export interface TaskInterface {
