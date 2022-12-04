@@ -29,6 +29,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
+          body_path: ./Release.md
           files: |
             ./*.AppImage
             ./*.deb
