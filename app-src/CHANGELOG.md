@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.2.0](https://github.com/xi72yow/ScreenChaser/compare/screenchaser-app@0.1.0...screenchaser-app@0.2.0) (2022-12-04)
+
+
+### Bug Fixes
+
+* **app:** fix input stripe on neopixel and device change ([68dec24](https://github.com/xi72yow/ScreenChaser/commit/68dec2441b68024a8b1785795e35333a31382197))
+* **app:** save navbar open states, number input neopixelcount ([b054836](https://github.com/xi72yow/ScreenChaser/commit/b0548363c5ebf8e4116e22a00da3af7975155dc5))
+* **app:** swatches random, hide color chooser on click ([313d58f](https://github.com/xi72yow/ScreenChaser/commit/313d58fe0338d6a7b9e583c0f14f95afa9d7937c))
+* fix build typos ([914b459](https://github.com/xi72yow/ScreenChaser/commit/914b4598337adb7d57c480048c5d7c30ffe0ca3e))
+
+
+### Features
+
+* **app:** load and check saved configuration ([55f7c66](https://github.com/xi72yow/ScreenChaser/commit/55f7c666180072781ac75184bfcd36f67d82138a))
+* **core:** update settings network-tab and overview -> exclude device ([8813831](https://github.com/xi72yow/ScreenChaser/commit/88138314b4556b71dddcd31825707b50e82084bb))
+
+
+
+
+
 # 0.1.0 (2022-12-02)
 
 
