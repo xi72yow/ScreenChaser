@@ -14,7 +14,7 @@ export default function BouncingBallsForm({ form }: BouncingBallsProps) {
   return (
     <React.Fragment>
       <Select
-        data={["random", "fixed"]}
+        data={["random", /* "rainbow", */ "color"]}
         label="Ball Mode"
         form={form}
         path="bouncingBalls.ballMode"

@@ -99,9 +99,7 @@ export function isConfigInterface(obj: unknown): obj is ConfigInterface {
         (typedObj["bouncingBalls"] !== null &&
             typeof typedObj["bouncingBalls"] === "object" ||
             typeof typedObj["bouncingBalls"] === "function") &&
-        (typedObj["bouncingBalls"]["ballMode"] === "random" ||
-            typedObj["bouncingBalls"]["ballMode"] === "rainbow" ||
-            typedObj["bouncingBalls"]["ballMode"] === "color") &&
+        typeof typedObj["bouncingBalls"]["ballMode"] === "string" &&
         typeof typedObj["bouncingBalls"]["mirrored"] === "boolean" &&
         typeof typedObj["bouncingBalls"]["tail"] === "number" &&
         typeof typedObj["bouncingBalls"]["ballCount"] === "number" &&

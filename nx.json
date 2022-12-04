@@ -11,7 +11,14 @@
     "targetDefaults": {
         "build": {
             "dependsOn": [
-                "^build"
+                {
+                    "projects": "dependencies",
+                    "target": "build"
+                },
+                {
+                    "target": "guard",
+                    "projects": "self"
+                }
             ]
         },
         "test": {

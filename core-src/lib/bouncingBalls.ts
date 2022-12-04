@@ -7,13 +7,13 @@ import { rgbToHsv, hsvToRgb } from "./basics/convertHsvRgb";
 import { CoreChaserEffectInterface, EffectInterface } from "./types/index";
 
 export interface BouncingBallsInterface {
-  ballMode: "random" | "rainbow" | "color";
+  ballMode: string;
   mirrored: boolean;
   tail: number;
   ballCount: number;
   baseStripe: string[];
 }
-
+///g
 export interface BauncingBallsEffectInterface
   extends CoreChaserEffectInterface,
     BouncingBallsInterface {}
