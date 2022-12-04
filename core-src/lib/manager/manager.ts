@@ -212,6 +212,7 @@ class Manager implements ManagerInterface {
   }
 
   start(index: number) {
+    if (this.chasers[index].config.device.exclude) return;
     const that = this;
     if (this.chasers[index].runningEffect) {
       this.chasers[index].interval = setInterval(() => {
