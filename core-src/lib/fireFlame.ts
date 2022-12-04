@@ -6,7 +6,6 @@ import { CoreChaserEffectInterface, EffectInterface } from "./types";
 export interface FireFlameInterface {
   cooling: number;
   sparking: number;
-  neopixelCount: number;
 }
 
 export interface FireFlameEffectInterface

@@ -6,7 +6,7 @@ import ColorWheel from "../colorWheel";
 import DyingLights from "../dyingLights";
 import FireFlame from "../fireFlame";
 import FrostyPike from "../frostyPike";
-import MeteorRain from "../meteor.js";
+import MeteorRain from "../meteorRain.js";
 import DataEmitter, { DataEmitterInterface } from "../network/dataEmitter";
 import Snake from "../snake";
 import { EffectInterface } from "../types";

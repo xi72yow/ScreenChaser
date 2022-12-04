@@ -4,7 +4,6 @@ import { CoreChaserEffectInterface, EffectInterface } from "./types";
 
 export interface ColorWheelInterface {
   speed: number;
-  neopixelCount: number;
 }
 
 export interface ColorWheelEffectInterface

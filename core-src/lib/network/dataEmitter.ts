@@ -17,6 +17,7 @@ export interface DataEmitterInterface {
     packageloss: number;
     power: number;
   };
+  getIp(): string;
 }
 
 class DataEmitter implements DataEmitterInterface {

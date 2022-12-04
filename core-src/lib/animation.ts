@@ -4,7 +4,6 @@ import { CoreChaserEffectInterface, EffectInterface } from "./types";
 export interface AnimationInterface {
   frames: Array<Array<string>>;
   fps: number;
-  neopixelCount: number;
 }
 
 export interface AnimationEffectInterface

@@ -8,6 +8,7 @@
     "dev:core": "lerna run dev --scope screenchaser-core",
     "build:app": "lerna run build --scope screenchaser-app",
     "build:core": "lerna run build --scope screenchaser-core",
+    "guard:app": "lerna run guard --scope screenchaser-app",
     "release": "lerna version --conventional-commits"
   },
   "workspaces": {

@@ -5,6 +5,8 @@ export { default as FrostyPike, FrostyPikeInterface } from "./frostyPike";
 export { default as DyingLights, DyingLightsInterface } from "./dyingLights";
 export { default as Snake, SnakeInterface } from "./snake";
 export { default as Bubbles, BubblesInterface } from "./bubbles";
+export { default as Animation, AnimationInterface } from "./animation";
+export { default as MeteorRain, MeteorRainInterface } from "./meteorRain";
 export {
   default as BouncingBalls,
   BouncingBallsInterface,

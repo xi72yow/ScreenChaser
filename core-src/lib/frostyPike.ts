@@ -6,7 +6,6 @@ import { CoreChaserEffectInterface, EffectInterface } from "./types";
 export interface FrostyPikeInterface {
   delay: number;
   baseStripe: string[];
-  neopixelCount: number;
 }
 
 export interface FrostyPikeEffectInterface

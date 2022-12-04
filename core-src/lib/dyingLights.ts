@@ -7,7 +7,6 @@ import { CoreChaserEffectInterface, EffectInterface } from "./types";
 
 export interface DyingLightsInterface {
   lightColor?: string;
-  neopixelCount: number;
 }
 
 export interface DyingLightsEffectInterface

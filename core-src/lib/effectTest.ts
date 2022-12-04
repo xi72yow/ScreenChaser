@@ -1,4 +1,4 @@
-import MeteorRain from "./meteor";
+import MeteorRain from "./meteorRain";
 import DataEmitter from "./network/dataEmitter";
 import BouncingBalls from "./bouncingBalls";
 import FireFlame from "./fireFlame";
