@@ -1,7 +1,17 @@
 import setAll from "./basics/setAll";
 import setPixel from "./basics/setPixel";
+import { CoreChaserEffectInterface, EffectInterface } from "./types";
 
-class ColorWheel {
+export interface ColorWheelInterface {
+  speed: number;
+  neopixelCount: number;
+}
+
+export interface ColorWheelEffectInterface
+  extends CoreChaserEffectInterface,
+    ColorWheelInterface {}
+
+class ColorWheel implements EffectInterface {
   count: number;
   stripe: string[];
   speed: number;
@@ -11,7 +21,7 @@ class ColorWheel {
    * @param {number} speed animation speed
    * @param {number} neopixelCount number of neopixels
    */
-  constructor(options: { speed: number; neopixelCount: number }) {
+  constructor(options: ColorWheelEffectInterface) {
     const { speed, neopixelCount } = options;
     this.count = 0;
     this.stripe = setAll(0, 0, 0, neopixelCount);
@@ -48,7 +58,7 @@ class ColorWheel {
     return this.stripe;
   }
 
-  getIdentifier() {
+  getIdentifier(): "colorWheel" {
     return "colorWheel";
   }
 }

@@ -60,9 +60,7 @@ const ChristmasEffect = new Bubbles({
 });
 
 const MeteorRainEffect = new MeteorRain({
-  red: 155,
-  green: 3,
-  blue: 255,
+  meteorColor: "#ffbb00",
   meteorSize: 2,
   meteorTrailDecay: 64,
   meteorRandomDecay: 10,

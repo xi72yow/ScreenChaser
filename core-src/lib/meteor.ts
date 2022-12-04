@@ -1,10 +1,23 @@
-import { random } from "./basics/random.js";
-import setAll from "./basics/setAll.js";
-import setPixel from "./basics/setPixel.js";
-import { hsvToRgb, rgbToHsv } from "./basics/convertHsvRgb.js";
-import { hexToRgb } from "./basics/convertRgbHex.js";
+import { random } from "./basics/random";
+import setAll from "./basics/setAll";
+import setPixel from "./basics/setPixel";
+import { hsvToRgb, rgbToHsv } from "./basics/convertHsvRgb";
+import { hexToRgb } from "./basics/convertRgbHex";
+import { CoreChaserEffectInterface, EffectInterface } from "./types/index";
 
-class MeteorRain {
+export interface MeteorRainInterface {
+  meteorSize: number;
+  meteorTrailDecay: number;
+  meteorRandomDecay: number;
+  rainbow: boolean;
+  meteorColor: string;
+}
+
+export interface MeteorRainEffectInterface
+  extends CoreChaserEffectInterface,
+    MeteorRainInterface {}
+
+class MeteorRain implements EffectInterface {
   stripe: string[];
   red: number;
   green: number;
@@ -15,20 +28,9 @@ class MeteorRain {
   count: number;
   neopixelCount: number;
   rainbow: boolean;
-  constructor(options: {
-    red: number;
-    green: number;
-    blue: number;
-    meteorSize: number;
-    meteorTrailDecay: number;
-    meteorRandomDecay: number;
-    neopixelCount: number;
-    rainbow?: boolean;
-  }) {
+  constructor(options: MeteorRainEffectInterface) {
     const {
-      red,
-      green,
-      blue,
+      meteorColor,
       meteorSize,
       meteorTrailDecay,
       meteorRandomDecay,
@@ -36,9 +38,10 @@ class MeteorRain {
       rainbow = false,
     } = options;
     this.stripe = setAll(0, 0, 0, neopixelCount);
-    this.red = red;
-    this.green = green;
-    this.blue = blue;
+    let rgb = hexToRgb(meteorColor);
+    this.red = rgb.r;
+    this.green = rgb.g;
+    this.blue = rgb.b;
     this.meteorSize = meteorSize;
     this.meteorTrailDecay = meteorTrailDecay;
     this.meteorRandomDecay = meteorRandomDecay;
@@ -109,8 +112,8 @@ class MeteorRain {
     return this.stripe;
   }
 
-  getIdentifier() {
-    return "meteor";
+  getIdentifier(): "meteorRain" {
+    return "meteorRain";
   }
 }
 

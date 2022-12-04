@@ -1,10 +1,21 @@
-import setPixel from "./basics/setPixel.js";
-import { random } from "./basics/random.js";
-import setAll from "./basics/setAll.js";
-import { hsvToRgb, rgbToHsv } from "./basics/convertHsvRgb.js";
-import { hexToRgb } from "./basics/convertRgbHex.js";
+import setPixel from "./basics/setPixel";
+import { random } from "./basics/random";
+import setAll from "./basics/setAll";
+import { hsvToRgb, rgbToHsv } from "./basics/convertHsvRgb";
+import { hexToRgb } from "./basics/convertRgbHex";
+import { CoreChaserEffectInterface, EffectInterface } from "./types/index";
 
-class Bubbles {
+export interface BubblesInterface {
+  maxParticles: number;
+  fadeValue: number;
+  colors?: Array<string>;
+}
+
+export interface BubblesEffectInterface
+  extends CoreChaserEffectInterface,
+    BubblesInterface {}
+
+class Bubbles implements EffectInterface {
   colors: string[];
   colorsHsv: { h: number; s: number; v: number }[];
   count: number;
@@ -13,12 +24,7 @@ class Bubbles {
   fadeValue: number;
   stripe: string[];
   neopixelCount: number;
-  constructor(options: {
-    neopixelCount: number;
-    maxParticles: number;
-    fadeValue: number;
-    colors?: string[];
-  }) {
+  constructor(options: BubblesEffectInterface) {
     const { neopixelCount, maxParticles, fadeValue, colors } = options;
 
     this.colors = colors || ["#24D024", "#EA0D0D"];
@@ -100,7 +106,7 @@ class Bubbles {
     return this.stripe;
   }
 
-  getIdentifier() {
+  getIdentifier(): "bubbles" {
     return "bubbles";
   }
 }

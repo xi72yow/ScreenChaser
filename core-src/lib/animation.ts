@@ -1,16 +1,23 @@
 import { reScale } from "./basics/reScale";
+import { CoreChaserEffectInterface, EffectInterface } from "./types";
 
-class Animation {
+export interface AnimationInterface {
+  frames: Array<Array<string>>;
+  fps: number;
+  neopixelCount: number;
+}
+
+export interface AnimationEffectInterface
+  extends CoreChaserEffectInterface,
+    AnimationInterface {}
+
+class Animation implements EffectInterface {
   count: number;
   frames: any;
   neopixelCount: any;
   fps: number;
   lastFrameTime: number;
-  constructor(options: {
-    frames: Array<Array<string>>;
-    fps?: number;
-    neopixelCount: any;
-  }) {
+  constructor(options: AnimationEffectInterface) {
     const { frames, fps = 10, neopixelCount } = options;
     this.count = 0;
     this.neopixelCount = neopixelCount;
@@ -33,7 +40,7 @@ class Animation {
     return frame;
   }
 
-  getIdentifier() {
+  getIdentifier(): "animation" {
     return "animation";
   }
 }

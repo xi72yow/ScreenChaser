@@ -1,11 +1,24 @@
-import { random } from "./basics/random.js";
-import setAll from "./basics/setAll.js";
-import setPixel from "./basics/setPixel.js";
-import millis from "./basics/millis.js";
-import { hexToRgb } from "./basics/convertRgbHex.js";
-import { rgbToHsv, hsvToRgb } from "./basics/convertHsvRgb.js";
+import { random } from "./basics/random";
+import setAll from "./basics/setAll";
+import setPixel from "./basics/setPixel";
+import millis from "./basics/millis";
+import { hexToRgb } from "./basics/convertRgbHex";
+import { rgbToHsv, hsvToRgb } from "./basics/convertHsvRgb";
+import { CoreChaserEffectInterface, EffectInterface } from "./types/index";
 
-class BauncingBalls {
+export interface BouncingBallsInterface {
+  ballMode: "random" | "rainbow" | "color";
+  mirrored: boolean;
+  tail: number;
+  ballCount: number;
+  baseStripe: string[];
+}
+
+export interface BauncingBallsEffectInterface
+  extends CoreChaserEffectInterface,
+    BouncingBallsInterface {}
+
+class BauncingBalls implements EffectInterface {
   myColors: { r: number; g: number; b: number }[];
   ballMode: string;
   mirrored: boolean;
@@ -26,14 +39,7 @@ class BauncingBalls {
   position: any[];
   neopixelCount: number;
   StartHeight: any;
-  constructor(options: {
-    ballMode: "random" | "rainbow" | "color";
-    mirrored: boolean;
-    tail: number;
-    ballCount: number;
-    neopixelCount: number;
-    baseStripe: string[];
-  }) {
+  constructor(options: BauncingBallsEffectInterface) {
     const { ballMode, mirrored, tail, ballCount, neopixelCount, baseStripe } =
       options;
     this.myColors = [
@@ -165,7 +171,7 @@ class BauncingBalls {
     return this.stripe;
   }
 
-  getIdentifier() {
+  getIdentifier(): "bouncingBalls" {
     return "bouncingBalls";
   }
 }

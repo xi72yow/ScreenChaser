@@ -2,22 +2,28 @@ import setPixel from "./basics/setPixel";
 import { random } from "./basics/random";
 import setAll from "./basics/setAll";
 import { hsvToRgb, rgbToHsv } from "./basics/convertHsvRgb";
+import { CoreChaserEffectInterface, EffectInterface } from "./types";
 
-class SpaceShuttle {
+export interface SpaceShuttleInterface {
+  baseStripe: string[];
+  delay: number;
+}
+
+export interface SpaceShuttleEffectInterface
+  extends CoreChaserEffectInterface,
+    SpaceShuttleInterface {}
+
+class SpaceShuttle implements EffectInterface {
   neopixelCount: number;
   count: number;
   spaseShuttleLength: number;
   shuttlePos: number;
   thrust: number;
   baseStripe: string[];
-  shuttleColor: { r: number; g: number; b: number; };
+  shuttleColor: { r: number; g: number; b: number };
   stripe: string[];
   direction: number;
-  constructor(options: {
-    baseStripe: string[];
-    delay: number;
-    neopixelCount: number;
-  }) {
+  constructor(options: SpaceShuttleEffectInterface) {
     const { baseStripe, delay, neopixelCount } = options;
     this.neopixelCount = neopixelCount;
     this.count = 0;
@@ -87,6 +93,10 @@ class SpaceShuttle {
     }
 
     return this.stripe;
+  }
+
+  getIdentifier(): "spaceShuttle" {
+    return "spaceShuttle";
   }
 }
 

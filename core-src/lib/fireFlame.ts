@@ -1,18 +1,25 @@
 import { random } from "./basics/random";
 import setAll from "./basics/setAll";
 import setPixel from "./basics/setPixel";
+import { CoreChaserEffectInterface, EffectInterface } from "./types";
 
-class FireFlame {
+export interface FireFlameInterface {
+  cooling: number;
+  sparking: number;
+  neopixelCount: number;
+}
+
+export interface FireFlameEffectInterface
+  extends CoreChaserEffectInterface,
+    FireFlameInterface {}
+
+class FireFlame implements EffectInterface {
   stripe: string[];
   heat: any[];
   cooling: number;
   sparking: number;
   neopixelCount: number;
-  constructor(options: {
-    cooling: number;
-    sparking: number;
-    neopixelCount: number;
-  }) {
+  constructor(options: FireFlameEffectInterface) {
     const { cooling, sparking, neopixelCount } = options;
     this.stripe = setAll(0, 0, 0, neopixelCount);
     this.heat = new Array(neopixelCount).fill(0);
@@ -76,7 +83,7 @@ class FireFlame {
     return this.stripe;
   }
 
-  getIdentifier() {
+  getIdentifier(): "fireFlame" {
     return "fireFlame";
   }
 }

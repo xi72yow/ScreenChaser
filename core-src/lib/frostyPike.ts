@@ -1,19 +1,26 @@
 import setPixel from "./basics/setPixel";
 import { random } from "./basics/random";
 import setAll from "./basics/setAll";
+import { CoreChaserEffectInterface, EffectInterface } from "./types";
 
-class FrostyPike {
+export interface FrostyPikeInterface {
+  delay: number;
+  baseStripe: string[];
+  neopixelCount: number;
+}
+
+export interface FrostyPikeEffectInterface
+  extends CoreChaserEffectInterface,
+    FrostyPike {}
+
+class FrostyPike implements EffectInterface {
   count: number;
   baseStripe: Array<string>;
   stripe: Array<string>;
   neopixelCount: number;
   delay: number;
   delayCount: number;
-  constructor(options: {
-    baseStripe: Array<string>;
-    delay: number;
-    neopixelCount: number;
-  }) {
+  constructor(options: FrostyPikeEffectInterface) {
     const { baseStripe, delay, neopixelCount } = options;
     this.count = 0;
     this.baseStripe = baseStripe ? baseStripe : setAll(0, 0, 0, neopixelCount);
@@ -34,7 +41,7 @@ class FrostyPike {
     return this.baseStripe;
   }
 
-  getIdentifier() {
+  getIdentifier(): "frostyPike" {
     return "frostyPike";
   }
 }

@@ -2,11 +2,22 @@ import { random } from "./basics/random";
 import setAll from "./basics/setAll";
 import setPixel from "./basics/setPixel";
 import { hsvToRgb, rgbToHsv } from "./basics/convertHsvRgb.js";
+import { CoreChaserEffectInterface, EffectInterface } from "./types";
 
-class Snake {
+export interface SnakeInterface {
+  speed: number;
+  maxSnakeSize: number;
+  appleCount: number;
+}
+
+export interface SnakeEffectInterface
+  extends CoreChaserEffectInterface,
+    SnakeInterface {}
+
+class Snake implements EffectInterface {
   stripe: string[];
-  headColor: { r: number; g: number; b: number; };
-  tailColor: { r: number; g: number; b: number; };
+  headColor: { r: number; g: number; b: number };
+  tailColor: { r: number; g: number; b: number };
   apples: number[];
   poisonAppleIndex: number;
   speed: number;
@@ -16,22 +27,9 @@ class Snake {
   neopixelCount: number;
   directionHead: number;
   directionTail: number;
-  rainbow: boolean;
   headIndex: number;
-  constructor(options: {
-    neopixelCount: number;
-    speed: number;
-    maxSnakeSize: number;
-    appleCount: number;
-    rainbow: boolean;
-  }) {
-    const {
-      appleCount,
-      speed,
-      maxSnakeSize,
-      neopixelCount,
-      rainbow = false,
-    } = options;
+  constructor(options: SnakeEffectInterface) {
+    const { appleCount, speed, maxSnakeSize, neopixelCount } = options;
     this.stripe = setAll(0, 0, 0, neopixelCount);
     let spice = random(50) > 25;
     this.headColor = spice
@@ -52,7 +50,6 @@ class Snake {
     this.neopixelCount = neopixelCount;
     this.directionHead = 1;
     this.directionTail = 1;
-    this.rainbow = rainbow;
     this.headIndex = 0;
   }
 
@@ -138,7 +135,7 @@ class Snake {
     return this.stripe;
   }
 
-  getIdentifier() {
+  getIdentifier(): "snake" {
     return "snake";
   }
 }

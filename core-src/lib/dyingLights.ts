@@ -3,8 +3,18 @@ import setPixel from "./basics/setPixel";
 import { random } from "./basics/random";
 import { hsvToRgb, rgbToHsv } from "./basics/convertHsvRgb.js";
 import { hexToRgb } from "./basics/convertRgbHex.js";
+import { CoreChaserEffectInterface, EffectInterface } from "./types";
 
-class DyingLights {
+export interface DyingLightsInterface {
+  lightColor?: string;
+  neopixelCount: number;
+}
+
+export interface DyingLightsEffectInterface
+  extends CoreChaserEffectInterface,
+    DyingLightsInterface {}
+
+class DyingLights implements EffectInterface {
   baseStripe: string[];
   stripe: string[];
   red: number;
@@ -12,7 +22,7 @@ class DyingLights {
   blue: number;
   count: number;
   neopixelCount: number;
-  constructor(options: { neopixelCount: number; lightColor?: string }) {
+  constructor(options: DyingLightsEffectInterface) {
     const { neopixelCount, lightColor = "#9B03FF" } = options;
 
     const { r: red, g: green, b: blue } = hexToRgb(lightColor.substring(1));
@@ -78,7 +88,7 @@ class DyingLights {
     return this.stripe;
   }
 
-  getIdentifier() {
+  getIdentifier(): "dyingLights" {
     return "dyingLights";
   }
 }

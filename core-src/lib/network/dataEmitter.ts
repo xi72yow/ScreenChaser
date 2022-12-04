@@ -1,9 +1,34 @@
 import dgram from "dgram";
 import os from "os";
 import { hexToRgb } from "../basics/convertRgbHex.js";
-import events from "events";
 
-class DataEmitter {
+interface Chaser {
+  ip: string;
+  type: string;
+  port: number;
+}
+
+export interface DataEmitterInterface {
+  init(): Promise<void>;
+  emit(data: string | any[]): void;
+  getHealth(): {
+    sendedPacks: number;
+    recivedPacks: number;
+    packageloss: number;
+    power: number;
+  };
+}
+
+class DataEmitter implements DataEmitterInterface {
+  ipaddr: string;
+  currentPixelArray: any[];
+  lastChunk: any[];
+  xSlaves: Chaser[];
+  DEBUG: boolean;
+  SCAN_NETWORK: boolean;
+  sendedPacks: number;
+  recivedPacks: number;
+  server: dgram.Socket;
   constructor(DEBUG = false, ipaddr = "") {
     this.ipaddr = ipaddr;
     this.currentPixelArray = [];
@@ -14,11 +39,11 @@ class DataEmitter {
     this.sendedPacks = 0;
     this.recivedPacks = 0;
     this.server = dgram.createSocket("udp4");
-    this.fetcher = new events.EventEmitter();
 
     this.server.on("error", (err) => {
       console.log(`server error:\n${err.stack}`);
       this.server.close();
+      throw err;
     });
 
     this.server.on("message", (msg, senderInfo) => {
@@ -69,7 +94,7 @@ class DataEmitter {
    * @param chunk_size {Integer} Size of every group
    * @return {Array} contains all chunks
    */
-  chunkArray(myArray, chunk_size) {
+  chunkArray(myArray: string, chunk_size: number) {
     let index = 0;
     const tempArray = [];
 
@@ -81,15 +106,15 @@ class DataEmitter {
     return tempArray;
   }
 
-  delay(ms) {
+  delay(ms: number | undefined) {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
-  dec2bin(dec) {
+  dec2bin(dec: number) {
     return (dec >>> 0).toString(2);
   }
 
-  combinations(n) {
+  combinations(n: number) {
     const r = [];
     for (let i = 0; i < 1 << n; i++) {
       const c = [];
@@ -101,16 +126,16 @@ class DataEmitter {
     return r;
   }
 
-  binToIp(bin) {
+  binToIp(bin: string) {
     return this.chunkArray(bin, 8)
       .map((octet) => parseInt(octet, 2))
       .join(".");
   }
 
-  ipToBin(ip) {
+  ipToBin(ip: string) {
     return ip
       .split(".")
-      .map((value) => {
+      .map((value: string) => {
         const convert = this.dec2bin(parseInt(value));
         return "0".repeat(8 - convert.length) + convert;
       })
@@ -123,7 +148,7 @@ class DataEmitter {
    * @param pixelArray {Array} represents the light colors (rgb-color formatted)
    * @return {Array} light colors (hex-color formatted)
    */
-  emit(pixelArray) {
+  emit(pixelArray: string | any[]) {
     if (this.ipaddr === "") {
       console.log(
         "ipaddr is not set: call init() first or set ipaddr manually"
@@ -181,15 +206,19 @@ class DataEmitter {
   }
 
   async init() {
-    return new Promise(async (resolve, reject) => {
+    return new Promise<void>(async (resolve, reject) => {
       if (this.ipaddr === "") {
         this.SCAN_NETWORK = true;
         const scanning = await this.scanNetwork();
-        const chasers = scanning.find((xSlave) => xSlave.type === "led");
+        const chasers = scanning.find(
+          (xSlave: Chaser) => xSlave.type === "led"
+        );
         if (!chasers) {
           reject("no chaser found");
+          this.SCAN_NETWORK = false;
+          return;
         }
-        this.ipaddr = scanning.find((xSlave) => xSlave.type === "led").ip;
+        this.ipaddr = chasers.ip;
         console.log(`ipaddr is set to: ${this.ipaddr}`);
       } else {
         console.log(`ipaddr is alredy set to: ${this.ipaddr}`);
@@ -199,7 +228,7 @@ class DataEmitter {
     });
   }
 
-  async scanNetwork() {
+  async scanNetwork(): Promise<Chaser[] | []> {
     this.SCAN_NETWORK = true;
     return new Promise(async (resolve, reject) => {
       console.log("Scanning network...");
@@ -208,6 +237,7 @@ class DataEmitter {
         (value) => value !== "lo"
       );
 
+      //@ts-ignore sorry for that i fix that later :D
       const importantInterface = os.networkInterfaces()[interfaces[0]][0];
       const netmaskBin = this.ipToBin(importantInterface.netmask);
       const addressBin = this.ipToBin(importantInterface.address);
@@ -271,11 +301,5 @@ class DataEmitter {
     console.log(`maxPower for LEDs: ${maxPower} W`);
   }
 }
-/* async function main() {
-  const DataEmitterForIP = new DataEmitter(true);
-  await DataEmitterForIP.init();
-  DataEmitterForIP.logSlaves();
-}
-main(); */
 
 export default DataEmitter;
