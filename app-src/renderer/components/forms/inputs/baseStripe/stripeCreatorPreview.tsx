@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 
-export default function StripeCreatorPreview({ frames, form }) {
+export default function StripeCreatorPreview({ frames, form, lastIp }) {
   const canvasRef = useRef(null);
   const [context, setContext] = useState(null);
 
@@ -54,9 +54,13 @@ export default function StripeCreatorPreview({ frames, form }) {
         ref={canvasRef}
         width={form.values.device.neoPixelCount * pixelSize * 1.1}
         height={pixelSize}
-        hidden={frames[0].length !== form.values.device.neoPixelCount}
+        hidden={
+          frames[0].length !== form.values.device.neoPixelCount &&
+          lastIp === form.values.device.ip
+        }
       />
       {frames[0].length !== form.values.device.neoPixelCount &&
+        lastIp === form.values.device.ip &&
         "You changed the number of pixels. Please confirm with the Creator"}
     </React.Fragment>
   );

@@ -14,6 +14,8 @@ interface BaseStripeInputProps {
   path: string;
   defaultValue: Array<string> | Array<Array<string>>;
   singleFrame?: boolean;
+  lastIp: string;
+  setLastIp: React.Dispatch<React.SetStateAction<string>>;
 }
 
 function LED(props) {
@@ -73,8 +75,11 @@ export default function StripeCreator({
   path,
   defaultValue,
   singleFrame = true,
+  lastIp,
+  setLastIp,
 }: BaseStripeInputProps) {
   const [activeFrame, setActiveFrame] = useState(1);
+
   const [frames, setFrames] = useState(
     defaultValue.map((frame) => {
       return prepareStripe(frame, form.values.device.neoPixelCount);
@@ -82,22 +87,22 @@ export default function StripeCreator({
   );
 
   useEffect(() => {
-    setFrames(
-      defaultValue.map((frame) => {
-        return prepareStripe(frame, form.values.device.neoPixelCount);
-      })
-    );
-  }, [defaultValue]);
-
-  useEffect(() => {
-    setFrames((prev) => {
-      return prev.map((frame, index) => {
-        return prepareStripe(frame, form.values.device.neoPixelCount);
+    if (lastIp === form.values.device.ip) {
+      setFrames((prev) => {
+        return prev.map((frame, index) => {
+          return prepareStripe(frame, form.values.device.neoPixelCount);
+        });
       });
-    });
+    } else {
+      setFrames(
+        defaultValue.map((frame) => {
+          return prepareStripe(frame, form.values.device.neoPixelCount);
+        })
+      );
+      setLastIp(form.values.device.ip);
+    }
     setChangeColorEvent((prev) => !prev);
-    handleSave();
-  }, [form.values.device.neoPixelCount]);
+  }, [form.values.device.neoPixelCount, form.values.device.ip]);
 
   useEffect(() => {
     setChangeColorEvent((prev) => !prev);

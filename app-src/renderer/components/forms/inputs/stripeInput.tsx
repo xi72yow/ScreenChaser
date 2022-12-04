@@ -1,6 +1,6 @@
 import { Group, Text, useMantineTheme } from "@mantine/core";
 import { UseFormReturnType } from "@mantine/form";
-import React from "react";
+import React, { useMemo, useState } from "react";
 import { ConfigInterface } from "../../database/db";
 import { useHorizontalScroll } from "../helpers/horizontalScroll";
 import StripeCreator from "./baseStripe/stripeCreator";
@@ -21,6 +21,8 @@ export default function StripeInput({
   singleFrame,
   label,
 }: Props) {
+  const [lastIpS, setLastIp] = useState(form.values.device.ip);
+  const lastIp = useMemo(() => lastIpS, [lastIpS]);
   const theme = useMantineTheme();
   const scrollRef = useHorizontalScroll();
   return (
@@ -52,9 +54,12 @@ export default function StripeInput({
           <StripeCreatorPreview
             frames={defaultValue}
             form={form}
+            lastIp={lastIp}
           ></StripeCreatorPreview>
         </Group>
         <StripeCreator
+          setLastIp={setLastIp}
+          lastIp={lastIp}
           form={form}
           path={path}
           defaultValue={defaultValue}
