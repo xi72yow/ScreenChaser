@@ -1,8 +1,15 @@
-import { AppShell, ColorScheme, ColorSchemeProvider, MantineProvider } from "@mantine/core";
-import { useForm } from "@mantine/form";
 import {
-  useHotkeys, useLocalStorage
-} from "@mantine/hooks";
+  Alert,
+  AppShell,
+  Button,
+  Code,
+  ColorScheme,
+  ColorSchemeProvider,
+  Group,
+  MantineProvider
+} from "@mantine/core";
+import { useForm } from "@mantine/form";
+import { useHotkeys, useLocalStorage } from "@mantine/hooks";
 import { ModalsProvider } from "@mantine/modals";
 import { NotificationsProvider } from "@mantine/notifications";
 import React, { useEffect, useRef, useState } from "react";
@@ -18,8 +25,10 @@ import SnakeForm from "../components/forms/snakeForm";
 import HeaderApp from "../components/header/header";
 import NavbarNested from "../components/navbar/navbar";
 
+import { IconAlertCircle } from "@tabler/icons";
 import { useLiveQuery } from "dexie-react-hooks";
 import { ipcRenderer } from "electron";
+import { ErrorBoundary } from "react-error-boundary";
 import { setTimeout } from "timers";
 import { ConfigInterface, db, initilalValues } from "../components/database/db";
 import AnimationForm from "../components/forms/animationForm";
@@ -27,6 +36,29 @@ import BubblesForm from "../components/forms/bubblesForm";
 import StaticLightForm from "../components/forms/staticLightForm";
 import ConfirmationContextProvider from "../components/hooks/confirm";
 import Toolbar from "../components/toolbar/toolbar";
+
+function ErrorFallback({ error, resetErrorBoundary }) {
+  return (
+    <Group position="center" sx={{ height: "90vh" }} m="lg">
+      <Alert
+        icon={<IconAlertCircle size={16} />}
+        title="Something went wrong:"
+        color="red"
+      >
+        Something terrible happened! Please try again and if it happens again,
+        contact me.
+        <Code block mt={"md"} color="gray">
+          {error.message}
+        </Code>
+        <Group position="right" pt={"md"} pb={"xs"}>
+          <Button onClick={resetErrorBoundary} variant="outline" color={"gray"}>
+            Try again
+          </Button>
+        </Group>
+      </Alert>
+    </Group>
+  );
+}
 
 function App() {
   const [selectedDevice, setSelectedDevice] = React.useState<number>(0);
@@ -235,45 +267,46 @@ function Next() {
   useHotkeys([["mod+J", () => toggleColorScheme()]]);
 
   return (
-    <ColorSchemeProvider
-      colorScheme={colorScheme}
-      toggleColorScheme={toggleColorScheme}
-    >
-      <MantineProvider
-        theme={{
-          globalStyles: (theme) => ({
-            "*, *::before, *::after": {
-              boxSizing: "border-box",
-            },
+    <ErrorBoundary FallbackComponent={ErrorFallback}>
+      <ColorSchemeProvider
+        colorScheme={colorScheme}
+        toggleColorScheme={toggleColorScheme}
+      >
+        <MantineProvider
+          theme={{
+            globalStyles: (theme) => ({
+              "*, *::before, *::after": {
+                boxSizing: "border-box",
+              },
 
-            "::-webkit-scrollbar": {
-              width: "0.5rem",
-              height: "0.5rem",
-            },
-            "::-webkit-scrollbar-track": {
-              backgroundColor:
-                theme.colorScheme === "dark"
-                  ? theme.colors.dark[8]
-                  : theme.colors.gray[0],
-            },
-            "::-webkit-scrollbar-thumb": {
-              borderRadius: theme.radius.sm,
-              backgroundColor:
-                theme.colorScheme === "dark"
-                  ? theme.colors.dark[4]
-                  : theme.colors.gray[3],
-            },
-            "::-webkit-scrollbar-thumb:hover": {
-              backgroundColor:
-                theme.colorScheme === "dark"
-                  ? theme.colors.dark[5]
-                  : theme.colors.gray[2],
-            },
-          }),
+              "::-webkit-scrollbar": {
+                width: "0.5rem",
+                height: "0.5rem",
+              },
+              "::-webkit-scrollbar-track": {
+                backgroundColor:
+                  theme.colorScheme === "dark"
+                    ? theme.colors.dark[8]
+                    : theme.colors.gray[0],
+              },
+              "::-webkit-scrollbar-thumb": {
+                borderRadius: theme.radius.sm,
+                backgroundColor:
+                  theme.colorScheme === "dark"
+                    ? theme.colors.dark[4]
+                    : theme.colors.gray[3],
+              },
+              "::-webkit-scrollbar-thumb:hover": {
+                backgroundColor:
+                  theme.colorScheme === "dark"
+                    ? theme.colors.dark[5]
+                    : theme.colors.gray[2],
+              },
+            }),
 
-          colorScheme,
-          fontFamily: "Greycliff CF, sans-serif",
-          /* colors: {
+            colorScheme,
+            fontFamily: "Greycliff CF, sans-serif",
+            /* colors: {
             dark: [
               "#21222c",
               "#414558",
@@ -299,19 +332,20 @@ function Next() {
               "#AD1374",
             ],
           }, */
-        }}
-        withNormalizeCSS
-        withGlobalStyles
-      >
-        <NotificationsProvider position="top-center">
-          <ModalsProvider>
-            <ConfirmationContextProvider>
-              <App />
-            </ConfirmationContextProvider>
-          </ModalsProvider>
-        </NotificationsProvider>
-      </MantineProvider>
-    </ColorSchemeProvider>
+          }}
+          withNormalizeCSS
+          withGlobalStyles
+        >
+          <NotificationsProvider position="top-center">
+            <ModalsProvider>
+              <ConfirmationContextProvider>
+                <App />
+              </ConfirmationContextProvider>
+            </ModalsProvider>
+          </NotificationsProvider>
+        </MantineProvider>
+      </ColorSchemeProvider>
+    </ErrorBoundary>
   );
 }
 

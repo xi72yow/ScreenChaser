@@ -19,6 +19,7 @@ type Props = {
 export default function NetworkForm({ configs }: Props) {
   const [selectedDevice, setSelectedDevice] = useState("0");
   const theme = useMantineTheme();
+  if (!configs || configs.length === 0) return <div>"No Chaser to Config"</div>;
 
   const form = useForm({
     initialValues: {
@@ -41,7 +42,6 @@ export default function NetworkForm({ configs }: Props) {
       onSubmit={form.onSubmit((values) => {
         const { neoPixelCount, name, exclude } = values;
         const index = parseInt(selectedDevice);
-        console.log(configs[index], index, values);
         updateConfig(index + 1, {
           device: {
             ...configs[index].device,
