@@ -7,14 +7,14 @@ import {
   ColorScheme,
   ColorSchemeProvider,
   Group,
-  MantineProvider,
+  MantineProvider
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useHotkeys, useLocalStorage } from "@mantine/hooks";
 import { ModalsProvider } from "@mantine/modals";
 import {
   NotificationsProvider,
-  showNotification,
+  showNotification
 } from "@mantine/notifications";
 import React, { useEffect, useRef, useState } from "react";
 import Chaser from "../components/boards/chaser";
@@ -40,7 +40,6 @@ import BubblesForm from "../components/forms/bubblesForm";
 import StaticLightForm from "../components/forms/staticLightForm";
 import ConfirmationContextProvider from "../components/hooks/confirm";
 import Toolbar from "../components/toolbar/toolbar";
-import Link from "next/link";
 
 function ErrorFallback({ error, resetErrorBoundary }) {
   return (
@@ -93,7 +92,6 @@ function App() {
       "https://api.github.com/repos/xi72yow/ScreenChaser/releases/latest"
     ).then((response) => {
       response.json().then((data) => {
-        console.log("🚀 ~ file: home.tsx:94 ~ response.json ~ data", data);
         const NEW_VERSION = data.tag_name.replace("screenchaser-app@", "");
         if (NEW_VERSION !== process.env.npm_package_version) {
           showNotification({

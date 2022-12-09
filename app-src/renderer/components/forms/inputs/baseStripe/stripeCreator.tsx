@@ -118,8 +118,19 @@ export default function StripeCreator({
     form.setFieldValue("globals.swatches", swatches);
   }, [swatches]);
 
-  const [cameraPosX, setCameraPosX] = useState(0);
-  const [cameraPosZ, setCameraPosZ] = useState(5);
+  const cameraPosKeyX = "cameraPosX" + path + form.values.device.ip;
+  const cameraPosKeyZ = "cameraPosZ" + path + form.values.device.ip;
+
+  const [cameraPosX, setCameraPosX] = useState(
+    localStorage.getItem(cameraPosKeyX)
+      ? parseInt(localStorage.getItem(cameraPosKeyX))
+      : 0
+  );
+  const [cameraPosZ, setCameraPosZ] = useState(
+    localStorage.getItem(cameraPosKeyZ)
+      ? parseInt(localStorage.getItem(cameraPosKeyZ))
+      : 5
+  );
 
   useHotkeys([
     ["A", () => setCameraPosX(cameraPosX + 1)],
@@ -142,6 +153,8 @@ export default function StripeCreator({
 
   function handleClose() {
     setOpen(false);
+    localStorage.setItem(cameraPosKeyX, cameraPosX.toString());
+    localStorage.setItem(cameraPosKeyZ, cameraPosZ.toString());
   }
 
   function handleSave() {
