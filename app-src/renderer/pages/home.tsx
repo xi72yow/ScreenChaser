@@ -1,17 +1,21 @@
 import {
   Alert,
   AppShell,
+  Box,
   Button,
   Code,
   ColorScheme,
   ColorSchemeProvider,
   Group,
-  MantineProvider
+  MantineProvider,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useHotkeys, useLocalStorage } from "@mantine/hooks";
 import { ModalsProvider } from "@mantine/modals";
-import { NotificationsProvider } from "@mantine/notifications";
+import {
+  NotificationsProvider,
+  showNotification,
+} from "@mantine/notifications";
 import React, { useEffect, useRef, useState } from "react";
 import Chaser from "../components/boards/chaser";
 import Dashboard from "../components/boards/dashboard";
@@ -27,7 +31,7 @@ import NavbarNested from "../components/navbar/navbar";
 
 import { IconAlertCircle } from "@tabler/icons";
 import { useLiveQuery } from "dexie-react-hooks";
-import { ipcRenderer } from "electron";
+import { ipcRenderer, shell } from "electron";
 import { ErrorBoundary } from "react-error-boundary";
 import { setTimeout } from "timers";
 import { ConfigInterface, db, initilalValues } from "../components/database/db";
@@ -36,6 +40,7 @@ import BubblesForm from "../components/forms/bubblesForm";
 import StaticLightForm from "../components/forms/staticLightForm";
 import ConfirmationContextProvider from "../components/hooks/confirm";
 import Toolbar from "../components/toolbar/toolbar";
+import Link from "next/link";
 
 function ErrorFallback({ error, resetErrorBoundary }) {
   return (
@@ -82,6 +87,36 @@ function App() {
   useEffect(() => {
     console.log(form.values);
   }, [form]);
+
+  useEffect(() => {
+    fetch(
+      "https://api.github.com/repos/xi72yow/ScreenChaser/releases/latest"
+    ).then((response) => {
+      response.json().then((data) => {
+        console.log("🚀 ~ file: home.tsx:94 ~ response.json ~ data", data);
+        const NEW_VERSION = data.tag_name.replace("screenchaser-app@", "");
+        if (NEW_VERSION !== process.env.npm_package_version) {
+          showNotification({
+            title: "New version available",
+            message: (
+              <Box>
+                {`Version ${NEW_VERSION} is available. You are running version ${process.env.npm_package_version}. Download `}
+                <span
+                  onClick={() => shell.openExternal(data.html_url)}
+                  style={{ color: "#09ADC3", cursor: "pointer" }}
+                >
+                  here
+                </span>
+                .
+              </Box>
+            ),
+            color: "blue",
+            icon: <IconAlertCircle size={16} />,
+          });
+        }
+      });
+    });
+  }, []);
 
   useEffect(() => {
     if (configs) {
