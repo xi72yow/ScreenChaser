@@ -7,14 +7,14 @@ import {
   ColorScheme,
   ColorSchemeProvider,
   Group,
-  MantineProvider
+  MantineProvider,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useHotkeys, useLocalStorage } from "@mantine/hooks";
 import { ModalsProvider } from "@mantine/modals";
 import {
   NotificationsProvider,
-  showNotification
+  showNotification,
 } from "@mantine/notifications";
 import React, { useEffect, useRef, useState } from "react";
 import Chaser from "../components/boards/chaser";
@@ -40,6 +40,7 @@ import BubblesForm from "../components/forms/bubblesForm";
 import StaticLightForm from "../components/forms/staticLightForm";
 import ConfirmationContextProvider from "../components/hooks/confirm";
 import Toolbar from "../components/toolbar/toolbar";
+import { version } from "../../package.json";
 
 function ErrorFallback({ error, resetErrorBoundary }) {
   return (
@@ -93,12 +94,12 @@ function App() {
     ).then((response) => {
       response.json().then((data) => {
         const NEW_VERSION = data.tag_name.replace("screenchaser-app@", "");
-        if (NEW_VERSION !== process.env.npm_package_version) {
+        if (NEW_VERSION !== version) {
           showNotification({
             title: "New version available",
             message: (
               <Box>
-                {`Version ${NEW_VERSION} is available. You are running version ${process.env.npm_package_version}. Download `}
+                {`Version ${NEW_VERSION} is available. You are running version ${version}. Download `}
                 <span
                   onClick={() => shell.openExternal(data.html_url)}
                   style={{ color: "#09ADC3", cursor: "pointer" }}

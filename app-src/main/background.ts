@@ -5,13 +5,14 @@ import { Manager } from "screenchaser-core";
 import { SerialPort } from "serialport";
 import * as util from "util";
 import { createWindow, StatCalculator } from "./helpers";
+import onEmit from "./helpers/devImport";
+
+const isProd: boolean = process.env.NODE_ENV === "production";
 
 const writeFile = util.promisify(fs.writeFile);
 const readFile = util.promisify(fs.readFile);
 
-const isProd: boolean = process.env.NODE_ENV === "production";
-
-const ChaserManager = new Manager();
+const ChaserManager = new Manager(onEmit?.default);
 
 const ChaserStatCalculator = new StatCalculator({
   Manager: ChaserManager,

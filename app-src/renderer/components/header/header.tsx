@@ -1,19 +1,16 @@
 import {
-  Code,
+  Badge, Button, Code,
   Group,
   Header,
-  Menu,
-  Button,
-  useMantineTheme,
-  Text,
-  Badge,
+  Menu, Text, useMantineTheme
 } from "@mantine/core";
-import { IconChevronDown, IconCpu, IconCpu2 } from "@tabler/icons";
-import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
-import Logo from "../styles/Logo.js";
-import ScanNetworkModal from "../modale/chaserSettingsModal";
+import { IconChevronDown, IconCpu } from "@tabler/icons";
 import { useLiveQuery } from "dexie-react-hooks";
+import { Dispatch, SetStateAction } from "react";
+import { version } from "../../../package.json";
 import { db } from "../database/db";
+import ScanNetworkModal from "../modale/chaserSettingsModal";
+import Logo from "../styles/Logo.js";
 
 interface HeaderAppProps {
   setSelectedDevice: Dispatch<SetStateAction<Number>>;
@@ -100,9 +97,7 @@ export default function HeaderApp({
                 : theme.colors.dark[7]
             }
           />
-          <Code sx={{ fontWeight: 700 }}>
-            v{process.env.npm_package_version}
-          </Code>
+          <Code sx={{ fontWeight: 700 }}>v{version}</Code>
         </Group>
       </Group>
       <Group
