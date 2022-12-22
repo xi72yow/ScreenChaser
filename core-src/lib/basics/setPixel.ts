@@ -1,4 +1,4 @@
-import { rgbToHex } from "./convertRgbHex.js";
+import { rgbToHex } from "./convertRgbHex";
 /**
  * set one neopixel of the stripe
  *

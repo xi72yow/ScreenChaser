@@ -1,6 +1,6 @@
 import dgram from "dgram";
 import os from "os";
-import { hexToRgb } from "../basics/convertRgbHex.js";
+import { hexToRgb } from "../basics/convertRgbHex";
 
 interface Chaser {
   ip: string;
@@ -30,7 +30,13 @@ class DataEmitter implements DataEmitterInterface {
   sendedPacks: number;
   recivedPacks: number;
   server: dgram.Socket;
-  constructor(DEBUG = false, ipaddr = "") {
+  onEmit: ((ip: string, pixelArray: string | any[]) => void) | undefined;
+  constructor(
+    DEBUG = false,
+    ipaddr = "",
+    onEmit?: (ip: string, pixelArray: string | any[]) => void
+  ) {
+    this.onEmit = onEmit;
     this.ipaddr = ipaddr;
     this.currentPixelArray = [];
     this.lastChunk = [];
@@ -150,6 +156,8 @@ class DataEmitter implements DataEmitterInterface {
    * @return {Array} light colors (hex-color formatted)
    */
   emit(pixelArray: string | any[]) {
+    if (this.onEmit) this.onEmit(this.ipaddr, pixelArray);
+
     if (this.ipaddr === "") {
       console.log(
         "ipaddr is not set: call init() first or set ipaddr manually"

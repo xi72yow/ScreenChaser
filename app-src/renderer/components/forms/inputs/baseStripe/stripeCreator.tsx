@@ -7,7 +7,7 @@ import { IconPalette } from "@tabler/icons";
 import React, { useEffect, useRef, useState } from "react";
 import { reScale } from "screenchaser-core";
 import { ConfigInterface } from "../../../database/db";
-import StripeCreatorToolbar from ".//stripeCreatorToolbar";
+import StripeCreatorToolbar from "./stripeCreatorToolbar";
 
 interface BaseStripeInputProps {
   form: UseFormReturnType<ConfigInterface>;

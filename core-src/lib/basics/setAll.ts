@@ -1,4 +1,4 @@
-import { rgbToHex } from "./convertRgbHex.js";
+import { rgbToHex } from "./convertRgbHex";
 /**
  *
  * @param {byte} r 8Bit color

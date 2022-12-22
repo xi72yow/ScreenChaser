@@ -78,7 +78,13 @@ const MeteorRainEffect = new MeteorRain({
 }); */
 
 async function main() {
-  const DataEmitterForIP = new DataEmitter(true, "192.168.2.113");
+  const DataEmitterForIP = new DataEmitter(
+    true,
+    "192.168.2.113",
+    (ip, pixels) => {
+      console.log(ip, pixels.length);
+    }
+  );
   //await DataEmitterForIP.init();
   setInterval(() => {
     count++;
