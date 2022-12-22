@@ -29,8 +29,10 @@ class Manager implements ManagerInterface {
   chasers: ManagedChaser[];
   debounce: NodeJS.Timeout | null;
   framerate: number;
+  onEmit: ((ip: string, pixelArray: string | any[]) => void) | undefined;
 
-  constructor() {
+  constructor(onEmit?: (ip: string, pixelArray: string | any[]) => void) {
+    this.onEmit = onEmit;
     this.chasers = [];
     this.debounce = null;
     this.framerate = 9.8;
@@ -90,7 +92,7 @@ class Manager implements ManagerInterface {
           config: { ...newConfig },
           interval: undefined,
           runningEffect: undefined,
-          emitter: new DataEmitter(false, newConfig.device.ip),
+          emitter: new DataEmitter(false, newConfig.device.ip, this.onEmit),
         });
         this.setAnimation(this.chasers.length - 1, newConfig);
       }
