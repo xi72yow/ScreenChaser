@@ -1,12 +1,10 @@
 node_modules
 proto.js
 todo
-package-lock.json
 myconfig.h
 effects_build
 .ScreenChaser.json
 libraries
-
 *.log
 .next
 app
