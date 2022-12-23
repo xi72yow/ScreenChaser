@@ -1,13 +1,17 @@
 import {
-  Badge, Button, Code,
+  Badge,
+  Button,
+  Code,
   Group,
   Header,
-  Menu, Text, useMantineTheme
+  Menu,
+  Text,
+  useMantineTheme,
 } from "@mantine/core";
 import { IconChevronDown, IconCpu } from "@tabler/icons";
 import { useLiveQuery } from "dexie-react-hooks";
 import { Dispatch, SetStateAction } from "react";
-import { version } from "../../../package.json";
+import package_json from "../../../package.json";
 import { db } from "../database/db";
 import ScanNetworkModal from "../modale/chaserSettingsModal";
 import Logo from "../styles/Logo.js";
@@ -97,7 +101,7 @@ export default function HeaderApp({
                 : theme.colors.dark[7]
             }
           />
-          <Code sx={{ fontWeight: 700 }}>v{version}</Code>
+          <Code sx={{ fontWeight: 700 }}>v{package_json.version}</Code>
         </Group>
       </Group>
       <Group
