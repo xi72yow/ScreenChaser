@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.3.0](https://github.com/xi72yow/ScreenChaser/compare/screenchaser-app@0.2.0...screenchaser-app@0.3.0) (2022-12-23)
+
+
+### Bug Fixes
+
+* **app:** save user view port for stripe-Creator ([2577234](https://github.com/xi72yow/ScreenChaser/commit/2577234ce3499364db9bd44290f921d4d3ad2c84))
+
+
+### Features
+
+* **app:** check for new version on app start ([e9e055b](https://github.com/xi72yow/ScreenChaser/commit/e9e055b50275fe051d6090f748c526c142c585d4))
+
+
+
+
+
 # [0.2.0](https://github.com/xi72yow/ScreenChaser/compare/screenchaser-app@0.1.0...screenchaser-app@0.2.0) (2022-12-04)
 
 

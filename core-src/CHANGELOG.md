@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.2.1](https://github.com/xi72yow/ScreenChaser/compare/screenchaser-core@0.2.0...screenchaser-core@0.2.1) (2022-12-23)
+
+
+### Bug Fixes
+
+* ci node version ([19f6dff](https://github.com/xi72yow/ScreenChaser/commit/19f6dfff480b9b19b167de906c5e4eea7c18c35c))
+
+
+
+
+
 # [0.2.0](https://github.com/xi72yow/ScreenChaser/compare/screenchaser-core@0.1.0...screenchaser-core@0.2.0) (2022-12-04)
 
 
