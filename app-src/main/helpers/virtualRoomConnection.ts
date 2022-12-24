@@ -2,7 +2,7 @@ import { Server } from "socket.io";
 
 const io = new Server(4545, {
   cors: {
-    origin: "http://localhost:8080",
+    origin: ["http://localhost:8080", "http://127.0.0.1:5500"],
     methods: ["GET", "POST"],
     allowedHeaders: ["virtual-room"],
     credentials: true,
