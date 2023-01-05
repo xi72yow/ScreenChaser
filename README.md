@@ -1,4 +1,8 @@
-![ScreenChaser Banner](https://xi72yow.de/data/pictures/screenchaser_logo.png#gh-light-mode-only)![ScreenChaser Banner](https://xi72yow.de/data/pictures/screenchaser_logo_white.png#gh-dark-mode-only)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://xi72yow.de/data/pictures/screenchaser_logo_white.png">
+  <source media="(prefers-color-scheme: light)" srcset="https://xi72yow.de/data/pictures/screenchaser_logo.png">
+  <img alt="ScreenChaser Banner" src="https://xi72yow.de/data/pictures/screenchaser_logo.png">
+</picture>
 
 <h1 align="left">ScreenChaser</h1>
 
