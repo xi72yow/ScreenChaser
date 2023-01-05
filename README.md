@@ -22,5 +22,6 @@ The ScreenChaser consists of three different software parts to control Neopixel 
 Note that the render below only gives an insight and does not show all functionality.
 
 
-https://user-images.githubusercontent.com/65042627/210892076-feff296b-0e97-4585-a47f-457dbd3151ff.mp4
+https://user-images.githubusercontent.com/65042627/210893593-29b303a0-6971-4d15-9e41-3c11cf5573cd.mp4
+
 
