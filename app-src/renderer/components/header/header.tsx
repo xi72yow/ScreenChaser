@@ -92,9 +92,12 @@ export default function HeaderApp({
           justifyContent: "center",
         }}
       >
-        <Group position="apart" sx={{ width: 300, paddingRight: "1rem" }}>
+        <Group
+          position="apart"
+          sx={{ width: 300, paddingRight: "1rem", paddingLeft: "0.5rem" }}
+        >
           <Logo
-            width={180}
+            width={200}
             fill={
               theme.colorScheme === "dark"
                 ? theme.colors.gray[2]
