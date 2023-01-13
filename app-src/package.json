@@ -48,6 +48,7 @@
   "devDependencies": {
     "@types/node": "^16.11.7",
     "@types/react": "^18.0.8",
+    "@types/w3c-image-capture": "^1.0.7",
     "commit-and-tag-version": "^10.1.0",
     "electron": "^20.1.0",
     "electron-builder": "^23.3.3",

@@ -3,19 +3,20 @@ import { ipcRenderer } from "electron";
 import React, { useEffect, useRef } from "react";
 import { db } from "../components/database/db";
 import { setAll, rgbToHex } from "screenchaser-core";
+import {
+  createDownScaleCore,
+  downScaleImageBitmap,
+} from "../components/resizer";
 
 type Props = {};
 
-const isProd: boolean = process.env.NODE_ENV === "production";
-
 function Next() {
-  const caserIntervals = useRef([]);
-  const chasedRow = useRef([]);
+  const chaserIntervals = useRef([]);
   const lastBlackCheck = useRef(0);
 
-  async function setVideoSource(sourceId, neoPixelCount, ip) {
+  async function setMediaStreamFromSource(sourceId, id) {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
         audio: false,
         video: {
           //@ts-ignore
@@ -26,7 +27,9 @@ function Next() {
           },
         },
       });
-      handleStream(stream, ip);
+      const video: HTMLVideoElement = document.querySelector(id);
+      video.srcObject = mediaStream;
+      video.onloadedmetadata = (e) => video.play();
     } catch (e) {
       handleError(e);
     }
@@ -37,110 +40,37 @@ function Next() {
     return [red, red + 1, red + 2, red + 3];
   };
 
-  function processCtxData(neoPixelCount, ip, index) {
-    try {
-      const canvas = document.getElementById("canvas" + ip);
-      const video = document.getElementById("video" + ip);
-
-      /* @ts-ignore */
-      const width = video.videoWidth;
-      /* @ts-ignore */
-      const height = video.videoHeight;
-
-      const scale = neoPixelCount / 400;
-      const scaledWidth = width * scale;
-      const scaledHeight = height * scale;
-
-      // scale the canvas to the dimensions of the neopixels
-      /* @ts-ignore */
-      canvas.width = scaledWidth;
-      /* @ts-ignore */
-      canvas.height = scaledHeight;
-
-      // if current setupt NOT matches the neopixel count, skip
-      if (
-        /* @ts-ignore */
-        canvas.width === 0 ||
-        /* @ts-ignore */
-        canvas.height === 0 ||
-        !canvas ||
-        !video ||
-        neoPixelCount === ""
-      )
-        return setAll(0, 0, 0, neoPixelCount);
-
-      //clculate the stripe
-      /* @ts-ignore */
-      let ctx = canvas.getContext("2d");
-
-      ctx.drawImage(video, 0, 0, scaledWidth, scaledHeight);
-
-      let frame = ctx.getImageData(0, 0, scaledWidth, scaledHeight);
-
-      let stripe = [];
-
-      for (let i = 0; i < neoPixelCount; i++) {
-        const [redIndex, greenIndex, blueIndex, alphaIndex] =
-          getColorIndicesForCoord(
-            i,
-            frame.height - chasedRow.current[index],
-            frame.width
-          );
-        stripe.push(
-          rgbToHex(frame.data[redIndex]) +
-            rgbToHex(frame.data[greenIndex]) +
-            rgbToHex(frame.data[blueIndex])
-        );
-      }
-
-      if (Date.now() - lastBlackCheck.current > 10000) {
-        chasedRow.current[index] = checkBlackBar(frame, neoPixelCount);
-        lastBlackCheck.current = Date.now();
-      }
-
-      return stripe;
-    } catch (e) {
-      handleError(e);
-    }
-  }
-
   //check for black bar at the bottom of the frame
-  function checkBlackBar(frame, neopixelCount) {
-    const reducedArr = [];
-    //if the last row is black, return true
-    for (let k = (frame.height / 4) | 0; k > 1; k--) {
-      let averageColor = 0;
-      for (let i = 0; i < neopixelCount; i++) {
-        const [redIndex, greenIndex, blueIndex, alphaIndex] =
-          getColorIndicesForCoord(i, frame.height - k, frame.width);
-        averageColor =
-          averageColor +
-          frame.data[redIndex] +
-          frame.data[greenIndex] +
-          frame.data[blueIndex];
-      }
-      reducedArr.push((averageColor / neopixelCount) * 3);
-    }
+  function checkBlackBar(frame, width, row) {
+    const avg = frame
+      .slice(
+        frame.length - width * row * 4,
+        frame.length - width * row * 4 + width * 4
+      )
+      .reduce((acc, curr) => acc + curr, 0);
 
-    for (let i = reducedArr.length; i > 0; i--) {
-      // here not zero because somtimes there is an logo in the bottom corner
-      if (reducedArr[i] > 2) {
-        const row = reducedArr.length - i + 2;
-        if (row < frame.height) return row;
-      }
-    }
-    return 1;
+    return avg / (width * 4) < 10;
   }
 
-  function handleStream(stream, id: any) {
-    const video: HTMLVideoElement = document.querySelector(id);
-    video.srcObject = stream;
-    video.onloadedmetadata = (e) => video.play();
+  function calculateStripeData(frame, width, height, row = 1) {
+    const stripe = [];
+
+    for (let i = 0; i < width; i++) {
+      const [redIndex, greenIndex, blueIndex, alphaIndex] =
+        getColorIndicesForCoord(i, height - row, width);
+      stripe.push(
+        rgbToHex(frame[redIndex]) +
+          rgbToHex(frame[greenIndex]) +
+          rgbToHex(frame[blueIndex])
+      );
+    }
+
+    return stripe;
   }
 
   function handleError(e) {
     console.log("🚀 ~ file: chaserhack.tsx ~ line 106 ~ handleError ~ e", e);
-    caserIntervals.current.forEach((interval) => clearInterval(interval));
+    chaserIntervals.current.forEach((interval) => clearInterval(interval));
   }
 
   const configs = useLiveQuery(
@@ -151,56 +81,86 @@ function Next() {
     []
   );
 
-  function startCasers() {
-    caserIntervals.current.forEach((interval) => clearInterval(interval));
+  function startChasers() {
+    chaserIntervals.current.forEach((interval) =>
+      clearInterval(interval.interval)
+    );
+
+    //TODO black bar detection depands on chaser setup
+    //TODO allaround chasing setup
 
     if (configs) {
       configs
         .filter((config) => config.task.taskCode === "chaser")
-        .forEach((config, i) => {
+        .forEach(async (config, i) => {
           console.log(config.chaser.sourceId);
-          setVideoSource(
-            config.chaser.sourceId,
+
+          const videoSelector = "#" + "video" + config.chaser.sourceId;
+
+          setMediaStreamFromSource(config.chaser.sourceId, videoSelector);
+
+          chaserIntervals.current[i] = {
+            interval: null,
+            downScaleCore: null,
+            canvas: null,
+          };
+
+          chaserIntervals.current[i].canvas = new OffscreenCanvas(256, 256);
+
+          chaserIntervals.current[i].downScaleCore = createDownScaleCore(
+            chaserIntervals.current[i].canvas,
             config.device.neoPixelCount,
-            "#" + "video" + config.device.ip.replaceAll(".", "")
+            10
           );
 
-          chasedRow.current[i] = 1;
-          caserIntervals.current[i] = setInterval(() => {
-            const neoPixelCount =
-              config.device.neoPixelCount > 9
-                ? config.device.neoPixelCount
-                : 10;
-            const stripe = processCtxData(
-              neoPixelCount,
-              config.device.ip.replaceAll(".", ""),
-              i
+          chaserIntervals.current[i].interval = setInterval(async () => {
+            const video = document.querySelector(
+              videoSelector
+            ) as HTMLVideoElement;
+
+            if (!video) return;
+            let imageBitmap = await createImageBitmap(video);
+
+            const frame = downScaleImageBitmap(
+              imageBitmap,
+              config.device.neoPixelCount,
+              10,
+              chaserIntervals.current[i].downScaleCore
             );
-            ipcRenderer.send("CHASER:SEND_STRIPE", stripe, config.device.ip);
-          }, 110);
+
+            ipcRenderer.send(
+              "CHASER:SEND_STRIPE",
+              calculateStripeData(frame, config.device.neoPixelCount, 10, 1),
+              config.device.ip
+            );
+          }, 100);
         });
     }
   }
 
   useEffect(() => {
     console.log(configs);
-    startCasers();
+    startChasers();
   }, [configs]);
 
   return (
     <div>
       {configs
         .filter((config) => config.task.taskCode === "chaser")
-        .map((config) => (
-          <div key={config.device.ip + "div"}>
-            <video id={"video" + config.device.ip.replaceAll(".", "")}></video>
-            <canvas
-              id={"canvas" + config.device.ip.replaceAll(".", "")}
-              width={config.device.neoPixelCount}
-              hidden={isProd}
-            ></canvas>
-          </div>
-        ))}
+        .filter((value, index, configs) => {
+          return (
+            configs.findIndex(
+              (v) => v.chaser.sourceId === value.chaser.sourceId
+            ) === index
+          );
+        })
+        .map((config) => {
+          return (
+            <div key={config.device.ip + "div"}>
+              <video id={"video" + config.chaser.sourceId}></video>
+            </div>
+          );
+        })}
     </div>
   );
 }
