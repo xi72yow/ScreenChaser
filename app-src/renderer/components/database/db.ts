@@ -69,7 +69,15 @@ export const initilalValues = {
       "#fd7e14",
     ],
   },
-  chaser: { sourceId: "", name: "" },
+  chaser: {
+    sourceId: "",
+    name: "",
+    setUp: { rowB: 0, colR: -1, rowT: -1, colL: -1 },
+    clockWise: false,
+    width: 114,
+    height: 0,
+    startLed: 0,
+  },
   staticLight: { baseStripe },
   animation: { frames: frames, fps: 3 },
   device: { name: "", ip: "", neoPixelCount: 42, new: false, exclude: false },
@@ -87,6 +95,11 @@ export interface GlobalsInterface {
 export interface ChaserInterface {
   sourceId: string;
   name: string;
+  setUp: { rowB: number; colR: number; rowT: number; colL: number };
+  startLed: number;
+  clockWise: boolean;
+  width: number;
+  height: number;
 }
 
 export interface DeviceInterface {
