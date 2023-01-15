@@ -95,7 +95,7 @@ export interface GlobalsInterface {
 export interface ChaserInterface {
   sourceId: string;
   name: string;
-  setUp: { rowB: number; colR: number; rowT: number; colL: number };
+  setUp: { rowB: 0 | -1; colR: 0 | -1; rowT: 0 | -1; colL: 0 | -1 };
   startLed: number;
   clockWise: boolean;
   width: number;

@@ -12,7 +12,6 @@ type Props = {};
 
 function Next() {
   const chaserIntervals = useRef([]);
-  const lastBlackCheck = useRef(0);
 
   async function setVideoSrcFromMediaStream(sourceId, id) {
     try {
@@ -44,17 +43,19 @@ function Next() {
   function checkBlackBarRow(frame, width, row) {
     const avg = frame
       .slice(
-        frame.length - width * row * 4,
-        frame.length - width * row * 4 + width * 4
+        frame.length - width * (row + 1) * 4,
+        frame.length - width * row * 4
       )
       .reduce((acc, curr) => acc + curr, 0);
-    return avg / (width * 4) - 255 * width < 10;
+    //i have to subsract 255 because of the alpha channel
+    return (avg - 255 * width) / (width * 4) < 10;
   }
 
+  //check for black bar at specific col
   function checkBlackBarCol(frame, width, col) {
     let avg = 0;
     const height = frame.length / (width * 4);
-    for (let i = col; i < frame.length; i += 4 * width) {
+    for (let i = col * 4; i < frame.length; i += 4 * width) {
       avg += frame[i] + frame[i + 1] + frame[i + 2];
     }
     return (avg / height) * 3 < 10;
@@ -110,6 +111,9 @@ function Next() {
   ) {
     // 0=>left, 1=>right, 2=>top, 3=>bottom
     const clockWiseRotStripeData = [...stripeData];
+
+    let stripeDataAround = [];
+
     if (!clockWise) {
       clockWiseRotStripeData[0] = stripeData[0].reverse();
       clockWiseRotStripeData[2] = stripeData[1].reverse();
@@ -118,12 +122,14 @@ function Next() {
       clockWiseRotStripeData[3] = stripeData[3].reverse();
     }
 
-    const stripeDataAround = [
+    stripeDataAround = [
       ...clockWiseRotStripeData[3],
       ...clockWiseRotStripeData[1],
       ...clockWiseRotStripeData[2],
       ...clockWiseRotStripeData[0],
     ];
+
+    if (clockWise) stripeDataAround = stripeDataAround.reverse();
 
     return [
       ...stripeDataAround.slice(startLed, stripeDataAround.length),
@@ -167,6 +173,7 @@ function Next() {
             downScaleCore: null,
             canvas: null,
             setUp: null,
+            lastBarDetection: null,
           };
 
           chaserIntervals.current[i].canvas = new OffscreenCanvas(256, 256);
@@ -189,7 +196,7 @@ function Next() {
               videoSelector
             ) as HTMLVideoElement;
 
-            if (!video) return;
+            if (!video && video.width === 0) return;
             let imageBitmap = await createImageBitmap(video);
 
             const frame = downScaleImageBitmap(
@@ -198,6 +205,12 @@ function Next() {
               height,
               chaserIntervals.current[i].downScaleCore
             );
+
+            const blackL = checkBlackBarCol(frame, width, 0);
+            const blackR = checkBlackBarCol(frame, width, width - 1);
+
+            const blackT = checkBlackBarRow(frame, width, 0);
+            const blackB = checkBlackBarRow(frame, width, height - 1);
 
             const stripeData = calculateStripeData(
               frame,
