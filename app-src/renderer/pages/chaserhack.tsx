@@ -22,7 +22,7 @@ function Next() {
           mandatory: {
             chromeMediaSource: "desktop",
             chromeMediaSourceId: sourceId,
-            maxWidth: 400,
+            maxWidth: 250,
           },
         },
       });

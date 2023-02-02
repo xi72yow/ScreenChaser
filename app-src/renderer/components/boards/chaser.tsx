@@ -1,13 +1,22 @@
 import styled from "@emotion/styled";
 import {
-  Box, Button, Grid, Group,
-  Image as MantineImage, Modal, ScrollArea, Text, useMantineTheme
+  Box,
+  Button,
+  Checkbox,
+  Grid,
+  Group,
+  Image as MantineImage,
+  Modal,
+  NumberInput,
+  ScrollArea,
+  Text,
+  useMantineTheme,
 } from "@mantine/core";
 import { UseFormReturnType } from "@mantine/form";
-import { useElementSize } from "@mantine/hooks";
 import { showNotification } from "@mantine/notifications";
 import { IconChevronDown } from "@tabler/icons";
 import { ipcRenderer } from "electron";
+import React from "react";
 import { useEffect, useState } from "react";
 import { ConfigInterface } from "../database/db";
 
@@ -21,28 +30,13 @@ const PreviewImage = styled(MantineImage)`
   }
 `;
 
-const Holder = styled.div<{ width: number }>`
-  background: #222;
-  width: ${({ width }) => (width ? `${width * 0.25}px` : "100%")};
-  height: 50px;
-`;
-
-//@ts-ignore
-const Stand = styled.div<{ width: number }>`
-  background: #333;
-  border-top-left-radius: 0.5em;
-  border-top-right-radius: 0.5em;
-  width: ${({ width }) => (width ? `${width * 0.5}px` : "100%")};
-  height: 20px;
-`;
-
 interface ChaserProps {
   form: UseFormReturnType<ConfigInterface>;
   selectedDevice: number;
 }
 
 export default function Chaser({ form, selectedDevice }: ChaserProps) {
-  const { ref: refSize, width, height } = useElementSize();
+  const canvasRef = React.useRef<HTMLCanvasElement>(null);
   const theme = useMantineTheme();
   const [selected, setSelected] = useState({
     id: form.values.chaser.sourceId || "",
@@ -57,34 +51,118 @@ export default function Chaser({ form, selectedDevice }: ChaserProps) {
     //ipcRenderer.send("CHASER:", selected);
   }, [selected]);
 
-  useEffect(() => {
-    setVideoSource(selected.id);
-  }, []);
+  function renderConfig() {
+    ipcRenderer
+      .invoke("GET_SOURCES", {
+        height: 768,
+        width: 1366,
+      })
+      .then(async (sources) => {
+        for (let s in sources) {
+          if (sources[s].id === selected.id) {
+            const horizontalPixels = form.values.chaser.width;
+            const verticalPixels = form.values.chaser.height;
+            const { rowB, colR, rowT, colL } = form.values.chaser.setUp;
+            const canvasCTX = canvasRef.current.getContext("2d");
+            const dataURL = sources[s].thumbnail.toDataURL();
+            const img = new Image();
+            img.src = dataURL;
+            img.onload = function () {
+              canvasCTX.drawImage(img, 0, 0, 1366, 768);
+              canvasCTX.fillStyle = "rgba(0, 0, 0, 0.5)";
+              canvasCTX.fillRect(0, 0, 1366, 768);
+              canvasCTX.font = "13px Arial";
+              const space = 0.1;
+              const canvasWidth = 1366;
+              const canvasHeight = 768;
+              const neoPixelCount = form.values.device.neoPixelCount;
+              const startLed = form.values.chaser.startLed;
 
-  async function setVideoSource(sourceId) {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: false,
-        video: {
-          //@ts-ignore
-          mandatory: {
-            chromeMediaSource: "desktop",
-            chromeMediaSourceId: sourceId,
-            maxWidth: 400,
-          },
-        },
+              const pixH = canvasWidth / (horizontalPixels * (space + 1));
+              const pixV =
+                (canvasHeight - 2 * pixH) / (verticalPixels * (space + 1));
+
+              const pix = Math.min(pixH, pixV);
+              let renderedLeds = 0;
+
+              for (let i = 0; i < neoPixelCount; i++) {
+                if (renderedLeds === startLed) {
+                  canvasCTX.fillStyle = "rgba(255, 0, 0, 0.5)";
+                } else {
+                  canvasCTX.fillStyle = "rgba(255, 255, 255, 0.5)";
+                }
+                if (
+                  rowB > -1 &&
+                  i >= 0 &&
+                  i < horizontalPixels &&
+                  horizontalPixels > 0
+                ) {
+                  canvasCTX.fillRect(
+                    i * pix * (1 + space),
+                    canvasHeight - pix * (1 + space),
+                    pix,
+                    pix
+                  );
+                  renderedLeds++;
+                }
+
+                if (
+                  colR > -1 &&
+                  i >= horizontalPixels &&
+                  i < horizontalPixels + verticalPixels &&
+                  verticalPixels > 0
+                ) {
+                  let sideIndex = i - horizontalPixels;
+                  canvasCTX.fillRect(
+                    canvasWidth - pix * (1 + space),
+                    canvasHeight - (sideIndex + 2) * pix * (1 + space),
+                    pix,
+                    pix
+                  );
+                  renderedLeds++;
+                }
+
+                if (
+                  rowT > -1 &&
+                  i >= horizontalPixels + verticalPixels &&
+                  i < 2 * horizontalPixels + verticalPixels &&
+                  horizontalPixels > 0
+                ) {
+                  let sideIndex = i - horizontalPixels - verticalPixels;
+                  canvasCTX.fillRect(
+                    canvasWidth - (sideIndex + 1) * pix * (1 + space),
+                    0,
+                    pix,
+                    pix
+                  );
+                  renderedLeds++;
+                }
+
+                if (
+                  colL > -1 &&
+                  i >= 2 * horizontalPixels + verticalPixels &&
+                  i < 2 * horizontalPixels + 2 * verticalPixels &&
+                  verticalPixels > 0
+                ) {
+                  let sideIndex = i - 2 * horizontalPixels - verticalPixels;
+                  canvasCTX.fillRect(
+                    0,
+                    (sideIndex + 1) * pix * (1 + space),
+                    pix,
+                    pix
+                  );
+                  renderedLeds++;
+                }
+              }
+            };
+          }
+        }
       });
-      handleStream(stream);
-    } catch (e) {
-      handleError(e);
-    }
   }
 
-  function handleStream(stream) {
-    const video = document.querySelector("video");
-    video.srcObject = stream;
-    video.onloadedmetadata = (e) => video.play();
-  }
+  useEffect(() => {
+    renderConfig();
+  }, [form.values]);
 
   function handleError(e) {
     showNotification({
@@ -107,11 +185,19 @@ export default function Chaser({ form, selectedDevice }: ChaserProps) {
           onClick={() => {
             setSelected(item);
             setOpened(false);
-            setVideoSource(item.id);
           }}
           style={{ paddingTop: 5 }}
         >
-          <Box sx={{ maxWidth: "98%" }}>
+          <Box
+            sx={{
+              maxWidth: "97%",
+              marginLeft: 5,
+              transition: "all 0.2s ease-in-out",
+              "&:hover": {
+                scale: "1.02",
+              },
+            }}
+          >
             <PreviewImage
               radius="md"
               src={item.thumbnail?.toDataURL()}
@@ -154,45 +240,15 @@ export default function Chaser({ form, selectedDevice }: ChaserProps) {
           </Grid>
         </ScrollArea>
       </Modal>
-      <Box ref={refSize}>
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            marginBottom: "1em",
-          }}
-        >
-          <Box>
-            <div
-              style={{
-                width: width * 0.7 + "px",
-                height: ((width * 0.7) / 16) * 9 + "px",
-                border: "solid 18px #333",
-                borderRadius: ".5em",
-                backgroundColor: "#000",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                overflow: "hidden",
-              }}
-            >
-              <video
-                id="chaser_video"
-                style={{
-                  height: ((width * 0.7) / 16) * 9 - 30 + "px",
-                  float: "right",
-                }}
-              ></video>
-            </div>
-            <Box sx={{ display: "flex", justifyContent: "center" }}>
-              <Holder width={width * 0.7}></Holder>
-            </Box>
-            <Box sx={{ display: "flex", justifyContent: "center" }}>
-              <Stand width={width * 0.7}></Stand>
-            </Box>
-          </Box>
-        </Box>
-      </Box>
+      <canvas
+        onClick={() => {
+          renderConfig();
+        }}
+        ref={canvasRef}
+        width={1366}
+        height={768}
+        style={{ width: "100%", backgroundColor: "Highlight" }}
+      ></canvas>
       <Button
         fullWidth
         leftIcon={<IconChevronDown size={18} stroke={1.5} />}
@@ -244,6 +300,61 @@ export default function Chaser({ form, selectedDevice }: ChaserProps) {
       >
         {selected?.name || "Choose Video Source"}
       </Button>
+      <Group sx={{ paddingTop: 5 }}>
+        <Checkbox
+          label="Top"
+          onChange={(e) => {
+            form.setFieldValue("chaser.setUp.rowT", e.target.checked ? 0 : -1);
+          }}
+        />
+        <Checkbox
+          label="Right"
+          onChange={(e) => {
+            form.setFieldValue("chaser.setUp.colR", e.target.checked ? 0 : -1);
+          }}
+        />
+        <Checkbox
+          label="Bottom"
+          onChange={(e) => {
+            form.setFieldValue("chaser.setUp.rowB", e.target.checked ? 0 : -1);
+          }}
+        />
+        <Checkbox
+          label="Left"
+          onChange={(e) => {
+            form.setFieldValue("chaser.setUp.colL", e.target.checked ? 0 : -1);
+          }}
+        />
+        <Checkbox
+          label="Clockwise"
+          onChange={(e) => {
+            form.setFieldValue("chaser.clockWise", e.target.checked ? 0 : -1);
+          }}
+        />
+      </Group>
+
+      <NumberInput
+        label="Horizontal Pixels"
+        value={form.values.chaser.width}
+        onChange={(value) => {
+          form.setFieldValue("chaser.width", value);
+        }}
+      />
+      <NumberInput
+        label="Vertikal Pixels"
+        value={form.values.chaser.height}
+        onChange={(value) => {
+          form.setFieldValue("chaser.height", value);
+        }}
+      />
+      <NumberInput
+        label="Start-Led"
+        value={form.values.chaser.startLed}
+        onChange={(value) => {
+          form.setFieldValue("chaser.startLed", value);
+        }}
+      />
+
       <canvas
         id="canvas-desktop-thumbnail"
         style={{ display: "none" }}

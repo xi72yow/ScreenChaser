@@ -70,9 +70,10 @@ if (isProd) {
   });
 
   ipcMain.handle("GET_SOURCES", async (event, ...args) => {
+    const thumbnailSize = args[0];
     const sources = await desktopCapturer.getSources({
       types: ["window", "screen"],
-      thumbnailSize: { width: 400, height: 400 },
+      thumbnailSize: thumbnailSize || { width: 400, height: 400 },
     });
     return sources;
   });
