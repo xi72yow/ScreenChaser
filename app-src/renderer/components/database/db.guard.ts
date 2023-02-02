@@ -37,7 +37,22 @@ export function isChaserInterface(obj: unknown): obj is ChaserInterface {
             typeof typedObj === "object" ||
             typeof typedObj === "function") &&
         typeof typedObj["sourceId"] === "string" &&
-        typeof typedObj["name"] === "string"
+        typeof typedObj["name"] === "string" &&
+        (typedObj["setUp"] !== null &&
+            typeof typedObj["setUp"] === "object" ||
+            typeof typedObj["setUp"] === "function") &&
+        (typedObj["setUp"]["rowB"] === 0 ||
+            typedObj["setUp"]["rowB"] === -1) &&
+        (typedObj["setUp"]["colR"] === 0 ||
+            typedObj["setUp"]["colR"] === -1) &&
+        (typedObj["setUp"]["rowT"] === 0 ||
+            typedObj["setUp"]["rowT"] === -1) &&
+        (typedObj["setUp"]["colL"] === 0 ||
+            typedObj["setUp"]["colL"] === -1) &&
+        typeof typedObj["startLed"] === "number" &&
+        typeof typedObj["clockWise"] === "boolean" &&
+        typeof typedObj["width"] === "number" &&
+        typeof typedObj["height"] === "number"
     )
 }
 

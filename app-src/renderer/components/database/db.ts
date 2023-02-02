@@ -1,4 +1,7 @@
 import Dexie, { Table } from "dexie";
+
+type chasingFlag = -1 | 0;
+
 import {
   DyingLightsInterface,
   FrostyPikeInterface,
@@ -72,7 +75,12 @@ export const initilalValues = {
   chaser: {
     sourceId: "",
     name: "",
-    setUp: { rowB: 0, colR: -1, rowT: -1, colL: -1 },
+    setUp: {
+      rowB: 0 as chasingFlag,
+      colR: -1 as chasingFlag,
+      rowT: -1 as chasingFlag,
+      colL: -1 as chasingFlag,
+    },
     clockWise: false,
     width: 114,
     height: 0,
@@ -95,7 +103,12 @@ export interface GlobalsInterface {
 export interface ChaserInterface {
   sourceId: string;
   name: string;
-  setUp: { rowB: 0 | -1; colR: 0 | -1; rowT: 0 | -1; colL: 0 | -1 };
+  setUp: {
+    rowB: chasingFlag;
+    colR: chasingFlag;
+    rowT: chasingFlag;
+    colL: chasingFlag;
+  };
   startLed: number;
   clockWise: boolean;
   width: number;
