@@ -172,7 +172,7 @@ function Next() {
             interval: null,
             downScaleCore: null,
             canvas: null,
-            setUp: null,
+            setUp: { ...config.chaser.setUp },
             lastBarDetection: null,
           };
 
@@ -206,11 +206,80 @@ function Next() {
               chaserIntervals.current[i].downScaleCore
             );
 
-            const blackL = checkBlackBarCol(frame, width, 0);
+            //black bar detection
+            const { rowB, colR, rowT, colL } = chaserIntervals.current[i].setUp;
+            // sorry Mr. Torvalds, i know this is ugly.
+            if (
+              Date.now() - chaserIntervals.current[i].lastBarDetection >
+              15000
+            ) {
+              if (rowB > -1) {
+                const buttonStartRow = height - 1;
+                const blackB = checkBlackBarRow(
+                  frame,
+                  width,
+                  buttonStartRow - rowB
+                );
+                if (blackB) {
+                  if (
+                    rowB > 0 &&
+                    checkBlackBarRow(frame, width, buttonStartRow - rowB - 1)
+                  )
+                    chaserIntervals.current[i].setUp.rowB--;
+                  else chaserIntervals.current[i].setUp.rowB++;
+                }
+                if (rowB === buttonStartRow)
+                  chaserIntervals.current[i].setUp.rowB = 0;
+              }
+
+              if (colR > -1) {
+                const buttonStartCol = width - 1;
+                const blackR = checkBlackBarCol(
+                  frame,
+                  width,
+                  buttonStartCol - colR
+                );
+                if (blackR) {
+                  if (
+                    colR > 0 &&
+                    checkBlackBarCol(frame, width, buttonStartCol - colR - 1)
+                  )
+                    chaserIntervals.current[i].setUp.colR--;
+                  else chaserIntervals.current[i].setUp.colR++;
+                }
+                if (colR === buttonStartCol)
+                  chaserIntervals.current[i].setUp.colR = 0;
+              }
+
+              if (rowT > -1) {
+                const blackT = checkBlackBarRow(frame, width, rowT);
+                if (blackT) {
+                  if (rowT > 0 && checkBlackBarRow(frame, width, rowT - 1))
+                    chaserIntervals.current[i].setUp.rowT--;
+                  else chaserIntervals.current[i].setUp.rowT++;
+                }
+                if (rowT === height - 1)
+                  chaserIntervals.current[i].setUp.rowT = 0;
+              }
+
+              if (colL > -1) {
+                const blackL = checkBlackBarCol(frame, width, colL);
+                if (blackL) {
+                  if (colL > 0 && checkBlackBarCol(frame, width, colL - 1))
+                    chaserIntervals.current[i].setUp.colL--;
+                  else chaserIntervals.current[i].setUp.colL++;
+                }
+                if (colL === width - 1)
+                  chaserIntervals.current[i].setUp.colL = 0;
+              }
+              chaserIntervals.current[i].lastBarDetection = Date.now();
+            }
+
+            /*const blackL = checkBlackBarCol(frame, width, 0);
             const blackR = checkBlackBarCol(frame, width, width - 1);
 
             const blackT = checkBlackBarRow(frame, width, 0);
-            const blackB = checkBlackBarRow(frame, width, height - 1);
+            const blackB = checkBlackBarRow(frame, width, height - 1);*/
 
             const stripeData = calculateStripeData(
               frame,
