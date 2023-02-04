@@ -16,6 +16,7 @@ export interface DataEmitterInterface {
     recivedPacks: number;
     packageloss: number;
     power: number;
+    maxPower: number;
   };
   getIp(): string;
 }
@@ -211,6 +212,7 @@ class DataEmitter implements DataEmitterInterface {
       recivedPacks: this.recivedPacks,
       packageloss: (this.recivedPacks / this.sendedPacks) * 100 - 100,
       power: this.claculatePower(),
+      maxPower: this.currentPixelArray.length * 3 * 20 * 0.005,
     };
   }
 
