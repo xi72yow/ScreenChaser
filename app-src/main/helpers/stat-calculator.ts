@@ -28,6 +28,7 @@ class StatCalculator {
           {
             title: "Power:",
             value: data.power,
+            maxPower: data.maxPower,
             icon: "bolt",
             diff:
               this.lastStats.length !== 0 && that.lastStats[i]

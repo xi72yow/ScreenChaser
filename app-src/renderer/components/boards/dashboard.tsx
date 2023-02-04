@@ -20,6 +20,10 @@ import {
 } from "@tabler/icons";
 import { randomId, useHash, useInterval } from "@mantine/hooks";
 import { ipcRenderer } from "electron";
+import { UseFormReturnType } from "@mantine/form";
+import { ConfigInterface, db } from "../database/db";
+import { useLiveQuery } from "dexie-react-hooks";
+import { GraphCanvas } from "./graphCanvas";
 
 const useStyles = createStyles((theme) => ({
   root: {
@@ -69,40 +73,51 @@ interface StatsGridProps {
 
 export function StatsGrid({ data }: StatsGridProps) {
   const { classes } = useStyles();
-  const stats = data.map((stat) => {
+
+  if (!data) return null;
+
+  const stats = data.map((stat, i) => {
     const Icon = icons[stat.icon];
     const DiffIcon = stat.diff > 0 ? IconArrowUpRight : IconArrowDownRight;
-
     return (
-      <Paper withBorder p="md" radius="md" key={stat.title}>
+      <Paper withBorder p="md" radius="md" key={stat.title + i}>
         <Group position="apart">
           <Text size="xs" color="dimmed" className={classes.title}>
             {stat.title}
           </Text>
           <Icon className={classes.icon} size={22} stroke={1.5} />
         </Group>
-
-        <Group align="flex-end" spacing="xs" mt={25}>
-          <Text className={classes.value}>
-            {stat.value.toFixed(2)}
-            {stat.icon === "bolt" ? "W" : "%"}
-          </Text>
-          <Text
-            color={stat.diff > 0 ? "red" : "teal"}
-            size="sm"
-            weight={500}
-            className={classes.diff}
+        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+          <Group align="flex-end" spacing="xs" mt={25}>
+            <Text className={classes.value}>
+              {stat.value.toFixed(2)}
+              {stat.icon === "bolt" ? "W" : "%"}
+            </Text>
+            <Text
+              color={stat.diff > 0 ? "red" : "teal"}
+              size="sm"
+              weight={500}
+              className={classes.diff}
+            >
+              {<span>{stat.diff.toFixed(2)}%</span>}
+              <DiffIcon size={16} stroke={1.5} />
+            </Text>
+            <Text size="xs" color="dimmed" mt={7}>
+              {stat.icon === "bolt"
+                ? "actual Power consumtion"
+                : "packageloss over lifetime"}
+            </Text>
+          </Group>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+            }}
           >
-            {<span>{stat.diff.toFixed(2)}%</span>}
-            <DiffIcon size={16} stroke={1.5} />
-          </Text>
-        </Group>
-
-        <Text size="xs" color="dimmed" mt={7}>
-          {stat.icon === "bolt"
-            ? "actual Power consumtion"
-            : "packageloss over lifetime"}
-        </Text>
+            <GraphCanvas stat={stat} />
+          </Box>
+        </Box>
       </Paper>
     );
   });
@@ -113,18 +128,18 @@ export function StatsGrid({ data }: StatsGridProps) {
   );
 }
 
-interface DashboardProps {}
+interface DashboardProps {
+  form: UseFormReturnType<ConfigInterface>;
+}
 
-export default function Dashboard({}: DashboardProps) {
-  const [hash, setHash] = useHash();
-  const dashBoardData = useRef<{ details: any; title: string; task: string }[]>(
-    []
-  );
+export default function Dashboard({ form }: DashboardProps) {
+  const [dashBoardData, setDashboardData] = useState<
+    { details: any; title: string; task: string }[]
+  >([]);
 
   const interval = useInterval(() => {
     ipcRenderer.invoke("GET_STATS").then((dashboardData) => {
-      dashBoardData.current = dashboardData;
-      setHash(randomId());
+      setDashboardData(dashboardData);
     });
   }, 3000);
 
@@ -134,21 +149,21 @@ export default function Dashboard({}: DashboardProps) {
   }, []);
 
   return (
-    <Box key={hash}>
-      {dashBoardData.current.map((item) => (
-        <Box key={item.title}>
+    <Box>
+      {dashBoardData.map((data, i) => (
+        <Box key={data.title}>
           <Group position="apart">
             <Text size="xl" mt={4} mb={1} weight={900}>
-              {item.title}:
+              {data.title}:
             </Text>
-            <Badge color={item.task ? "lime" : "grape"} size="sm">
-              {item.task || "nothing to do"}
+            <Badge color={data.task ? "lime" : "grape"} size="sm">
+              {data.task || "nothing to do"}
             </Badge>
           </Group>
-          <StatsGrid data={item.details} />
+          <StatsGrid data={data?.details} />
         </Box>
       ))}
-      {dashBoardData.current.length === 0 && (
+      {dashBoardData.length === 0 && (
         <Box>
           <Group position="apart" m={9}>
             <Skeleton height={20} mt={8} width="25%" radius="xl" />
