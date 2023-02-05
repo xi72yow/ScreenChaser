@@ -2,6 +2,7 @@ import { UseFormReturnType } from "@mantine/form";
 import React from "react";
 import { ConfigInterface } from "../database/db";
 import Checkbox from "./inputs/checkbox";
+import CheckBoxGroup from "./inputs/checkBoxGroup";
 import QuantityInput from "./inputs/number";
 import Select from "./inputs/select";
 import StripeInput from "./inputs/stripeInput";
@@ -32,12 +33,9 @@ export default function BouncingBallsForm({ form }: BouncingBallsProps) {
         label="Ball Count"
         defaultValue={form.values.bouncingBalls?.ballCount || 3}
       ></QuantityInput>
-      <Checkbox
-        label="Mirrored?"
-        form={form}
-        path="bouncingBalls.mirrored"
-        defaultValue={form.values.bouncingBalls?.mirrored || false}
-      />
+      <CheckBoxGroup>
+        <Checkbox label="Mirrored?" form={form} path="bouncingBalls.mirrored" />
+      </CheckBoxGroup>
       {form.values.bouncingBalls?.tail === 0 && (
         <StripeInput
           form={form}

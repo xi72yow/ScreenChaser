@@ -140,6 +140,9 @@ function Next() {
   function handleError(e) {
     console.log("🚀 ~ file: chaserhack.tsx ~ line 106 ~ handleError ~ e", e);
     chaserIntervals.current.forEach((interval) => clearInterval(interval));
+    setTimeout(() => {
+      window.location.reload();
+    }, 1000);
   }
 
   const configs = useLiveQuery(
@@ -196,7 +199,8 @@ function Next() {
               videoSelector
             ) as HTMLVideoElement;
 
-            if (!video && video.width === 0) return;
+            if (!video || video.videoWidth === 0) return;
+
             let imageBitmap = await createImageBitmap(video);
 
             const frame = downScaleImageBitmap(

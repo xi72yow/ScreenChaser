@@ -2,6 +2,7 @@ import { UseFormReturnType } from "@mantine/form";
 import React from "react";
 import { ConfigInterface } from "../database/db";
 import Checkbox from "./inputs/checkbox";
+import CheckBoxGroup from "./inputs/checkBoxGroup";
 import Color from "./inputs/color";
 import QuantityInput from "./inputs/number";
 
@@ -36,7 +37,13 @@ export default function MeteorRainForm({ form }: MeteorRainFormProps) {
         label="Meteor Random Decay"
         defaultValue={form.values.meteorRain?.meteorRandomDecay || 7}
       ></QuantityInput>
-      <Checkbox label="Rainbow Meteor?" form={form} path="meteorRain.rainbow" />
+      <CheckBoxGroup>
+        <Checkbox
+          label="Rainbow Meteor?"
+          form={form}
+          path="meteorRain.rainbow"
+        />
+      </CheckBoxGroup>
     </React.Fragment>
   );
 }

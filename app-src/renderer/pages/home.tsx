@@ -17,7 +17,6 @@ import {
   showNotification,
 } from "@mantine/notifications";
 import React, { useEffect, useRef, useState } from "react";
-import Chaser from "../components/boards/chaser";
 import Dashboard from "../components/boards/dashboard";
 import BouncingBallsForm from "../components/forms/bouncingBallsForm";
 import ColorWheelForm from "../components/forms/colorWheelForm";
@@ -41,6 +40,7 @@ import StaticLightForm from "../components/forms/staticLightForm";
 import ConfirmationContextProvider from "../components/hooks/confirm";
 import Toolbar from "../components/toolbar/toolbar";
 import package_json from "../../package.json";
+import ChaserForm from "../components/forms/chaserForm";
 
 function ErrorFallback({ error, resetErrorBoundary }) {
   return (
@@ -204,7 +204,7 @@ function App() {
       {(() => {
         switch (taskCode) {
           case "dashboard":
-            return <Dashboard></Dashboard>;
+            return <Dashboard form={form}></Dashboard>;
           case "meteorRain":
             return (
               <MeteorRainForm
@@ -253,11 +253,11 @@ function App() {
             );
           case "chaser":
             return (
-              <Chaser
+              <ChaserForm
                 key={selectedDevice + "chaser"}
                 selectedDevice={selectedDevice}
                 form={form}
-              ></Chaser>
+              ></ChaserForm>
             );
           case "bubbles":
             return (
