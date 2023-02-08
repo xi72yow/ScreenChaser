@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.2.3](https://github.com/xi72yow/ScreenChaser/compare/screenchaser-core@0.2.2...screenchaser-core@0.2.3) (2023-02-08)
+
+
+### Bug Fixes
+
+* **core:** fix automatic scan on windows ([855b36f](https://github.com/xi72yow/ScreenChaser/commit/855b36fa825c85960ad7beed86b640c57e518274))
+
+
+
+
+
 ## [0.2.2](https://github.com/xi72yow/ScreenChaser/compare/screenchaser-core@0.2.1...screenchaser-core@0.2.2) (2023-02-05)
 
 **Note:** Version bump only for package screenchaser-core
