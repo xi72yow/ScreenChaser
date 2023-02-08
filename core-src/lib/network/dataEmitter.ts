@@ -245,11 +245,19 @@ class DataEmitter implements DataEmitterInterface {
       console.log("Scanning network...");
       let scanningCount = 0;
       const interfaces = Object.keys(os.networkInterfaces()).filter(
-        (value) => value !== "lo"
+        (value) => value !== "lo" && value !== "Loopback Pseudo-Interface 1"
       );
 
-      //@ts-ignore sorry for that i fix that later :D
-      const importantInterface = os.networkInterfaces()[interfaces[0]][0];
+      const importantInterface = os
+        .networkInterfaces()
+        [interfaces[0]]?.find((x) => x.family === "IPv4");
+
+      if (!importantInterface) {
+        resolve([]);
+        this.SCAN_NETWORK = false;
+        return;
+      }
+
       const netmaskBin = this.ipToBin(importantInterface.netmask);
       const addressBin = this.ipToBin(importantInterface.address);
       const netmaskCount = netmaskBin.indexOf("0");
