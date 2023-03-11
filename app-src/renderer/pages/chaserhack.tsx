@@ -158,7 +158,7 @@ function Next() {
       clearInterval(interval.interval)
     );
 
-    //TODO black bar detection depands on chaser setup
+    //TODO black bar detection depends on chaser setup
 
     if (configs) {
       configs
@@ -218,63 +218,45 @@ function Next() {
               15000
             ) {
               if (rowB > -1) {
+                //find first black row from bottom
                 const buttonStartRow = height - 1;
-                const blackB = checkBlackBarRow(
-                  frame,
-                  width,
-                  buttonStartRow - rowB
-                );
-                if (blackB) {
-                  if (
-                    rowB > 0 &&
-                    checkBlackBarRow(frame, width, buttonStartRow - rowB - 1)
-                  )
-                    chaserIntervals.current[i].setUp.rowB--;
-                  else chaserIntervals.current[i].setUp.rowB++;
+                for (let c = buttonStartRow; c >= 0; c--) {
+                  if (!checkBlackBarRow(frame, width, c)) {
+                    chaserIntervals.current[i].setUp.rowB = buttonStartRow - c;
+                    break;
+                  }
                 }
-                if (rowB === buttonStartRow)
-                  chaserIntervals.current[i].setUp.rowB = 0;
               }
 
               if (colR > -1) {
-                const buttonStartCol = width - 1;
-                const blackR = checkBlackBarCol(
-                  frame,
-                  width,
-                  buttonStartCol - colR
-                );
-                if (blackR) {
-                  if (
-                    colR > 0 &&
-                    checkBlackBarCol(frame, width, buttonStartCol - colR - 1)
-                  )
-                    chaserIntervals.current[i].setUp.colR--;
-                  else chaserIntervals.current[i].setUp.colR++;
+                //find first black col from right
+                const rightStartCol = width - 1;
+                for (let c = rightStartCol; c >= 0; c--) {
+                  if (!checkBlackBarCol(frame, width, c)) {
+                    chaserIntervals.current[i].setUp.colR = rightStartCol - c;
+                    break;
+                  }
                 }
-                if (colR === buttonStartCol)
-                  chaserIntervals.current[i].setUp.colR = 0;
               }
 
               if (rowT > -1) {
-                const blackT = checkBlackBarRow(frame, width, rowT);
-                if (blackT) {
-                  if (rowT > 0 && checkBlackBarRow(frame, width, rowT - 1))
-                    chaserIntervals.current[i].setUp.rowT--;
-                  else chaserIntervals.current[i].setUp.rowT++;
+                //find first black row from top
+                for (let c = 0; c < height; c++) {
+                  if (!checkBlackBarRow(frame, width, c)) {
+                    chaserIntervals.current[i].setUp.rowT = c;
+                    break;
+                  }
                 }
-                if (rowT === height - 1)
-                  chaserIntervals.current[i].setUp.rowT = 0;
               }
 
               if (colL > -1) {
-                const blackL = checkBlackBarCol(frame, width, colL);
-                if (blackL) {
-                  if (colL > 0 && checkBlackBarCol(frame, width, colL - 1))
-                    chaserIntervals.current[i].setUp.colL--;
-                  else chaserIntervals.current[i].setUp.colL++;
+                //find first black col from left
+                for (let c = 0; c < width; c++) {
+                  if (!checkBlackBarCol(frame, width, c)) {
+                    chaserIntervals.current[i].setUp.colL = c;
+                    break;
+                  }
                 }
-                if (colL === width - 1)
-                  chaserIntervals.current[i].setUp.colL = 0;
               }
               chaserIntervals.current[i].lastBarDetection = Date.now();
             }
