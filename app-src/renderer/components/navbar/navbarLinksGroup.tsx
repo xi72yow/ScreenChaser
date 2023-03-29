@@ -9,6 +9,7 @@ import {
 } from "@mantine/core";
 import { useLocalStorage } from "@mantine/hooks";
 import { IconChevronLeft, IconChevronRight, TablerIcon } from "@tabler/icons";
+import { TaskCodes } from "../database/db";
 
 const useStyles = createStyles((theme) => ({
   control: {
@@ -70,20 +71,25 @@ interface LinksGroupProps {
   icon: TablerIcon;
   label: string;
   initiallyOpened?: boolean;
-  taskCode?: string;
-  links?: { label: string; taskCode?: string }[];
-  setTaskCode: (taskCode: string) => void;
-  choosenTaskCode: string;
+  links?: {
+    label: string;
+    taskCode: TaskCodes;
+    id: number;
+    icon: TablerIcon;
+  }[];
+  selectedTaskId: number;
+  setSelectedTaskId: (taskCode: number) => void;
+  id: number;
 }
 
 export default function LinksGroup({
   icon: Icon,
   label,
   initiallyOpened,
+  id,
   links,
-  setTaskCode,
-  taskCode,
-  choosenTaskCode,
+  setSelectedTaskId,
+  selectedTaskId,
 }: LinksGroupProps) {
   const { classes, theme } = useStyles();
   const hasLinks = Array.isArray(links);
@@ -92,22 +98,30 @@ export default function LinksGroup({
     defaultValue: initiallyOpened,
   });
   const ChevronIcon = theme.dir === "ltr" ? IconChevronRight : IconChevronLeft;
-  const items = (hasLinks ? links : []).map((link) => (
-    <Text<"a">
-      component="a"
-      className={
-        classes.link +
-        " " +
-        (choosenTaskCode === link.taskCode ? classes.active : "")
-      }
-      key={link.label}
+  const items = (hasLinks ? links : []).map(({ label, id, icon: LinkIcon }) => (
+    <Box
+      key={label}
       onClick={(event) => {
-        setTaskCode(link.taskCode);
+        setSelectedTaskId(id);
         event.preventDefault();
       }}
+      className={
+        classes.link + " " + (selectedTaskId === id ? classes.active : "")
+      }
     >
-      {link.label}
-    </Text>
+      <Box
+        style={{
+          display: "flex",
+          justifyContent: "start",
+          alignItems: "center",
+        }}
+      >
+        <ThemeIcon color={"gray"} size={24}>
+          <LinkIcon size={12} />
+        </ThemeIcon>
+        <Text ml={12}>{label}</Text>
+      </Box>
+    </Box>
   ));
 
   return (
@@ -116,13 +130,11 @@ export default function LinksGroup({
         onClick={() => {
           setOpened((o) => !o);
           if (!hasLinks) {
-            setTaskCode(taskCode);
+            setSelectedTaskId(id);
           }
         }}
         className={
-          classes.control +
-          " " +
-          (choosenTaskCode === taskCode ? classes.active : "")
+          classes.control + " " + (selectedTaskId === id ? classes.active : "")
         }
       >
         <Group position="apart" spacing={0}>

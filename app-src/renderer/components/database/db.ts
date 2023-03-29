@@ -1,4 +1,5 @@
-import Dexie, { Table } from "dexie";
+import Dexie, { DbEvents, Table, Transaction } from "dexie";
+import packageJson from "../../../package.json";
 
 type chasingFlag = -1 | 0;
 
@@ -145,55 +146,217 @@ export interface ConfigInterface {
   animation: AnimationInterface;
 }
 
-export async function addConfig(param) {
-  try {
-    // Add the new config to the DB
-    const id = await db.configs.add({ ...initilalValues, ...param });
-  } catch (error) {
-    // Oops! We got an error!
-    console.error(error);
-  }
+export interface DeviceTableInterface {
+  id: number;
+  ip: string;
+  name: string;
+  neoPixelCount: number;
+  new: boolean;
+  exclude: boolean;
+  configId: number;
 }
 
-export async function updateConfig(id, config) {
-  try {
-    // Update the config in the DB
-    await db.configs.update(id, config);
-  } catch (error) {
-    // Oops! We got an error!
-    console.error(error);
-  }
+export interface ConfigsTableInterface {
+  id: number;
+  deviceId: number;
+  taskId: number;
+  name: string;
+  config:
+    | AnimationInterface
+    | StaticLightInterface
+    | MeteorRainInterface
+    | BouncingBallsInterface
+    | FireFlameInterface
+    | ColorWheelInterface
+    | FrostyPikeInterface
+    | DyingLightsInterface
+    | SnakeInterface
+    | BubblesInterface;
 }
 
-export async function deleteConfig(id) {
-  try {
-    // Delete the config from the DB
-    await db.configs.delete(id);
-  } catch (error) {
-    // Oops! We got an error!
-    console.error(error);
-  }
+export enum TaskTypes {
+  chaser = "chaser",
+  effect = "effect",
+  render = "render",
+  ui = "ui",
 }
 
-export async function getConfig(id) {
-  try {
-    // Get the config from the DB
-    return await db.configs.where("id").equals(1);
-  } catch (error) {
-    // Oops! We got an error!
-    console.error(error);
-  }
+export enum dbBool {
+  true = "true",
+  false = "false",
+}
+
+export enum TaskCodes {
+  dashboard = "dashboard",
+  library = "library",
+  videoChaser = "videoChaser",
+  animation = "animation",
+  dyingLights = "dyingLights",
+  frostyPike = "frostyPike",
+  colorWheel = "colorWheel",
+  fireFlame = "fireFlame",
+  bouncingBalls = "bouncingBalls",
+  meteorRain = "meteorRain",
+  snake = "snake",
+  bubbles = "bubbles",
+  staticLight = "staticLight",
+}
+
+export interface TaskTableInterface {
+  id: number;
+  taskCode: TaskCodes;
+  label: string;
+  type: TaskTypes;
+  favorite: dbBool;
+  formScheme: JSON;
+}
+
+export interface UserTableInterface {
+  id: number;
+  swatches: string[];
+}
+
+export enum TableNames {
+  devices = "devices",
+  configs = "configs",
+  tasks = "tasks",
+  users = "users",
+}
+
+export function addElementToTable(tableIdentifier: TableNames, element: any) {
+  return db[tableIdentifier].add(element);
+}
+
+export function updateElementInTable(
+  tableIdentifier: TableNames,
+  id: number,
+  element: any
+) {
+  return db[tableIdentifier].update(id, element);
+}
+
+export function deleteElementFromTable(
+  tableIdentifier: TableNames,
+  id: number
+) {
+  return db[tableIdentifier].delete(id);
+}
+
+export function getElementFromTable(tableIdentifier: TableNames, id: number) {
+  return db[tableIdentifier].get(id);
 }
 
 export class ScreenChaserDB extends Dexie {
-  configs!: Table<ConfigInterface>;
+  configs!: Table<ConfigsTableInterface>;
+  devices!: Table<DeviceTableInterface>;
+  tasks!: Table<TaskTableInterface>;
+  users!: Table<UserTableInterface>;
 
   constructor() {
     super("ScreenChaserDatabase");
-    this.version(1).stores({
-      configs: "++id", // Primary key and indexed props
+    this.version(Number(packageJson.databaseVersion)).stores({
+      configs: "++id, deviceId, taskId, name, config",
+      devices: "++id, ip, name, neoPixelCount, new, exclude, taskId",
+      tasks: "++id, taskCode, formScheme, label, type, favorite",
+      users: "++id, swatches",
     });
   }
 }
 
 export const db = new ScreenChaserDB();
+
+db.on("populate", (tx: Transaction) => {
+  tx.table("tasks").bulkAdd([
+    {
+      taskCode: TaskCodes.dashboard,
+      label: "Dashboard",
+      type: TaskTypes.ui,
+      favorite: "true",
+      formScheme: {},
+    },
+    {
+      taskCode: TaskCodes.library,
+      label: "Library",
+      type: TaskTypes.ui,
+      favorite: "true",
+      formScheme: {},
+    },
+    {
+      taskCode: TaskCodes.videoChaser,
+      label: "Video Chaser",
+      type: TaskTypes.chaser,
+      favorite: "true",
+      formScheme: {},
+    },
+    {
+      taskCode: TaskCodes.animation,
+      label: "Animation",
+      type: TaskTypes.render,
+      favorite: "false",
+      formScheme: {},
+    },
+    {
+      taskCode: TaskCodes.staticLight,
+      label: "Static Light",
+      type: TaskTypes.render,
+      favorite: "false",
+      formScheme: {},
+    },
+    {
+      taskCode: TaskCodes.dyingLights,
+      label: "Dying Lights",
+      type: TaskTypes.effect,
+      favorite: "true",
+      formScheme: {},
+    },
+    {
+      taskCode: TaskCodes.frostyPike,
+      label: "Frosty Pike",
+      type: TaskTypes.effect,
+      favorite: "false",
+      formScheme: {},
+    },
+    {
+      taskCode: TaskCodes.colorWheel,
+      label: "Color Wheel",
+      type: TaskTypes.effect,
+      favorite: "false",
+      formScheme: {},
+    },
+    {
+      taskCode: TaskCodes.fireFlame,
+      label: "Fire Flame",
+      type: TaskTypes.effect,
+      favorite: "false",
+      formScheme: {},
+    },
+    {
+      taskCode: TaskCodes.bouncingBalls,
+      label: "Bouncing Balls",
+      type: TaskTypes.effect,
+      favorite: "false",
+      formScheme: {},
+    },
+    {
+      taskCode: TaskCodes.meteorRain,
+      label: "Meteor Rain",
+      type: TaskTypes.effect,
+      favorite: "false",
+      formScheme: {},
+    },
+    {
+      taskCode: TaskCodes.snake,
+      label: "Snake",
+      type: TaskTypes.effect,
+      favorite: "false",
+      formScheme: {},
+    },
+    {
+      taskCode: TaskCodes.bubbles,
+      label: "Bubbles",
+      type: TaskTypes.effect,
+      favorite: "false",
+      formScheme: {},
+    },
+  ]);
+});

@@ -1,29 +1,44 @@
 import { Button, Footer, Group } from "@mantine/core";
-import { UseFormReturnType } from "@mantine/form";
 import { showNotification } from "@mantine/notifications";
 import { IconBulb, IconInfoCircle } from "@tabler/icons";
-import { ConfigInterface, updateConfig } from "../database/db";
+import { useLiveQuery } from "dexie-react-hooks";
+import {
+  db,
+  DeviceTableInterface,
+  updateElementInTable,
+  TableNames,
+  TaskTableInterface,
+  TaskCodes,
+} from "../database/db";
 import useStyles from "../styles/styles";
 import GlobalSettings from "./globalSettings";
 
 type ToolbarProps = {
-  taskCode: string;
-  selectedDevice: number;
-  setLightsOff: any;
-  configs: Array<ConfigInterface>;
-  form: UseFormReturnType<ConfigInterface>;
-  lightsOff: boolean;
+  selectedTaskId: number;
+  selectedDeviceId: number;
 };
 
 export default function Toolbar({
-  form,
-  taskCode,
-  selectedDevice,
-  configs,
-  setLightsOff,
-  lightsOff,
+  selectedTaskId,
+  selectedDeviceId,
 }: ToolbarProps) {
   const { classes } = useStyles();
+
+  const currentDevice: DeviceTableInterface = useLiveQuery(
+    async () => {
+      return await db.devices.get(selectedDeviceId);
+    },
+    [selectedDeviceId],
+    null
+  );
+
+  const currentTask: TaskTableInterface = useLiveQuery(
+    async () => {
+      return await db.tasks.get(selectedTaskId);
+    },
+    [selectedTaskId],
+    null
+  );
 
   return (
     <Footer
@@ -42,10 +57,7 @@ export default function Toolbar({
           paddingRight: "1rem",
         }}
       >
-        <GlobalSettings
-          lightsOff={lightsOff}
-          setLightsOff={setLightsOff}
-        ></GlobalSettings>
+        <GlobalSettings></GlobalSettings>
       </Group>
       <Group
         sx={{
@@ -56,40 +68,40 @@ export default function Toolbar({
         }}
       >
         <Group>
-          {taskCode !== "dashboard" && (
-            <Button
-              onClick={() => {
-                const currentFormConfig = form.values[taskCode];
-                updateConfig(selectedDevice + 1, {
-                  task: { taskCode },
-                  [taskCode]: currentFormConfig,
-                });
+          {currentTask?.taskCode !== TaskCodes.dashboard &&
+            currentTask?.taskCode !== TaskCodes.library && (
+              <Button
+                disabled={!currentDevice}
+                onClick={() => {
+                  updateElementInTable(TableNames.devices, selectedDeviceId, {
+                    taskId: selectedTaskId,
+                  });
 
-                if (form.values.device.exclude)
-                  showNotification({
-                    title: "Saved Configuration",
-                    message:
-                      "Saved device settings for " +
-                      form.values.device.ip +
-                      ". This device is excluded from the task. To include it, see Network Tab in settings.",
-                    color: "teal",
-                    icon: <IconInfoCircle />,
-                  });
-                else
-                  showNotification({
-                    title: "Changed task",
-                    message:
-                      "Changing Config for " +
-                      taskCode +
-                      " on Device " +
-                      configs[selectedDevice].device.ip,
-                  });
-              }}
-              leftIcon={<IconBulb size={14} />}
-            >
-              Lights On and Save
-            </Button>
-          )}
+                  if (currentDevice.exclude)
+                    showNotification({
+                      title: "Saved Configuration",
+                      message:
+                        "Saved device settings for " +
+                        currentDevice.ip +
+                        ". This device is excluded from the task. To include it, see Network Tab in settings.",
+                      color: "teal",
+                      icon: <IconInfoCircle />,
+                    });
+                  else
+                    showNotification({
+                      title: "Changed task",
+                      message:
+                        "Changing Config for " +
+                        currentTask.taskCode +
+                        " on Device " +
+                        currentDevice.ip,
+                    });
+                }}
+                leftIcon={<IconBulb size={14} />}
+              >
+                Lights On and Save
+              </Button>
+            )}
         </Group>
       </Group>
     </Footer>

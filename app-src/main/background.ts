@@ -92,17 +92,18 @@ if (isProd) {
     ChaserManager.setConfigs(args);
   });
 
-  ipcMain.on("LIGHTS_OFF", (event, args) => {
-    ChaserManager.lightsOff();
-  });
-
-  ipcMain.on("LIGHTS_ON", (event, args) => {
-    ChaserManager.startAll();
-  });
-
   let chaserWindow: BrowserWindow = null;
 
-  ipcMain.on("CHASER:ON", async (event, args) => {
+  ipcMain.on("LIGHTS_OFF", async (event, args) => {
+    ChaserManager.lightsOff();
+    if (chaserWindow) {
+      await chaserWindow.close();
+      chaserWindow = null;
+    }
+  });
+
+  ipcMain.on("LIGHTS_ON", async (event, args) => {
+    ChaserManager.startAll();
     if (chaserWindow) return;
     chaserWindow = new BrowserWindow({
       webPreferences: {
@@ -121,13 +122,6 @@ if (isProd) {
       const port = process.argv[2];
       await chaserWindow.loadURL(`http://localhost:${port}/chaserhack`);
       chaserWindow.webContents.openDevTools();
-    }
-  });
-
-  ipcMain.on("CHASER:OFF", async (event, args) => {
-    if (chaserWindow) {
-      await chaserWindow.close();
-      chaserWindow = null;
     }
   });
 

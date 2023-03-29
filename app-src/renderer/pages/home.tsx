@@ -33,7 +33,14 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { ipcRenderer, shell } from "electron";
 import { ErrorBoundary } from "react-error-boundary";
 import { setTimeout } from "timers";
-import { ConfigInterface, db, initilalValues } from "../components/database/db";
+import {
+  ConfigInterface,
+  db,
+  DeviceTableInterface,
+  initilalValues,
+  TaskCodes,
+  TaskTableInterface,
+} from "../components/database/db";
 import AnimationForm from "../components/forms/animationForm";
 import BubblesForm from "../components/forms/bubblesForm";
 import StaticLightForm from "../components/forms/staticLightForm";
@@ -41,6 +48,36 @@ import ConfirmationContextProvider from "../components/hooks/confirm";
 import Toolbar from "../components/toolbar/toolbar";
 import package_json from "../../package.json";
 import ChaserForm from "../components/forms/chaserForm";
+import Library from "../components/boards/library";
+
+function checkForUpdates() {
+  fetch(
+    "https://api.github.com/repos/xi72yow/ScreenChaser/releases/latest"
+  ).then((response) => {
+    response.json().then((data) => {
+      const NEW_VERSION = data.tag_name.replace("screenchaser-app@", "");
+      if (NEW_VERSION !== package_json.version) {
+        showNotification({
+          title: "New version available",
+          message: (
+            <Box>
+              {`Version ${NEW_VERSION} is available. You are running version ${package_json.version}. Download `}
+              <span
+                onClick={() => shell.openExternal(data.html_url)}
+                style={{ color: "#09ADC3", cursor: "pointer" }}
+              >
+                here
+              </span>
+              .
+            </Box>
+          ),
+          color: "blue",
+          icon: <IconAlertCircle size={16} />,
+        });
+      }
+    });
+  });
+}
 
 function ErrorFallback({ error, resetErrorBoundary }) {
   return (
@@ -66,130 +103,68 @@ function ErrorFallback({ error, resetErrorBoundary }) {
 }
 
 function App() {
-  const [selectedDevice, setSelectedDevice] = React.useState<number>(0);
-  const [taskCode, setTaskCode] = React.useState("dashboard");
-  const chaserRunning = useRef(false);
+  const [selectedDeviceId, setSelectedDeviceId] = React.useState<number>(1);
+  const [selectedTaskId, setSelectedTaskiD] = React.useState<number>(1);
 
-  const [lightsOff, setLightsOff] = useState(false);
+  const currentDevice: DeviceTableInterface = useLiveQuery(
+    async () => {
+      return await db.devices.get(selectedDeviceId);
+    },
+    [selectedDeviceId],
+    null
+  );
 
-  const configs = useLiveQuery(
+  const currentTask: TaskTableInterface = useLiveQuery(
+    async () => {
+      return await db.tasks.get(selectedTaskId);
+    },
+    [selectedTaskId],
+    null
+  );
+
+  /*   const configs = useLiveQuery(
     async () => {
       return await db.configs.toArray();
     },
     null,
     []
-  );
-
+  ); */
+  /* 
   const form = useForm<ConfigInterface>({
     initialValues: { ...initilalValues },
   });
 
   useEffect(() => {
     console.log(form.values);
-  }, [form]);
+  }, [form]); */
 
-  useEffect(() => {
-    fetch(
-      "https://api.github.com/repos/xi72yow/ScreenChaser/releases/latest"
-    ).then((response) => {
-      response.json().then((data) => {
-        const NEW_VERSION = data.tag_name.replace("screenchaser-app@", "");
-        if (NEW_VERSION !== package_json.version) {
-          showNotification({
-            title: "New version available",
-            message: (
-              <Box>
-                {`Version ${NEW_VERSION} is available. You are running version ${package_json.version}. Download `}
-                <span
-                  onClick={() => shell.openExternal(data.html_url)}
-                  style={{ color: "#09ADC3", cursor: "pointer" }}
-                >
-                  here
-                </span>
-                .
-              </Box>
-            ),
-            color: "blue",
-            icon: <IconAlertCircle size={16} />,
-          });
-        }
-      });
-    });
-  }, []);
+  // light off/on
+  // ipcRenderer.send("CHASER:ON");
+  // ipcRenderer.send("CHASER:OFF");
 
-  useEffect(() => {
-    if (configs) {
-      if (lightsOff) {
-        if (chaserRunning.current) {
-          ipcRenderer.send("CHASER:OFF");
-          chaserRunning.current = false;
-          setTimeout(() => {
-            ipcRenderer.send("LIGHTS_OFF");
-          }, 1000);
-        } else ipcRenderer.send("LIGHTS_OFF");
-      } else {
-        ipcRenderer.send("LIGHTS_ON");
-        if (!chaserRunning.current) {
-          if (
-            configs.filter((config) => config.task.taskCode === "chaser")
-              .length > 0
-          ) {
-            ipcRenderer.send("CHASER:ON");
-            chaserRunning.current = true;
-          }
-        }
-      }
-    }
-  }, [lightsOff]);
-
-  useEffect(() => {
-    if (
-      configs.filter((config) => config.task.taskCode === "chaser").length > 0
-    ) {
-      if (!chaserRunning.current) {
-        ipcRenderer.send("CHASER:ON");
-        chaserRunning.current = true;
-      }
-    } else {
-      ipcRenderer.send("CHASER:OFF");
-      chaserRunning.current = false;
-    }
-
-    if (taskCode === "chaser") {
-      ipcRenderer.send("CHANGE_CONFIG", configs);
-    }
-    ipcRenderer.send("CHANGE_CONFIG_DEBOUNCED", configs);
-
-    if (configs) form.setValues(configs[selectedDevice]);
-  }, [configs, selectedDevice]);
-
-  if (!configs) {
+  /*   if (!configs) {
     return <div>Loading...</div>;
-  }
+  } */
 
   return (
     <AppShell
       padding="md"
       navbar={
         <NavbarNested
-          taskCode={taskCode}
-          setTaskCode={setTaskCode}
+          selectedTaskId={selectedTaskId}
+          setSelectedTaskId={setSelectedTaskiD}
         ></NavbarNested>
       }
       header={
         <HeaderApp
-          selectedDevice={selectedDevice}
-          setSelectedDevice={setSelectedDevice}
+          selectedDeviceId={selectedDeviceId}
+          setSelectedDeviceId={setSelectedDeviceId}
         ></HeaderApp>
       }
       footer={
         <Toolbar
-          form={form}
-          configs={configs}
-          taskCode={taskCode}
-          selectedDevice={selectedDevice}
-          setLightsOff={setLightsOff}
-          lightsOff={lightsOff}
+          selectedTaskId={selectedTaskId}
+          selectedDeviceId={selectedDeviceId}
         ></Toolbar>
       }
       styles={(theme) => ({
@@ -202,10 +177,13 @@ function App() {
       })}
     >
       {(() => {
-        switch (taskCode) {
-          case "dashboard":
-            return <Dashboard form={form}></Dashboard>;
-          case "meteorRain":
+        switch (currentTask?.taskCode) {
+          /*      case "dashboard":
+            return <Dashboard form={form}></Dashboard>; */
+
+          case TaskCodes.library:
+            return <Library></Library>;
+          /* case "meteorRain":
             return (
               <MeteorRainForm
                 form={form}
@@ -279,7 +257,7 @@ function App() {
                 key={selectedDevice + "staticLight"}
                 form={form}
               ></AnimationForm>
-            );
+            ); */
           default:
             return <h1>work in progress</h1>;
         }

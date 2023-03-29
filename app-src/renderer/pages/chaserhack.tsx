@@ -158,8 +158,6 @@ function Next() {
       clearInterval(interval.interval)
     );
 
-    //TODO black bar detection depends on chaser setup
-
     if (configs) {
       configs
         .filter((config) => config.task.taskCode === "chaser")

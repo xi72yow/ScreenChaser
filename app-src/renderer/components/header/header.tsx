@@ -9,39 +9,44 @@ import {
   useMantineTheme,
 } from "@mantine/core";
 import { IconChevronDown, IconCpu } from "@tabler/icons";
+import Dexie from "dexie";
 import { useLiveQuery } from "dexie-react-hooks";
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, useEffect } from "react";
 import package_json from "../../../package.json";
-import { db } from "../database/db";
+import {
+  ConfigsTableInterface,
+  db,
+  DeviceTableInterface,
+} from "../database/db";
 import ScanNetworkModal from "../modale/chaserSettingsModal";
 import Logo from "../styles/Logo.js";
 
 interface HeaderAppProps {
-  setSelectedDevice: Dispatch<SetStateAction<Number>>;
-  selectedDevice: any;
+  setSelectedDeviceId: Dispatch<SetStateAction<Number>>;
+  selectedDeviceId: any;
 }
 
 export default function HeaderApp({
-  setSelectedDevice,
-  selectedDevice,
+  setSelectedDeviceId,
+  selectedDeviceId,
 }: HeaderAppProps) {
   const theme = useMantineTheme();
 
-  const configs = useLiveQuery(async () => {
-    return await db.configs.toArray();
-  });
+  const devices: DeviceTableInterface[] = useLiveQuery(
+    async () => {
+      return db.devices.toArray();
+    },
+    null,
+    []
+  );
 
-  if (!configs) {
-    return <div>Loading...</div>;
-  }
-
-  const items = configs.map(({ device }, i) => {
+  const items = devices.map(({ ip, name, neoPixelCount }, i) => {
     return (
-      device.ip && (
+      ip && (
         <Menu.Item
-          key={device.ip}
+          key={ip}
           onClick={() => {
-            setSelectedDevice(i);
+            setSelectedDeviceId(i);
           }}
           icon={<IconCpu size={16} color={theme.colors.blue[6]} stroke={1.5} />}
           rightSection={
@@ -58,25 +63,26 @@ export default function HeaderApp({
                 textOverflow: "ellipsis",
               }}
             >
-              {device.name || "No name"}
+              {name || "No name"}
             </Text>
           }
         >
           <Group position="left">
             <Text size="sm" weight={900}>
-              {device.ip}
+              {ip}
             </Text>
             <Badge
               color={"blue"}
               variant={theme.colorScheme === "dark" ? "light" : "outline"}
             >
-              {device.neoPixelCount}
+              {neoPixelCount}
             </Badge>
           </Group>
         </Menu.Item>
       )
     );
   });
+
   return (
     <Header
       height={80}
@@ -132,12 +138,18 @@ export default function HeaderApp({
                   }}
                 >
                   {`${
-                    configs[selectedDevice]?.device.name
-                      ? configs[selectedDevice]?.device.name
+                    devices.find((device) => device.id === selectedDeviceId)
+                      ?.name
+                      ? devices.find((device) => device.id === selectedDeviceId)
+                          ?.name
                       : "New"
                   }` || "Choose Device"}
                 </Text>
-                <Text>{`@${configs[selectedDevice]?.device.ip}` || ""}</Text>
+                <Text>
+                  {`@${
+                    devices.find((device) => device.id === selectedDeviceId)?.ip
+                  }` || ""}
+                </Text>
               </Button>
             </Menu.Target>
             <Menu.Dropdown>{items}</Menu.Dropdown>

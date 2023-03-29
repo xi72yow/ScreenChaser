@@ -26,12 +26,13 @@ import { isConfigInterface } from "../database/db.guard";
 import { useConfirm } from "../hooks/confirm";
 import HelpModal from "../modale/helpModal";
 
-type Props = { setLightsOff: any; lightsOff: boolean };
+type Props = {};
 
-export default function GlobalSettings({ setLightsOff, lightsOff }: Props) {
+export default function GlobalSettings({}: Props) {
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
   const theme = useMantineTheme();
   const [open, setOpen] = useState(false);
+  const [lightsOff, setLightsOff] = useState(false);
 
   const confirm = useConfirm();
 
@@ -52,22 +53,22 @@ export default function GlobalSettings({ setLightsOff, lightsOff }: Props) {
             setLightsOff((bool) => {
               return !bool;
             });
-            if (lightsOff)
-              showNotification({
-                title: "Chaser Notification",
-                message: "The Chasers continues to work.",
-                color: "green",
-                icon: <IconPlayerPlay size={18} />,
-                sx: { cursor: "pointer" },
-              });
-            else
-              showNotification({
-                title: "Chaser Notification",
-                message: "Signal to turn off the device has been sent. ",
-                color: "red",
-                icon: <IconPower size={18} />,
-                sx: { cursor: "pointer" },
-              });
+
+            showNotification({
+              title: "Chaser Notification",
+              message: lightsOff
+                ? "The Chasers continues to work."
+                : "Signal to turn off the device has been sent. ",
+              color: lightsOff ? "green" : "red",
+              icon: lightsOff ? (
+                <IconPlayerPlay size={18} />
+              ) : (
+                <IconPower size={18} />
+              ),
+              sx: { cursor: "pointer" },
+            });
+
+            ipcRenderer.send("CHASER:" + lightsOff ? "ON" : "OFF");
           }}
           size="lg"
           sx={(theme) => ({
