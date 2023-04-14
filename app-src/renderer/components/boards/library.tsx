@@ -51,9 +51,7 @@ const library = (props: Props) => {
 
   const tasks: TaskTableInterface[] = useLiveQuery(
     async () => {
-      return (
-        await db.tasks.where("type").notEqual(TaskTypes.ui).sortBy("favorite")
-      ).reverse();
+      return await db.tasks.where("type").notEqual(TaskTypes.ui).toArray();
     },
     null,
     []

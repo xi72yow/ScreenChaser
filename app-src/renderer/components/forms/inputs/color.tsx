@@ -2,32 +2,30 @@ import React from "react";
 import { ActionIcon, ColorInput, createStyles } from "@mantine/core";
 import { IconWand } from "@tabler/icons";
 import { randomColor } from "screenchaser-core";
+import { JsonForms, withJsonFormsControlProps } from "@jsonforms/react";
 
-type Props = { form: any; path: string; label?: string; defaultValue: string };
+type Props = {
+  path: string;
+  label?: string;
+  data;
+  handleChange(path: string, value: any): void;
+};
 
 const useStyles = createStyles((theme) => ({
   input: {
     textAlign: "center",
-    paddingRight: `${theme.spacing.sm}px !important`,
-    paddingLeft: `${theme.spacing.sm}px !important`,
     border: `1px solid ${
       theme.colorScheme === "dark" ? "transparent" : theme.colors.gray[3]
     }`,
     backgroundColor:
       theme.colorScheme === "dark" ? theme.colors.dark[5] : theme.white,
-    height: 40,
+    height: 42,
     flex: 1,
     padding: `6px ${theme.spacing.xs}px !important`,
   },
 }));
 
-export default function Color({ form, path, label, defaultValue }: Props) {
-  React.useEffect(() => {
-    if (form) {
-      form.setFieldValue(path, defaultValue || "#9B03FF");
-    }
-  }, []);
-
+export function Color({ path, label, data, handleChange }: Props) {
   const { classes } = useStyles();
 
   return (
@@ -36,14 +34,14 @@ export default function Color({ form, path, label, defaultValue }: Props) {
         placeholder="Pick color"
         label={label ? label : "Color"}
         onChange={(value) => {
-          form.setFieldValue(path, value);
+          handleChange(path, value);
         }}
         classNames={{ input: classes.input }}
-        value={defaultValue}
+        value={data}
         rightSection={
           <ActionIcon
             onClick={() => {
-              form.setFieldValue(path, randomColor());
+              handleChange(path, randomColor());
             }}
           >
             <IconWand size={16} />
@@ -53,3 +51,5 @@ export default function Color({ form, path, label, defaultValue }: Props) {
     </div>
   );
 }
+
+export default withJsonFormsControlProps(Color);

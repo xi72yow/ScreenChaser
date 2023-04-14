@@ -1,14 +1,7 @@
-import {
-  ActionIcon,
-  createStyles,
-  NumberInput,
-  NumberInputHandlers,
-  Text,
-  useMantineTheme,
-} from "@mantine/core";
-import { IconMinus, IconPlus } from "@tabler/icons";
-import React, { useRef, useState } from "react";
-import { withJsonFormsControlProps } from "@jsonforms/react";
+import { JsonForms, withJsonFormsControlProps } from "@jsonforms/react";
+import { ActionIcon, createStyles, Text, useMantineTheme } from "@mantine/core";
+import { IconCheck, IconMinus, IconX } from "@tabler/icons";
+import React, { useState } from "react";
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
@@ -52,34 +45,16 @@ const useStyles = createStyles((theme) => ({
   },
 }));
 
-interface QuantityInputProps {
-  min?: number;
-  max?: number;
+type Props = {
+  path: string;
   label?: string;
   data: any;
   handleChange(path: string, value: any): void;
-  path: string;
-  sx?: any;
-  onChange?: (value: number) => void;
-}
+};
 
-export function QuantityInput({
-  min = 0,
-  max = 255,
-  handleChange,
-  label = "",
-  path,
-  sx,
-  data,
-}: QuantityInputProps) {
+export function Boolean({ label, data, handleChange, path }: Props) {
   const theme = useMantineTheme();
   const { classes } = useStyles();
-  const handlers = useRef<NumberInputHandlers>(null);
-  const [value, setValue] = useState<number | undefined>(data);
-
-  React.useEffect(() => {
-    handleChange(path, value);
-  }, [value]);
 
   return (
     <React.Fragment>
@@ -87,7 +62,7 @@ export function QuantityInput({
         sx={{
           fontSize: theme.fontSizes.sm,
           fontWeight: 400,
-          marginTop: "0.5rem",
+          marginTop: "0.1rem",
         }}
       >
         {label}
@@ -97,38 +72,22 @@ export function QuantityInput({
         <ActionIcon<"button">
           size={28}
           variant="transparent"
-          onClick={() => handlers.current?.decrement()}
-          disabled={value === min}
+          onClick={() => handleChange(path, !data)}
           className={classes.control}
           onMouseDown={(event) => event.preventDefault()}
         >
-          <IconMinus size={16} stroke={1.5} />
+          {data ? (
+            <IconCheck size={16} stroke={1.5} />
+          ) : (
+            <IconX size={16} stroke={1.5} />
+          )}
         </ActionIcon>
-
-        <NumberInput
-          variant="unstyled"
-          min={min}
-          max={max}
-          sx={sx}
-          value={value}
-          handlersRef={handlers}
-          onChange={setValue}
-          classNames={{ input: classes.input }}
-        />
-
-        <ActionIcon<"button">
-          size={28}
-          variant="transparent"
-          disabled={value === max}
-          className={classes.control}
-          onClick={() => handlers.current?.increment()}
-          onMouseDown={(event) => event.preventDefault()}
-        >
-          <IconPlus size={16} stroke={1.5} />
-        </ActionIcon>
+        <Text classNames={{ input: classes.input }}>
+          {data ? "Enabled" : "Disabled"}
+        </Text>
       </div>
     </React.Fragment>
   );
 }
 
-export default withJsonFormsControlProps(QuantityInput);
+export default withJsonFormsControlProps(Boolean);

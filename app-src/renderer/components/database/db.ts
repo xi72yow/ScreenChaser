@@ -235,6 +235,30 @@ export function updateElementInTable(
   return db[tableIdentifier].update(id, element);
 }
 
+function debounce(func: any, wait: number, immediate?: boolean) {
+  let timeout: any;
+  return function () {
+    const context = this,
+      args = arguments;
+    const later = function () {
+      timeout = null;
+      if (!immediate) func.apply(context, args);
+    };
+    const callNow = immediate && !timeout;
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+    if (callNow) func.apply(context, args);
+  };
+}
+
+export function updateElementDebouncedInTable(
+  tableIdentifier: TableNames,
+  id: number,
+  element: any
+) {
+  return debounce(() => db[tableIdentifier].update(id, element), 1000);
+}
+
 export function deleteElementFromTable(
   tableIdentifier: TableNames,
   id: number

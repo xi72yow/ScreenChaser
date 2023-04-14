@@ -7,11 +7,23 @@ import {
   ColorSwatch,
   Tooltip,
   useMantineTheme,
+  TextInput,
+  createStyles,
 } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import { IconFocus2, IconRefresh } from "@tabler/icons";
-import React, { useState } from "react";
+import { useLiveQuery } from "dexie-react-hooks";
+import React, { useEffect, useState } from "react";
 import { DataEmitter, setAll } from "screenchaser-core";
+import {
+  DeviceTableInterface,
+  TableNames,
+  db,
+  dbBool,
+  updateElementDebouncedInTable,
+  updateElementInTable,
+} from "../../database/db";
+import { useDebouncedValue } from "@mantine/hooks";
 
 const IdentifyColors = {
   "0": { name: "gray", color: { r: 50, g: 50, b: 50 } },
@@ -24,27 +36,116 @@ const IdentifyColors = {
   "7": { name: "white", color: { r: 255, g: 255, b: 255 } },
 };
 
-function DeviceRow({ device, configs, i, theme }: any) {
+function DeviceRow({ device, theme, counter }: any) {
+  const [name, setName] = useState(device.name);
+  const [debouncedName] = useDebouncedValue(name, 200, { leading: true });
+
+  useEffect(() => {
+    updateElementInTable(TableNames.devices, device.id, {
+      name: name,
+      new: debouncedName.length !== 0 ? dbBool.false : dbBool.true,
+    });
+  }, [debouncedName]);
+
+  const [neoPixelCount, setNeoPixelCount] = useState(device.neoPixelCount);
+  const [debouncedNeoPixelCount] = useDebouncedValue(neoPixelCount, 200, {
+    leading: true,
+  });
+
+  useEffect(() => {
+    if (debouncedNeoPixelCount.length === 0) {
+      showNotification({
+        title: "Error",
+        message: "NeoPixel count must be a number",
+        color: "red",
+      });
+      return;
+    }
+    updateElementInTable(TableNames.devices, device.id, {
+      neoPixelCount: neoPixelCount,
+    });
+  }, [debouncedNeoPixelCount]);
+
   return (
     device.ip && (
       <tr style={{ height: "3rem" }}>
         <td>{device.ip}</td>
-        <td>{configs[i].device.name || <Text c="dimmed">No Name</Text>}</td>
-        <td>{IdentifyColors[i].name}</td>
+        <td>
+          <TextInput
+            sx={{
+              input: {
+                border: "none",
+                borderBottom: "1px solid #ccc",
+                margin: "0",
+                paddingLeft: "1rem",
+                width: "100%",
+                height: "100%",
+                textAlign: "left",
+                "&:focus": {
+                  outline: "none",
+                  borderBottom: "1px solid #000",
+                },
+              },
+            }}
+            placeholder="Your Device Name"
+            value={name}
+            onChange={(e) => {
+              setName(e.currentTarget.value);
+            }}
+          />
+        </td>
+        <td>{IdentifyColors[counter].name}</td>
 
-        <td>{configs[i].device.neoPixelCount}</td>
+        <td>
+          <TextInput
+            sx={{
+              input: {
+                border: "none",
+                borderBottom: "1px solid #ccc",
+                margin: "0",
+                paddingLeft: "1rem",
+                width: "100%",
+                height: "100%",
+                textAlign: "left",
+                "&:focus": {
+                  outline: "none",
+                  borderBottom: "1px solid #000",
+                },
+              },
+            }}
+            type="number"
+            placeholder="LED Count"
+            value={neoPixelCount}
+            onChange={(e) => {
+              if (e.currentTarget.value.length > 3) {
+                showNotification({
+                  title: "Chaser Notification",
+                  message: `LED Count can't be more than 3 digits`,
+                });
+                return;
+              }
+              setNeoPixelCount(e.currentTarget.value);
+            }}
+          />
+        </td>
         <td>
           <Group position="center" sx={{ width: "42px" }}>
             <Tooltip
-              label={device.new ? "new" : device.exclude ? "excluded" : "ok"}
+              label={
+                device.new === dbBool.true
+                  ? "new"
+                  : device.exclude === dbBool.true
+                  ? "excluded"
+                  : "ok"
+              }
             >
               <ColorSwatch
                 component="div"
                 opacity={0.5}
                 color={
-                  device.new
+                  device.new === dbBool.true
                     ? theme.colors.grape[6]
-                    : device.exclude
+                    : device.exclude === dbBool.true
                     ? theme.colors.gray[6]
                     : theme.colors.green[6]
                 }
@@ -65,36 +166,39 @@ type Props = {
   scanning: boolean;
 };
 
-export default function OverviewTable({
-  configs,
-  scanNetwork,
-  scanning,
-  setScanning,
-}: Props) {
+export default function OverviewTable({ scanNetwork, scanning }: Props) {
   const theme = useMantineTheme();
 
+  const devices: DeviceTableInterface[] = useLiveQuery(
+    async () => {
+      return db.devices.toArray();
+    },
+    null,
+    []
+  );
+
   function sendIdentifyColor() {
-    configs.forEach(({ device }, index, array) => {
-      const DataEmitterForIP = new DataEmitter(false, device.ip);
+    devices.forEach(({ ip, neoPixelCount }, index, array) => {
+      const DataEmitterForIP = new DataEmitter(false, ip);
       const rgb = IdentifyColors[index].color;
-      DataEmitterForIP.emit(
-        setAll(rgb.r, rgb.g, rgb.b, device.neoPixelCount || 60)
-      );
+      DataEmitterForIP.emit(setAll(rgb.r, rgb.g, rgb.b, neoPixelCount || 60));
     });
     showNotification({
       title: "Chaser Notification",
       message: `Sent identify colors to all Chasers`,
     });
   }
-  const rows = configs.map(({ device }, i) => (
-    <DeviceRow
-      key={device.ip + configs.length}
-      device={device}
-      theme={theme}
-      configs={configs}
-      i={i}
-    />
-  ));
+
+  const rows = devices.map((device, i) => {
+    return (
+      <DeviceRow
+        key={device.ip + "-device-row"}
+        device={device}
+        theme={theme}
+        counter={i}
+      />
+    );
+  });
   return (
     <>
       <Table>

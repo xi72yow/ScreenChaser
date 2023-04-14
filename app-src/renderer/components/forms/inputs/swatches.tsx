@@ -9,35 +9,27 @@ import {
   Text,
   useMantineTheme,
 } from "@mantine/core";
-import { UseFormReturnType } from "@mantine/form";
 import { showNotification } from "@mantine/notifications";
 import { IconEdit, IconSquareX, IconWand } from "@tabler/icons";
 import React, { useState } from "react";
 import { random, randomColor } from "screenchaser-core";
-import { ConfigInterface } from "../../database/db";
+import { withJsonFormsControlProps } from "@jsonforms/react";
 
 type Props = {
   label: string;
-  defaultValue?: Array<string>;
-  form: UseFormReturnType<ConfigInterface>;
   path?: string;
+  data: any;
+  handleChange(path: string, value: any): void;
 };
 
-export default function Swatches({ label, form, defaultValue, path }: Props) {
+export function Swatches({ label, path, data, handleChange }: Props) {
   const theme = useMantineTheme();
-  const [swatches, setSwatches] = useState(defaultValue);
+  const [swatches, setSwatches] = useState(data);
   const [opened, setOpened] = useState(false);
   const [color, setColor] = useState("#9B03FF");
-  React.useEffect(() => {
-    if (form) {
-      form.setFieldValue(path, defaultValue);
-    }
-  }, []);
 
   React.useEffect(() => {
-    if (form) {
-      form.setFieldValue(path, swatches);
-    }
+    handleChange(path, swatches);
   }, [swatches]);
 
   const onClick = (event) => {
@@ -54,21 +46,20 @@ export default function Swatches({ label, form, defaultValue, path }: Props) {
         sx={{
           fontSize: theme.fontSizes.sm,
           fontWeight: 400,
-          marginTop: "0.5rem",
+          marginTop: "0.1rem",
         }}
       >
         {label}
       </Text>
       <Group
         sx={{
-          paddingRight: `${theme.spacing.sm}px !important`,
-          paddingLeft: `${theme.spacing.sm}px !important`,
+          padding: `6px ${theme.spacing.xs}px`,
           border: `1px solid ${
             theme.colorScheme === "dark" ? "transparent" : theme.colors.gray[3]
           }`,
           backgroundColor:
             theme.colorScheme === "dark" ? theme.colors.dark[5] : theme.white,
-          height: 40,
+          height: 42,
           borderRadius: theme.radius.sm,
           justifyContent: "space-between",
         }}
@@ -167,3 +158,5 @@ export default function Swatches({ label, form, defaultValue, path }: Props) {
     </React.Fragment>
   );
 }
+
+export default withJsonFormsControlProps(Swatches);

@@ -9,15 +9,10 @@ import {
   useMantineTheme,
 } from "@mantine/core";
 import { IconChevronDown, IconCpu } from "@tabler/icons";
-import Dexie from "dexie";
 import { useLiveQuery } from "dexie-react-hooks";
-import { Dispatch, SetStateAction, useEffect } from "react";
+import { Dispatch, SetStateAction } from "react";
 import package_json from "../../../package.json";
-import {
-  ConfigsTableInterface,
-  db,
-  DeviceTableInterface,
-} from "../database/db";
+import { DeviceTableInterface, db } from "../database/db";
 import ScanNetworkModal from "../modale/chaserSettingsModal";
 import Logo from "../styles/Logo.js";
 
@@ -40,46 +35,52 @@ export default function HeaderApp({
     []
   );
 
-  const items = devices.map(({ ip, name, neoPixelCount }, i) => {
+  const currentDevice = useLiveQuery(
+    async () => {
+      return db.devices.where("id").equals(selectedDeviceId).first();
+    },
+    [selectedDeviceId],
+    null
+  );
+
+  const items = devices.map(({ ip, name, neoPixelCount, id }) => {
     return (
-      ip && (
-        <Menu.Item
-          key={ip}
-          onClick={() => {
-            setSelectedDeviceId(i);
-          }}
-          icon={<IconCpu size={16} color={theme.colors.blue[6]} stroke={1.5} />}
-          rightSection={
-            <Text
-              size="xs"
-              transform="uppercase"
-              weight={700}
-              color="dimmed"
-              ml={8}
-              sx={{
-                whiteSpace: "nowrap",
-                maxWidth: "150px",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-              }}
-            >
-              {name || "No name"}
-            </Text>
-          }
-        >
-          <Group position="left">
-            <Text size="sm" weight={900}>
-              {ip}
-            </Text>
-            <Badge
-              color={"blue"}
-              variant={theme.colorScheme === "dark" ? "light" : "outline"}
-            >
-              {neoPixelCount}
-            </Badge>
-          </Group>
-        </Menu.Item>
-      )
+      <Menu.Item
+        key={ip}
+        onClick={() => {
+          setSelectedDeviceId(id);
+        }}
+        icon={<IconCpu size={16} color={theme.colors.blue[6]} stroke={1.5} />}
+        rightSection={
+          <Text
+            size="xs"
+            transform="uppercase"
+            weight={700}
+            color="dimmed"
+            ml={8}
+            sx={{
+              whiteSpace: "nowrap",
+              maxWidth: "150px",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
+            {name || "No name"}
+          </Text>
+        }
+      >
+        <Group position="left">
+          <Text size="sm" weight={900}>
+            {ip}
+          </Text>
+          <Badge
+            color={"blue"}
+            variant={theme.colorScheme === "dark" ? "light" : "outline"}
+          >
+            {neoPixelCount}
+          </Badge>
+        </Group>
+      </Menu.Item>
     );
   });
 
@@ -137,19 +138,10 @@ export default function HeaderApp({
                     textOverflow: "ellipsis",
                   }}
                 >
-                  {`${
-                    devices.find((device) => device.id === selectedDeviceId)
-                      ?.name
-                      ? devices.find((device) => device.id === selectedDeviceId)
-                          ?.name
-                      : "New"
-                  }` || "Choose Device"}
+                  {`${currentDevice?.name ? currentDevice?.name : "New"}` ||
+                    "Choose Device"}
                 </Text>
-                <Text>
-                  {`@${
-                    devices.find((device) => device.id === selectedDeviceId)?.ip
-                  }` || ""}
-                </Text>
+                <Text>{`@${currentDevice?.ip}` || ""}</Text>
               </Button>
             </Menu.Target>
             <Menu.Dropdown>{items}</Menu.Dropdown>

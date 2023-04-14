@@ -1,21 +1,19 @@
 import styled from "@emotion/styled";
+import { withJsonFormsControlProps } from "@jsonforms/react";
 import {
-  Modal,
-  ScrollArea,
-  Grid,
+  ActionIcon,
   Box,
+  Grid,
   Group,
   Image as MantineImage,
+  Modal,
+  ScrollArea,
   Text,
-  Button,
   useMantineTheme,
-  ActionIcon,
 } from "@mantine/core";
-import { UseFormReturnType } from "@mantine/form";
-import { IconChevronDown, IconDeviceTv } from "@tabler/icons";
+import { IconDeviceTv } from "@tabler/icons";
 import { ipcRenderer } from "electron";
 import React, { useEffect, useState } from "react";
-import { ConfigInterface } from "../../database/db";
 
 const PreviewImage = styled(MantineImage)`
   cursor: pointer;
@@ -29,12 +27,34 @@ const PreviewImage = styled(MantineImage)`
 
 type SourcePickerProps = {
   label: string;
-  defaultValue?: string;
-  form: UseFormReturnType<ConfigInterface>;
   path: string;
+  data: any;
+  handleChange: (path: string, value: any) => void;
 };
 
-export default function SourcePicker({ form, label }: SourcePickerProps) {
+const delimiter = "d3l1m173r";
+
+function createSourceString(source) {
+  return `${source.name}${delimiter}${source.id}`;
+}
+
+function parseSourceString(sourceString) {
+  const [name, id] = sourceString.split(delimiter);
+  if (!name || !id) {
+    return { name: "", id: "" };
+  }
+  if (name.length > 20) {
+    return { name: name.slice(0, 45) + "...", id };
+  }
+  return { name, id };
+}
+
+export function SourcePicker({
+  data,
+  path,
+  label,
+  handleChange,
+}: SourcePickerProps) {
   const [opened, setOpened] = useState(false);
   const [loading, setLoading] = useState(false);
   const [sources, setSources] = useState([]);
@@ -58,8 +78,9 @@ export default function SourcePicker({ form, label }: SourcePickerProps) {
   }
 
   useEffect(() => {
-    getPreview(form.values.chaser.sourceId);
-  }, [form.values.chaser.sourceId]);
+    const item = parseSourceString(data);
+    getPreview(item.id);
+  }, [data]);
 
   const arrayInHalf = (array) => [
     array.slice(0, Math.ceil(array.length / 2)),
@@ -72,8 +93,7 @@ export default function SourcePicker({ form, label }: SourcePickerProps) {
         <Group
           key={item.id}
           onClick={() => {
-            form.setFieldValue("chaser.sourceId", item.id || "");
-            form.setFieldValue("chaser.name", item.name || "");
+            handleChange(path, createSourceString(item));
             setOpened(false);
           }}
           style={{ paddingTop: 5 }}
@@ -134,7 +154,7 @@ export default function SourcePicker({ form, label }: SourcePickerProps) {
         sx={{
           fontSize: theme.fontSizes.sm,
           fontWeight: 500,
-          marginTop: "0.5rem",
+          marginTop: "0.1rem",
         }}
       >
         {label}
@@ -148,7 +168,7 @@ export default function SourcePicker({ form, label }: SourcePickerProps) {
           }`,
           backgroundColor:
             theme.colorScheme === "dark" ? theme.colors.dark[5] : theme.white,
-          height: 40,
+          height: 42,
           borderRadius: theme.radius.sm,
           justifyContent: "space-between",
         }}
@@ -161,9 +181,9 @@ export default function SourcePicker({ form, label }: SourcePickerProps) {
             marginRight: 10,
           }}
         />
-        {form.values.chaser.name === ""
+        {parseSourceString(data).id === ""
           ? "Choose Video Source"
-          : form.values.chaser.name}
+          : parseSourceString(data).name}
         <ActionIcon
           loading={loading}
           onClick={() => {
@@ -225,3 +245,5 @@ export default function SourcePicker({ form, label }: SourcePickerProps) {
     </React.Fragment>
   );
 }
+
+export default withJsonFormsControlProps(SourcePicker);

@@ -1,35 +1,50 @@
-import { NativeSelect } from "@mantine/core";
-import { UseFormReturnType } from "@mantine/form";
+import { withJsonFormsControlProps } from "@jsonforms/react";
+import { Select as MantineSelect, createStyles } from "@mantine/core";
 import React from "react";
-import { ConfigInterface } from "../../database/db";
 
-interface CheckboxProps {
+const useStyles = createStyles((theme) => ({
+  input: {
+    textAlign: "center",
+    border: `1px solid ${
+      theme.colorScheme === "dark" ? "transparent" : theme.colors.gray[3]
+    }`,
+    backgroundColor:
+      theme.colorScheme === "dark" ? theme.colors.dark[5] : theme.white,
+    height: 42,
+    padding: `6px ${theme.spacing.xs}px !important`,
+  },
+}));
+
+interface SelectProps {
   label: string;
-  defaultValue?: string;
-  form: UseFormReturnType<ConfigInterface>;
-  data: Array<"color" | "random" | "rainbow">;
+  data: any;
   path: string;
+  handleChange(path: string, value: any): void;
+  schema: any;
 }
 
-export default function CheckboxInput({
+export function Select({
   label,
-  defaultValue,
-  form,
   path,
   data,
-}: CheckboxProps) {
-  React.useEffect(() => {
-    if (form) form.setFieldValue(path, defaultValue);
-  }, []);
+  handleChange,
+  schema,
+}: SelectProps) {
+  const { classes } = useStyles();
 
   return (
-    <NativeSelect
-      data={data}
-      label={label}
-      onChange={(event) => {
-        if (form) form.setFieldValue(path, event.currentTarget.value);
-      }}
-      {...form.getInputProps(path)}
-    />
+    <div>
+      <MantineSelect
+        classNames={{ input: classes.input }}
+        data={schema.enum}
+        label={label}
+        value={data}
+        onChange={(value) => {
+          handleChange(path, value);
+        }}
+      />
+    </div>
   );
 }
+
+export default withJsonFormsControlProps(Select);

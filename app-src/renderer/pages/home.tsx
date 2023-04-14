@@ -9,7 +9,6 @@ import {
   Group,
   MantineProvider,
 } from "@mantine/core";
-import { useForm } from "@mantine/form";
 import { useHotkeys, useLocalStorage } from "@mantine/hooks";
 import { ModalsProvider } from "@mantine/modals";
 import {
@@ -49,6 +48,7 @@ import Toolbar from "../components/toolbar/toolbar";
 import package_json from "../../package.json";
 import ChaserForm from "../components/forms/chaserForm";
 import Library from "../components/boards/library";
+import FormRenderer from "../components/forms/formRenderer";
 
 function checkForUpdates() {
   fetch(
@@ -183,83 +183,14 @@ function App() {
 
           case TaskCodes.library:
             return <Library></Library>;
-          /* case "meteorRain":
-            return (
-              <MeteorRainForm
-                form={form}
-                key={selectedDevice + "meteorRain"}
-              ></MeteorRainForm>
-            );
-          case "bouncingBalls":
-            return (
-              <BouncingBallsForm
-                form={form}
-                key={selectedDevice + "bouncingBalls"}
-              ></BouncingBallsForm>
-            );
-          case "fireFlame":
-            return (
-              <FireFlameForm
-                form={form}
-                key={selectedDevice + "fireFlame"}
-              ></FireFlameForm>
-            );
-          case "colorWheel":
-            return (
-              <ColorWheelForm
-                form={form}
-                key={selectedDevice + "colorWheel"}
-              ></ColorWheelForm>
-            );
-          case "frostyPike":
-            return (
-              <FrostyPikeForm
-                form={form}
-                key={selectedDevice + "frostyPike"}
-              ></FrostyPikeForm>
-            );
-          case "dyingLights":
-            return (
-              <DyingLightsForm
-                form={form}
-                key={selectedDevice + "dyingLights"}
-              ></DyingLightsForm>
-            );
-          case "snake":
-            return (
-              <SnakeForm key={selectedDevice + "snake"} form={form}></SnakeForm>
-            );
-          case "chaser":
-            return (
-              <ChaserForm
-                key={selectedDevice + "chaser"}
-                selectedDevice={selectedDevice}
-                form={form}
-              ></ChaserForm>
-            );
-          case "bubbles":
-            return (
-              <BubblesForm
-                key={selectedDevice + "bubbles"}
-                form={form}
-              ></BubblesForm>
-            );
-          case "staticLight":
-            return (
-              <StaticLightForm
-                key={selectedDevice + "staticLight"}
-                form={form}
-              ></StaticLightForm>
-            );
-          case "animation":
-            return (
-              <AnimationForm
-                key={selectedDevice + "staticLight"}
-                form={form}
-              ></AnimationForm>
-            ); */
+
           default:
-            return <h1>work in progress</h1>;
+            return (
+              <FormRenderer
+                selectedDeviceId={selectedDeviceId}
+                selectedTaskId={selectedTaskId}
+              ></FormRenderer>
+            );
         }
       })()}
     </AppShell>

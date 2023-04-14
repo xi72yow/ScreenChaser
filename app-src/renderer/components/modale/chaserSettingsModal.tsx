@@ -1,45 +1,18 @@
 import {
   ActionIcon,
   Box,
-  Button,
-  Group,
   Indicator,
-  Loader,
   Modal,
-  Text,
-  NativeSelect,
-  NumberInput,
-  PasswordInput,
-  Popover,
   SegmentedControl,
-  Select,
-  Table,
-  TextInput,
-  Divider,
-  useMantineTheme,
-  Transition,
-  ColorSwatch,
-  Tooltip,
 } from "@mantine/core";
-import { Carousel } from "@mantine/carousel";
-import {
-  IconRefresh,
-  IconFocus2,
-  IconAccessPoint,
-  IconSend,
-  IconEditCircle,
-} from "@tabler/icons";
-import React, { useEffect, useRef, useState } from "react";
-import { DataEmitter } from "screenchaser-core";
-import { setAll } from "screenchaser-core";
 import { showNotification } from "@mantine/notifications";
+import { IconAccessPoint } from "@tabler/icons";
 import { useLiveQuery } from "dexie-react-hooks";
-import { addConfig, db, updateConfig } from "../database/db";
-import { ipcRenderer } from "electron";
-import { useForm } from "@mantine/form";
-import { setTimeout } from "timers";
-import NetworkForm from "./chaserSettingsModalComponents/networkForm";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { DataEmitter } from "screenchaser-core";
+import { TableNames, addElementToTable, db, dbBool } from "../database/db";
 import DeviceForm from "./chaserSettingsModalComponents/deviceForm";
+import NetworkForm from "./chaserSettingsModalComponents/networkForm";
 import OverviewTable from "./chaserSettingsModalComponents/overviewTable";
 
 interface scanNetworkModalProps {}
@@ -47,12 +20,31 @@ interface scanNetworkModalProps {}
 export default function ScanNetworkModal({}: scanNetworkModalProps) {
   const [open, setOpen] = useState(false);
   const [selectedTab, setSelectedTab] = useState("overview");
-  const initialScan = useRef(true);
   const [scanning, setScanning] = useState(false);
 
-  const configs = useLiveQuery(async () => {
-    return await db.configs.toArray();
-  }, []);
+  const configs = useLiveQuery(
+    async () => {
+      return await db.configs.toArray();
+    },
+    null,
+    []
+  );
+
+  const devices = useLiveQuery(
+    async () => {
+      return await db.devices.toArray();
+    },
+    null,
+    undefined
+  );
+
+  const newDevicesCount = useLiveQuery(
+    async () => {
+      return await db.devices.where("new").equals(dbBool.true).count();
+    },
+    null,
+    0
+  );
 
   function scanNetwork() {
     setScanning(true);
@@ -60,10 +52,7 @@ export default function ScanNetworkModal({}: scanNetworkModalProps) {
     DataEmitterForIP.init()
       .then((value) => {
         const detectedDevices = DataEmitterForIP.getSlaves();
-        checkForNewDevices(
-          configs.map((conf) => conf.device),
-          detectedDevices
-        );
+        checkForNewDevices(devices, detectedDevices);
         setScanning(false);
       })
       .catch((err) => {
@@ -77,7 +66,7 @@ export default function ScanNetworkModal({}: scanNetworkModalProps) {
       });
   }
 
-  function checkForNewDevices(old, newDevices) {
+  function checkForNewDevices(old, newDevices): void {
     let newConfigs = [];
     newDevices.forEach((newD, index, array) => {
       old.findIndex((old, index, array) => {
@@ -88,14 +77,15 @@ export default function ScanNetworkModal({}: scanNetworkModalProps) {
           return old.ip === newD.ip;
         }) === -1
       ) {
-        newD.new = true;
+        newD.new = dbBool.true;
+        newD.exclude = dbBool.false;
         delete newD.type;
         delete newD.port;
         newD.name = "";
         newD.neoPixelCount = 60;
         newConfigs.push({ device: { ...newD } });
 
-        addConfig({ device: { ...newD } }).then((value) => {
+        addElementToTable(TableNames.devices, { ...newD }).then((value) => {
           showNotification({
             title: "Chaser Notification",
             message: `I found a new device: ${newD.ip}`,
@@ -112,16 +102,15 @@ export default function ScanNetworkModal({}: scanNetworkModalProps) {
     }
   }
 
-  useEffect(() => {
-    if (configs && initialScan.current) {
-      scanNetwork();
-      initialScan.current = false;
-    }
-  }, [configs]);
+  const firstUpdate = useRef(true);
 
-  if (configs === undefined) {
-    return <div>Loading...</div>;
-  }
+  useEffect(() => {
+    if (devices === undefined) return;
+    if (firstUpdate.current) {
+      scanNetwork();
+      firstUpdate.current = false;
+    }
+  }, [devices]);
 
   return (
     <React.Fragment>
@@ -144,7 +133,6 @@ export default function ScanNetworkModal({}: scanNetworkModalProps) {
           }}
           data={[
             { value: "overview", label: "Overview" },
-            { value: "network", label: "Network" },
             { value: "credentials", label: "Hardware" },
           ]}
         />
@@ -158,19 +146,11 @@ export default function ScanNetworkModal({}: scanNetworkModalProps) {
             />
           )}
           {selectedTab === "credentials" && <DeviceForm></DeviceForm>}
-          {selectedTab === "network" && (
-            <NetworkForm configs={configs}></NetworkForm>
-          )}
         </Box>
       </Modal>
       <Indicator
         dot={scanning}
-        label={configs.reduce(
-          (previousValue, currentValue, currentIndex, array) => {
-            return currentValue.device.new ? previousValue + 1 : previousValue;
-          },
-          0
-        )}
+        label={newDevicesCount}
         inline
         size={22}
         position="bottom-end"
