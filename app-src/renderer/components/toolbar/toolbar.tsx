@@ -10,6 +10,7 @@ import {
   TaskTableInterface,
   TaskCodes,
   dbBool,
+  addElementToTable,
 } from "../database/db";
 import useStyles from "../styles/styles";
 import GlobalSettings from "./globalSettings";
@@ -21,9 +22,9 @@ type ToolbarProps = {
 };
 
 export default function Toolbar({
-  data,
   selectedTaskId,
   selectedDeviceId,
+  data,
 }: ToolbarProps) {
   const { classes } = useStyles();
 
@@ -76,8 +77,14 @@ export default function Toolbar({
               <Button
                 disabled={!currentDevice}
                 onClick={() => {
+                  const { configId, ...rest } = data;
+                  console.log("🚀 ~ file: toolbar.tsx:81 ~ data:", data);
+
+                  return;
+
                   updateElementInTable(TableNames.devices, selectedDeviceId, {
-                    taskId: selectedTaskId,
+                    config: rest,
+                    deviceId: selectedDeviceId,
                   });
 
                   if (currentDevice.exclude === dbBool.true)

@@ -1,37 +1,26 @@
-import React, { useContext, useEffect, useState } from "react";
-import Autocomplete from "./inputs/autocomplete";
 import { useLiveQuery } from "dexie-react-hooks";
+import { useContext, useEffect } from "react";
 import { db } from "../database/db";
-import AnimationForm from "./animationForm";
-import BouncingBallsForm from "./bouncingBallsForm";
-import BubblesForm from "./bubblesForm";
-import ChaserForm from "./chaserForm";
-import ColorWheelForm from "./colorWheelForm";
-import DyingLightsForm from "./dyingLightsForm";
-import FireFlameForm from "./fireFlameForm";
-import FrostyPikeForm from "./frostyPikeForm";
-import MeteorRainForm from "./meteorRainForm";
-import SnakeForm from "./snakeForm";
-import StaticLightForm from "./staticLightForm";
 
 import { JsonForms } from "@jsonforms/react";
 import { vanillaCells, vanillaRenderers } from "@jsonforms/vanilla-renderers";
 
-import numberTester from "./inputs/numberTester";
-import number from "./inputs/number";
-import colorTester from "./inputs/colorTester";
-import color from "./inputs/color";
-import booleanTester from "./inputs/booleanTester";
+import { FormContext, FormProvider } from "./formContext";
 import boolean from "./inputs/boolean";
+import booleanTester from "./inputs/booleanTester";
+import color from "./inputs/color";
+import colorTester from "./inputs/colorTester";
+import ConfigPicker from "./inputs/configPicker";
+import number from "./inputs/number";
+import numberTester from "./inputs/numberTester";
+import select from "./inputs/select";
+import selectTester from "./inputs/selectTester";
+import sourcePicker from "./inputs/sourcePicker";
+import sourcePickerTester from "./inputs/sourcePickerTester";
+import stripeInput from "./inputs/stripeInput";
+import stripeInputTester from "./inputs/stripeInputTester";
 import swatches from "./inputs/swatches";
 import swatchesTester from "./inputs/swatchesTester";
-import selectTester from "./inputs/selectTester";
-import select from "./inputs/select";
-import sourcePickerTester from "./inputs/sourcePickerTester";
-import sourcePicker from "./inputs/sourcePicker";
-import stripeInputTester from "./inputs/stripeInputTester";
-import stripeInput from "./inputs/stripeInput";
-import { FormContext, FormProvider } from "./formContext";
 
 const schema = {
   type: "object",
@@ -122,25 +111,19 @@ type Props = {
   selectedDeviceId: number;
   selectedTaskId: number;
   setData: (data: any) => void;
+  data: any;
+  selectedConfigId: number;
+  setSelectedConfigId: (id: number) => void;
 };
 
 export default function FormRenderer({
   selectedDeviceId,
   selectedTaskId,
   setData,
+  data,
+  selectedConfigId,
+  setSelectedConfigId,
 }: Props) {
-  const configs = useLiveQuery(
-    async () => {
-      return await db.configs
-        .where("deviceId")
-        .equals(selectedDeviceId)
-        .and((config) => config.taskId === selectedTaskId)
-        .toArray();
-    },
-    [selectedDeviceId, selectedTaskId],
-    []
-  );
-
   const currentTask = useLiveQuery(
     async () => {
       return db.tasks.get(selectedTaskId);
@@ -174,11 +157,19 @@ export default function FormRenderer({
 
   return (
     <FormProvider>
-      <Autocomplete data={configs}></Autocomplete>
+      <ConfigPicker
+        selectedTaskId={selectedTaskId}
+        selectedDeviceId={selectedDeviceId}
+        selectedConfigId={selectedConfigId}
+        setSelectedConfigId={setSelectedConfigId}
+        data={data}
+        setData={setData}
+      ></ConfigPicker>
       <JsonForms
+        key={selectedConfigId + "-JsonForms"}
         schema={currentTask.schema}
         uischema={currentTask.uiSchema}
-        data={currentTask.defaultData}
+        data={selectedConfigId === -1 ? currentTask.defaultData : data}
         renderers={renderers}
         cells={vanillaCells}
         onChange={({ data }) => setData(data)}

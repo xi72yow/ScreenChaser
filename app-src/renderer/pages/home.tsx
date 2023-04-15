@@ -21,7 +21,7 @@ import NavbarNested from "../components/navbar/navbar";
 
 import { IconAlertCircle } from "@tabler/icons";
 import { useLiveQuery } from "dexie-react-hooks";
-import { shell } from "electron";
+import { ipcRenderer, shell } from "electron";
 import { ErrorBoundary } from "react-error-boundary";
 import package_json from "../../package.json";
 import Library from "../components/boards/library";
@@ -90,7 +90,9 @@ function ErrorFallback({ error, resetErrorBoundary }) {
 
 function App() {
   const [selectedDeviceId, setSelectedDeviceId] = React.useState<number>(1);
-  const [selectedTaskId, setSelectedTaskiD] = React.useState<number>(1);
+  const [selectedTaskId, setSelectedTaskId] = React.useState<number>(1);
+  const [selectedConfigId, setSelectedConfigId] = React.useState<number>(-1);
+
   const [data, setData] = React.useState({});
 
   const currentDevice: DeviceTableInterface = useLiveQuery(
@@ -109,29 +111,38 @@ function App() {
     null
   );
 
-  /*   const configs = useLiveQuery(
+  const deviceConfigs = useLiveQuery(
     async () => {
-      return await db.configs.toArray();
+      const allDevices = await db.devices.toArray();
+      const prepardedData = allDevices.map(async (device) => {
+        return {
+          device,
+          config: await db.configs.get(device.configId).catch((e) => {
+            return { taskCode: "nothing to do" };
+          }),
+        };
+      });
+      return Promise.all(prepardedData);
     },
     null,
     []
-  ); */
-  /* 
-  const form = useForm<ConfigInterface>({
-    initialValues: { ...initilalValues },
-  });
+  );
 
-  useEffect(() => {
-    console.log(form.values);
-  }, [form]); */
+  React.useEffect(() => {
+    setSelectedConfigId(-1);
+  }, [selectedTaskId]);
 
-  // light off/on
-  // ipcRenderer.send("CHASER:ON");
-  // ipcRenderer.send("CHASER:OFF");
+  /* React.useEffect(() => {
+    checkForUpdates();
+  }, []); */
 
-  /*   if (!configs) {
-    return <div>Loading...</div>;
-  } */
+  React.useEffect(() => {
+    if (deviceConfigs) {
+      deviceConfigs.forEach((deviceConfig) => {
+        ipcRenderer.send("MANAGE_CHASER", deviceConfig);
+      });
+    }
+  }, [deviceConfigs]);
 
   return (
     <AppShell
@@ -139,7 +150,7 @@ function App() {
       navbar={
         <NavbarNested
           selectedTaskId={selectedTaskId}
-          setSelectedTaskId={setSelectedTaskiD}
+          setSelectedTaskId={setSelectedTaskId}
         ></NavbarNested>
       }
       header={
@@ -176,8 +187,11 @@ function App() {
             return (
               <FormRenderer
                 setData={setData}
+                data={data}
                 selectedDeviceId={selectedDeviceId}
                 selectedTaskId={selectedTaskId}
+                selectedConfigId={selectedConfigId}
+                setSelectedConfigId={setSelectedConfigId}
               ></FormRenderer>
             );
         }

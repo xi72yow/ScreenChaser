@@ -82,14 +82,10 @@ if (isProd) {
     return ChaserStatCalculator.calculateStats();
   });
 
-  ipcMain.on("CHANGE_CONFIG_DEBOUNCED", (event, args) => {
-    console.log("CHANGE_CONFIG_DEBOUNCED");
-    ChaserManager.setDebouncedConfigs(args);
-  });
-
-  ipcMain.on("CHANGE_CONFIG", (event, args) => {
-    console.log("CHANGE_CONFIG");
-    ChaserManager.setConfigs(args);
+  ipcMain.on("MANAGE_CHASER", (event, args: any) => {
+    console.log("MANAGE_CHASER");
+    const { device, config } = args;
+    if (device && config) ChaserManager.setChaser(args);
   });
 
   let chaserWindow: BrowserWindow = null;
@@ -103,7 +99,7 @@ if (isProd) {
   });
 
   ipcMain.on("LIGHTS_ON", async (event, args) => {
-    ChaserManager.startAll();
+    ChaserManager.continueLight();
     if (chaserWindow) return;
     chaserWindow = new BrowserWindow({
       webPreferences: {

@@ -314,8 +314,8 @@ export class ScreenChaserDB extends Dexie {
   constructor() {
     super("ScreenChaserDatabase");
     this.version(Number(packageJson.databaseVersion)).stores({
-      configs: "++id, deviceId, taskId, name, config",
-      devices: "++id, ip, name, neoPixelCount, new, exclude, taskId",
+      configs: "++id, deviceId, taskId, taskCode, name, config",
+      devices: "++id, ip, name, neoPixelCount, new, exclude, configId",
       tasks:
         "++id, taskCode, schema, uiSchema, defaultData, label, type, favorite",
       usrs: "++id",
