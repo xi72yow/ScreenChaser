@@ -15,10 +15,24 @@ type EffectsIdentifier =
   | "spaceShuttle";
 
 export interface CoreChaserEffectInterface {
-  neopixelCount: number;
+  neoPixelCount: number;
 }
 
 export interface EffectInterface {
   render(): any;
   getIdentifier(): EffectsIdentifier;
+}
+
+export enum TaskCodes {
+  videoChaser = "videoChaser",
+  animation = "animation",
+  dyingLights = "dyingLights",
+  frostyPike = "frostyPike",
+  colorWheel = "colorWheel",
+  fireFlame = "fireFlame",
+  bouncingBalls = "bouncingBalls",
+  meteorRain = "meteorRain",
+  snake = "snake",
+  bubbles = "bubbles",
+  staticLight = "staticLight",
 }

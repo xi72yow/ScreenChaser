@@ -26,7 +26,7 @@ class MeteorRain implements EffectInterface {
   meteorTrailDecay: number;
   meteorRandomDecay: number;
   count: number;
-  neopixelCount: number;
+  neoPixelCount: number;
   rainbow: boolean;
   constructor(options: MeteorRainEffectInterface) {
     const {
@@ -34,10 +34,10 @@ class MeteorRain implements EffectInterface {
       meteorSize,
       meteorTrailDecay,
       meteorRandomDecay,
-      neopixelCount,
+      neoPixelCount,
       rainbow = false,
     } = options;
-    this.stripe = setAll(0, 0, 0, neopixelCount);
+    this.stripe = setAll(0, 0, 0, neoPixelCount);
     let rgb = hexToRgb(meteorColor);
     this.red = rgb.r;
     this.green = rgb.g;
@@ -46,7 +46,7 @@ class MeteorRain implements EffectInterface {
     this.meteorTrailDecay = meteorTrailDecay;
     this.meteorRandomDecay = meteorRandomDecay;
     this.count = 0;
-    this.neopixelCount = neopixelCount;
+    this.neoPixelCount = neoPixelCount;
     this.rainbow = rainbow;
   }
 
@@ -72,7 +72,7 @@ class MeteorRain implements EffectInterface {
   render() {
     this.count++;
     // fade brightness all LEDs one step
-    for (let j = 0; j < this.neopixelCount; j++) {
+    for (let j = 0; j < this.neoPixelCount; j++) {
       if (random(10) > 5)
         this.stripe = this.fadeToBlack(
           j,
@@ -84,7 +84,7 @@ class MeteorRain implements EffectInterface {
     for (let k = 0; k < this.meteorSize; k++) {
       let rgb = hsvToRgb({ h: this.count * 15, s: 1, v: 1 });
 
-      if (this.count - k < this.neopixelCount && this.count - k >= 0) {
+      if (this.count - k < this.neoPixelCount && this.count - k >= 0) {
         if (this.rainbow)
           this.stripe = setPixel(
             this.count - k,
@@ -105,7 +105,7 @@ class MeteorRain implements EffectInterface {
     }
 
     //restart animation
-    if (this.count > this.neopixelCount + this.meteorSize) {
+    if (this.count > this.neoPixelCount + this.meteorSize) {
       this.count = 0;
     }
 

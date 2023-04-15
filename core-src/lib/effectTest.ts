@@ -14,11 +14,11 @@ import setPixel from "./basics/setPixel";
 
 let count = 0;
 
-function createExampleStripe(neopixelCount: number) {
-  const stripe = setAll(0, 0, 0, neopixelCount);
+function createExampleStripe(neoPixelCount: number) {
+  const stripe = setAll(0, 0, 0, neoPixelCount);
 
-  for (let index = 0; index < neopixelCount; index++) {
-    if (index < neopixelCount / 2) {
+  for (let index = 0; index < neoPixelCount; index++) {
+    if (index < neoPixelCount / 2) {
       setPixel(index, stripe, 255, 187, 0);
     } else setPixel(index, stripe, 175, 0, 105);
   }
@@ -32,7 +32,7 @@ const BouncingBallsEffect = new BouncingBalls(255, false, 10, 3, 120);
 const ColorWheelEffect = new ColorWheel(2, 120);
 const FrostyPikeEffect = new FrostyPike(createExampleStripe(120), 5, 120); */
 /* const SnakeEffect = new Snake({
-  neopixelCount: 113,
+  neoPixelCount: 113,
   maxSnakeSize: 20,
   red: 12,
   green: 255,
@@ -43,7 +43,7 @@ const FrostyPikeEffect = new FrostyPike(createExampleStripe(120), 5, 120); */
 }); */
 
 /* const SpaceShuttleEffect = new SpaceShuttle({
-  neopixelCount: 113,
+  neoPixelCount: 113,
   maxSnakeSize: 20,
   red: 12,
   green: 255,
@@ -54,7 +54,7 @@ const FrostyPikeEffect = new FrostyPike(createExampleStripe(120), 5, 120); */
 }); */
 
 const ChristmasEffect = new Bubbles({
-  neopixelCount: 114,
+  neoPixelCount: 114,
   maxParticles: 25,
   fadeValue: 5,
 });
@@ -65,7 +65,7 @@ const MeteorRainEffect = new MeteorRain({
   meteorTrailDecay: 64,
   meteorRandomDecay: 10,
   rainbow: true,
-  neopixelCount: 114,
+  neoPixelCount: 114,
 });
 
 /* const BouncingBallsEffect = new BouncingBalls({
@@ -73,7 +73,7 @@ const MeteorRainEffect = new MeteorRain({
   mirrored: true,
   tail: 10,
   ballCount: 2,
-  neopixelCount: 114,
+  neoPixelCount: 114,
   baseStripe: null,
 }); */
 

@@ -24,13 +24,13 @@ class Snake implements EffectInterface {
   maxSnakeSize: number;
   count: number;
   snakeSize: number;
-  neopixelCount: number;
+  neoPixelCount: number;
   directionHead: number;
   directionTail: number;
   headIndex: number;
   constructor(options: SnakeEffectInterface) {
-    const { appleCount, speed, maxSnakeSize, neopixelCount } = options;
-    this.stripe = setAll(0, 0, 0, neopixelCount);
+    const { appleCount, speed, maxSnakeSize, neoPixelCount } = options;
+    this.stripe = setAll(0, 0, 0, neoPixelCount);
     let spice = random(50) > 25;
     this.headColor = spice
       ? { r: 255, g: 187, b: 0 }
@@ -39,15 +39,15 @@ class Snake implements EffectInterface {
       ? { r: 255, g: 187, b: 0 }
       : { r: 175, g: 0, b: 105 };
     this.apples = [];
-    this.poisonAppleIndex = random(neopixelCount);
+    this.poisonAppleIndex = random(neoPixelCount);
     for (let i = 0; i < appleCount; i++) {
-      this.apples.push(random(neopixelCount));
+      this.apples.push(random(neoPixelCount));
     }
     this.speed = speed;
     this.maxSnakeSize = maxSnakeSize;
     this.count = 0;
     this.snakeSize = 1;
-    this.neopixelCount = neopixelCount;
+    this.neoPixelCount = neoPixelCount;
     this.directionHead = 1;
     this.directionTail = 1;
     this.headIndex = 0;
@@ -68,7 +68,7 @@ class Snake implements EffectInterface {
     this.count++;
 
     if (this.count % this.speed === 0) {
-      //this.stripe = setAll(0, 0, 0, this.neopixelCount);
+      //this.stripe = setAll(0, 0, 0, this.neoPixelCount);
 
       //render apples
       for (let i = 0; i < this.apples.length; i++) {
@@ -103,13 +103,13 @@ class Snake implements EffectInterface {
           let lastBlackPixel =
             this.headIndex + this.snakeSize * this.directionHead * -1;
 
-          if (lastBlackPixel > this.neopixelCount)
+          if (lastBlackPixel > this.neoPixelCount)
             lastBlackPixel =
-              this.neopixelCount - (lastBlackPixel - this.neopixelCount);
+              this.neoPixelCount - (lastBlackPixel - this.neoPixelCount);
 
           if (lastBlackPixel < 0)
             lastBlackPixel =
-              0 + this.neopixelCount - (lastBlackPixel + this.neopixelCount);
+              0 + this.neoPixelCount - (lastBlackPixel + this.neoPixelCount);
 
           this.stripe = setPixel(lastBlackPixel, this.stripe, 0, 0, 0);
         }
@@ -118,17 +118,17 @@ class Snake implements EffectInterface {
         if (this.apples.includes(this.headIndex)) {
           this.snakeSize++;
           this.apples = this.apples.filter((a) => a !== this.headIndex);
-          this.apples.push(random(this.neopixelCount));
+          this.apples.push(random(this.neoPixelCount));
         }
       } else if (this.headIndex === this.poisonAppleIndex) {
         this.snakeSize = 1;
-        this.poisonAppleIndex = random(this.neopixelCount);
+        this.poisonAppleIndex = random(this.neoPixelCount);
       }
 
       this.headIndex = this.directionHead + this.headIndex;
     }
 
-    if (this.headIndex >= this.neopixelCount || this.headIndex <= 0) {
+    if (this.headIndex >= this.neoPixelCount || this.headIndex <= 0) {
       this.directionHead = this.directionHead * -1;
     }
 

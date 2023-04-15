@@ -13,15 +13,15 @@ export interface AnimationEffectInterface
 class Animation implements EffectInterface {
   count: number;
   frames: any;
-  neopixelCount: any;
+  neoPixelCount: any;
   fps: number;
   lastFrameTime: number;
   constructor(options: AnimationEffectInterface) {
-    const { frames, fps = 10, neopixelCount } = options;
+    const { frames, fps = 10, neoPixelCount } = options;
     this.count = 0;
-    this.neopixelCount = neopixelCount;
+    this.neoPixelCount = neoPixelCount;
     this.frames = frames.map((frame: string[]) => {
-      return reScale(frame, neopixelCount);
+      return reScale(frame, neoPixelCount);
     });
     this.fps = fps;
     this.lastFrameTime = Date.now();

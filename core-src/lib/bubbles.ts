@@ -23,9 +23,9 @@ class Bubbles implements EffectInterface {
   maxPix: number;
   fadeValue: number;
   stripe: string[];
-  neopixelCount: number;
+  neoPixelCount: number;
   constructor(options: BubblesEffectInterface) {
-    const { neopixelCount, maxParticles, fadeValue, colors } = options;
+    const { neoPixelCount, maxParticles, fadeValue, colors } = options;
 
     this.colors = colors || ["#24D024", "#EA0D0D"];
 
@@ -34,7 +34,7 @@ class Bubbles implements EffectInterface {
     });
 
     this.count = 0;
-    this.pixStates = Array(neopixelCount).fill({
+    this.pixStates = Array(neoPixelCount).fill({
       value: 0,
       color: { h: 0, s: 0, v: 0 },
       state: "OFF",
@@ -42,8 +42,8 @@ class Bubbles implements EffectInterface {
     this.maxPix = maxParticles || 10;
     this.fadeValue = fadeValue || 10;
 
-    this.stripe = setAll(0, 0, 0, neopixelCount);
-    this.neopixelCount = neopixelCount;
+    this.stripe = setAll(0, 0, 0, neoPixelCount);
+    this.neoPixelCount = neoPixelCount;
   }
 
   fadeToBlack(pixel: number, stripe: string[], fadeValue: number) {
@@ -91,9 +91,9 @@ class Bubbles implements EffectInterface {
 
   render() {
     if (this.maxPix - this.countPix() > 0)
-      this.startPixel(random(this.neopixelCount));
+      this.startPixel(random(this.neoPixelCount));
 
-    for (let index = 0; index < this.neopixelCount; index++) {
+    for (let index = 0; index < this.neoPixelCount; index++) {
       const pixState = { ...this.pixStates[index] };
       if (pixState.state === "FILL") {
         this.fadeToLight(index, this.stripe, this.fadeValue + random(10));

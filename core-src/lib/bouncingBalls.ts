@@ -37,10 +37,10 @@ class BauncingBalls implements EffectInterface {
   clockTimeSinceLastBounce: any[];
   dampening: any[];
   position: any[];
-  neopixelCount: number;
+  neoPixelCount: number;
   StartHeight: any;
   constructor(options: BauncingBallsEffectInterface) {
-    const { ballMode, mirrored, tail, ballCount, neopixelCount, baseStripe } =
+    const { ballMode, mirrored, tail, ballCount, neoPixelCount, baseStripe } =
       options;
     this.myColors = [
       { r: 255, g: 187, b: 0 },
@@ -63,13 +63,13 @@ class BauncingBalls implements EffectInterface {
       0,
       0,
       0,
-      neopixelCount
+      neoPixelCount
     );
     this.baseStripe = /* baseStripe ? baseStripe :  */ setAll(
       0,
       0,
       0,
-      neopixelCount
+      neoPixelCount
     );
     this.gravity = -9.81;
     this.startHeight = 1;
@@ -81,7 +81,7 @@ class BauncingBalls implements EffectInterface {
     this.clockTimeSinceLastBounce = new Array(ballCount);
     this.dampening = new Array(ballCount);
     this.position = new Array(ballCount);
-    this.neopixelCount = neopixelCount;
+    this.neoPixelCount = neoPixelCount;
 
     for (let i = 0; i < ballCount; i++) {
       this.clockTimeSinceLastBounce[i] = millis();
@@ -124,12 +124,12 @@ class BauncingBalls implements EffectInterface {
         }
       }
       this.position[i] = Math.round(
-        (this.height[i] * (this.neopixelCount - 1)) / this.startHeight
+        (this.height[i] * (this.neoPixelCount - 1)) / this.startHeight
       );
     }
 
     if (this.tail > 0) {
-      for (let i = 0; i < this.neopixelCount; i++) {
+      for (let i = 0; i < this.neoPixelCount; i++) {
         this.stripe = this.fadeToBlack(
           i,
           this.stripe,
@@ -148,7 +148,7 @@ class BauncingBalls implements EffectInterface {
       );
       if (this.mirrored) {
         this.stripe = setPixel(
-          this.neopixelCount - this.position[i],
+          this.neoPixelCount - this.position[i],
           this.stripe,
           this.ballColors[i].r,
           this.ballColors[i].b,

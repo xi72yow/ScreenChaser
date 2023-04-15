@@ -17,14 +17,14 @@ class FireFlame implements EffectInterface {
   heat: any[];
   cooling: number;
   sparking: number;
-  neopixelCount: number;
+  neoPixelCount: number;
   constructor(options: FireFlameEffectInterface) {
-    const { cooling, sparking, neopixelCount } = options;
-    this.stripe = setAll(0, 0, 0, neopixelCount);
-    this.heat = new Array(neopixelCount).fill(0);
+    const { cooling, sparking, neoPixelCount } = options;
+    this.stripe = setAll(0, 0, 0, neoPixelCount);
+    this.heat = new Array(neoPixelCount).fill(0);
     this.cooling = cooling;
     this.sparking = sparking;
-    this.neopixelCount = neopixelCount;
+    this.neoPixelCount = neoPixelCount;
   }
 
   setPixelHeatColor(pixel: number, temperature: number) {
@@ -51,8 +51,8 @@ class FireFlame implements EffectInterface {
   render() {
     let cooldown;
     // Step 1.  Cool down every cell a little
-    for (let i = 0; i < this.neopixelCount; i++) {
-      cooldown = random((this.cooling * 10) / this.neopixelCount);
+    for (let i = 0; i < this.neoPixelCount; i++) {
+      cooldown = random((this.cooling * 10) / this.neoPixelCount);
 
       if (cooldown > this.heat[i]) {
         this.heat[i] = 0;
@@ -62,7 +62,7 @@ class FireFlame implements EffectInterface {
     }
 
     // Step 2.  Heat from each cell drifts 'up' and diffuses a little
-    for (let k = this.neopixelCount - 1; k >= 2; k--) {
+    for (let k = this.neoPixelCount - 1; k >= 2; k--) {
       this.heat[k] =
         (this.heat[k - 1] + this.heat[k - 2] + this.heat[k - 2]) / 3;
     }
@@ -75,7 +75,7 @@ class FireFlame implements EffectInterface {
     }
 
     // Step 4.  Convert heat to LED colors
-    for (let j = 0; j < this.neopixelCount; j++) {
+    for (let j = 0; j < this.neoPixelCount; j++) {
       this.setPixelHeatColor(j, this.heat[j]);
     }
 

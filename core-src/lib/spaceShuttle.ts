@@ -14,7 +14,7 @@ export interface SpaceShuttleEffectInterface
     SpaceShuttleInterface {}
 
 class SpaceShuttle implements EffectInterface {
-  neopixelCount: number;
+  neoPixelCount: number;
   count: number;
   spaseShuttleLength: number;
   shuttlePos: number;
@@ -24,15 +24,15 @@ class SpaceShuttle implements EffectInterface {
   stripe: string[];
   direction: number;
   constructor(options: SpaceShuttleEffectInterface) {
-    const { baseStripe, delay, neopixelCount } = options;
-    this.neopixelCount = neopixelCount;
+    const { baseStripe, delay, neoPixelCount } = options;
+    this.neoPixelCount = neoPixelCount;
     this.count = 0;
     this.spaseShuttleLength = 3;
     this.shuttlePos = 60;
     this.thrust = 15;
     this.baseStripe = baseStripe;
     this.shuttleColor = { r: 255, g: 255, b: 255 };
-    this.stripe = setAll(0, 0, 0, neopixelCount);
+    this.stripe = setAll(0, 0, 0, neoPixelCount);
     this.direction = 1;
   }
 
@@ -77,13 +77,13 @@ class SpaceShuttle implements EffectInterface {
   }
 
   render() {
-    this.stripe = setAll(0, 0, 0, this.neopixelCount);
+    this.stripe = setAll(0, 0, 0, this.neoPixelCount);
     this.count++;
     this.renderSpaceShuttle(this.shuttlePos);
 
     this.shuttlePos = this.shuttlePos + this.direction;
 
-    if (this.shuttlePos > this.neopixelCount) {
+    if (this.shuttlePos > this.neoPixelCount) {
       this.direction = -1;
       this.thrust = 10;
     }

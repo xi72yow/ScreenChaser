@@ -14,18 +14,18 @@ class ColorWheel implements EffectInterface {
   count: number;
   stripe: string[];
   speed: number;
-  neopixelCount: number;
+  neoPixelCount: number;
   /**
    *
    * @param {number} speed animation speed
-   * @param {number} neopixelCount number of neopixels
+   * @param {number} neoPixelCount number of neopixels
    */
   constructor(options: ColorWheelEffectInterface) {
-    const { speed, neopixelCount } = options;
+    const { speed, neoPixelCount } = options;
     this.count = 0;
-    this.stripe = setAll(0, 0, 0, neopixelCount);
+    this.stripe = setAll(0, 0, 0, neoPixelCount);
     this.speed = speed;
-    this.neopixelCount = neopixelCount;
+    this.neoPixelCount = neoPixelCount;
   }
 
   Wheel(WheelPos: number) {
@@ -45,9 +45,9 @@ class ColorWheel implements EffectInterface {
     this.count++;
     this.count = this.speed + this.count;
     if (this.count < 256 * 5) {
-      for (let i = 0; i < this.neopixelCount; i++) {
+      for (let i = 0; i < this.neoPixelCount; i++) {
         let color = this.Wheel(
-          ((i * 256) / this.neopixelCount + this.count) & 255
+          ((i * 256) / this.neoPixelCount + this.count) & 255
         );
         this.stripe = setPixel(i, this.stripe, color.r, color.g, color.b);
       }

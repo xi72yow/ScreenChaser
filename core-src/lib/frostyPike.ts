@@ -16,22 +16,22 @@ class FrostyPike implements EffectInterface {
   count: number;
   baseStripe: Array<string>;
   stripe: Array<string>;
-  neopixelCount: number;
+  neoPixelCount: number;
   delay: number;
   delayCount: number;
   constructor(options: FrostyPikeEffectInterface) {
-    const { baseStripe, delay, neopixelCount } = options;
+    const { baseStripe, delay, neoPixelCount } = options;
     this.count = 0;
-    this.baseStripe = baseStripe ? baseStripe : setAll(0, 0, 0, neopixelCount);
+    this.baseStripe = baseStripe ? baseStripe : setAll(0, 0, 0, neoPixelCount);
     this.stripe = this.baseStripe;
-    this.neopixelCount = neopixelCount;
+    this.neoPixelCount = neoPixelCount;
     this.delay = delay;
     this.delayCount = 0;
   }
 
   render() {
     this.stripe = [...this.baseStripe];
-    let pixel = random(this.neopixelCount);
+    let pixel = random(this.neoPixelCount);
     if (this.delayCount % this.delay === 0) {
       this.stripe = setPixel(pixel, this.stripe, 255, 255, 255);
       return this.stripe;

@@ -100,7 +100,7 @@ class Manager implements ManagerInterface {
   }
 
   setAnimation(foundIndex: number, config: any) {
-    const neopixelCount = config.device.neoPixelCount;
+    const neoPixelCount = config.device.neoPixelCount;
     const index = foundIndex === -1 ? this.chasers.length : foundIndex;
     clearInterval(this.chasers[index].interval);
 
@@ -109,7 +109,7 @@ class Manager implements ManagerInterface {
         const { meteorRain } = config;
         this.chasers[index].runningEffect = new MeteorRain({
           ...meteorRain,
-          neopixelCount,
+          neoPixelCount,
         });
         break;
 
@@ -117,7 +117,7 @@ class Manager implements ManagerInterface {
         const { bouncingBalls } = config;
         this.chasers[index].runningEffect = new BouncingBalls({
           ...bouncingBalls,
-          neopixelCount,
+          neoPixelCount,
           baseStripe: this.prepareBaseStipe(bouncingBalls.baseStripe),
         });
         break;
@@ -126,7 +126,7 @@ class Manager implements ManagerInterface {
         const { fireFlame } = config;
         this.chasers[index].runningEffect = new FireFlame({
           ...fireFlame,
-          neopixelCount,
+          neoPixelCount,
         });
         break;
 
@@ -134,7 +134,7 @@ class Manager implements ManagerInterface {
         const { colorWheel } = config;
         this.chasers[index].runningEffect = new ColorWheel({
           ...colorWheel,
-          neopixelCount,
+          neoPixelCount,
         });
         break;
 
@@ -142,7 +142,7 @@ class Manager implements ManagerInterface {
         const { frostyPike } = config;
         this.chasers[index].runningEffect = new FrostyPike({
           ...frostyPike,
-          neopixelCount,
+          neoPixelCount,
           baseStripe: this.prepareBaseStipe(frostyPike.baseStripe),
         });
         break;
@@ -151,7 +151,7 @@ class Manager implements ManagerInterface {
         const { dyingLights } = config;
         this.chasers[index].runningEffect = new DyingLights({
           ...dyingLights,
-          neopixelCount,
+          neoPixelCount,
         });
         break;
 
@@ -159,7 +159,7 @@ class Manager implements ManagerInterface {
         const { snake } = config;
         this.chasers[index].runningEffect = new Snake({
           ...snake,
-          neopixelCount,
+          neoPixelCount,
         });
         break;
 
@@ -167,7 +167,7 @@ class Manager implements ManagerInterface {
         const { bubbles } = config;
         this.chasers[index].runningEffect = new Bubbles({
           ...bubbles,
-          neopixelCount,
+          neoPixelCount,
         });
         break;
 
@@ -175,7 +175,7 @@ class Manager implements ManagerInterface {
         const { animation } = config;
         this.chasers[index].runningEffect = new Animation({
           ...animation,
-          neopixelCount,
+          neoPixelCount,
         });
         break;
 

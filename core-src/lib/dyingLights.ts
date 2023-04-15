@@ -20,19 +20,19 @@ class DyingLights implements EffectInterface {
   green: number;
   blue: number;
   count: number;
-  neopixelCount: number;
+  neoPixelCount: number;
   constructor(options: DyingLightsEffectInterface) {
-    const { neopixelCount, lightColor = "#9B03FF" } = options;
+    const { neoPixelCount, lightColor = "#9B03FF" } = options;
 
     const { r: red, g: green, b: blue } = hexToRgb(lightColor.substring(1));
 
-    this.baseStripe = setAll(red, green, blue, neopixelCount);
-    this.stripe = setAll(red, green, blue, neopixelCount);
+    this.baseStripe = setAll(red, green, blue, neoPixelCount);
+    this.stripe = setAll(red, green, blue, neoPixelCount);
     this.red = red;
     this.green = green;
     this.blue = blue;
     this.count = 0;
-    this.neopixelCount = neopixelCount;
+    this.neoPixelCount = neoPixelCount;
   }
   flickerRed() {
     this.stripe = [...this.baseStripe];
@@ -41,19 +41,19 @@ class DyingLights implements EffectInterface {
       this.red - flicker,
       this.green,
       this.blue,
-      this.neopixelCount
+      this.neoPixelCount
     );
     return this.stripe;
   }
   flickerValue() {}
   startUvTube() {
     let hsv = rgbToHsv({ r: this.red, g: this.green, b: this.blue });
-    const value = hsv.v / (this.neopixelCount / random(4));
-    for (let index = 0; index < this.neopixelCount / 2; index++) {
+    const value = hsv.v / (this.neoPixelCount / random(4));
+    for (let index = 0; index < this.neoPixelCount / 2; index++) {
       let rgb = hsvToRgb({ h: hsv.h, s: hsv.s, v: hsv.v - value * index || 0 });
       this.stripe = setPixel(index, this.stripe, rgb.r, rgb.g, rgb.b);
       this.stripe = setPixel(
-        this.neopixelCount - index,
+        this.neoPixelCount - index,
         this.stripe,
         rgb.r,
         rgb.g,
@@ -78,7 +78,7 @@ class DyingLights implements EffectInterface {
     }
 
     if (this.count % 121 === 1 || this.count % 121 === 25) {
-      this.stripe = setAll(0, 0, 0, this.neopixelCount);
+      this.stripe = setAll(0, 0, 0, this.neoPixelCount);
     }
     if (this.count % 121 === 5 || this.count % 121 === 27) {
       this.stripe = [...this.baseStripe];

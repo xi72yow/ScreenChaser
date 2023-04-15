@@ -14,11 +14,11 @@ export {
 export { default as FireFlame, FireFlameInterface } from "./fireFlame";
 
 // export complex core utils with types
-export { default as Manager, ManagerInterface } from "./manager/manager.js";
+export { default as Manager, ManagerInterface } from "./manager/taskManager";
 export {
   default as DataEmitter,
   DataEmitterInterface,
-} from "./network/dataEmitter.js";
+} from "./network/dataEmitter";
 
 // export some functions
 export { reScale } from "./basics/reScale";
