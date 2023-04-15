@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 
-export default function StripeCreatorPreview({ frames, form, lastIp }) {
+export default function StripeCreatorPreview({ data }) {
   const canvasRef = useRef(null);
   const [context, setContext] = useState(null);
 
@@ -11,8 +11,8 @@ export default function StripeCreatorPreview({ frames, form, lastIp }) {
   const draw = (frameCount) => {
     context.clearRect(0, 0, context.canvas.width, context.canvas.height);
     context.beginPath();
-    for (let i = 0; i < form.values.device.neoPixelCount; i++) {
-      context.fillStyle = frames[frameCount][i];
+    for (let i = 0; i < data[0].length; i++) {
+      context.fillStyle = data[frameCount][i];
 
       context.fillRect(i * pixelSize * 1.1, 0, pixelSize, pixelSize);
     }
@@ -32,36 +32,30 @@ export default function StripeCreatorPreview({ frames, form, lastIp }) {
 
     clearInterval(renderInterval.current);
 
-    if (context && frames) {
+    if (context && data) {
       const render = () => {
         renderInterval.current = setInterval(() => {
           draw(frameCount);
-          if (frameCount === frames.length - 1) {
+          if (frameCount === data.length - 1) {
             frameCount = 0;
           } else frameCount++;
-        }, 1000 / form.values.animation?.fps || 1);
+        }, 1);
       };
       render();
     }
     return () => {
       clearInterval(renderInterval.current);
     };
-  }, [draw, context, frames]);
+  }, [draw, context, data]);
 
   return (
     <React.Fragment>
       <canvas
         ref={canvasRef}
-        width={form.values.device.neoPixelCount * pixelSize * 1.1}
+        width={data[0].length * pixelSize * 1.1}
         height={pixelSize}
-        hidden={
-          frames[0].length !== form.values.device.neoPixelCount &&
-          lastIp === form.values.device.ip
-        }
+        hidden={false}
       />
-      {frames[0].length !== form.values.device.neoPixelCount &&
-        lastIp === form.values.device.ip &&
-        "You changed the number of pixels. Please confirm with the Creator"}
     </React.Fragment>
   );
 }

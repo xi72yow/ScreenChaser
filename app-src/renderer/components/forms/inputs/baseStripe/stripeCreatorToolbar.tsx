@@ -2,30 +2,22 @@ import {
   ActionIcon,
   Box,
   ColorPicker,
-  ColorSwatch,
   Group,
   Pagination,
-  ScrollArea,
   Tooltip,
-  useMantineTheme,
 } from "@mantine/core";
-import { UseFormReturnType } from "@mantine/form";
 import {
   IconColorPicker,
   IconCopy,
-  IconPlayerPlay,
   IconRelationOneToMany,
   IconSquareMinus,
   IconSquarePlus,
   IconTrash,
 } from "@tabler/icons";
 import React from "react";
-import { ConfigInterface } from "../../../database/db";
 import { useConfirm } from "../../../hooks/confirm";
 
 type Props = {
-  path: string;
-  form: UseFormReturnType<ConfigInterface>;
   color: string;
   setColor: (color: string) => void;
   swatches: Array<string>;
@@ -35,21 +27,16 @@ type Props = {
   setActiveFrame: React.Dispatch<React.SetStateAction<number>>;
   activeFrame: number;
   frames: Array<Array<string>>;
-  singleFrame: boolean;
+  singleFrame?: boolean;
 };
 
 const insert = (index, arr, newItem) => [
-  // part of the array before the specified index
   ...arr.slice(0, index),
-  // inserted item
   newItem,
-  // part of the array after the specified index
   ...arr.slice(index),
 ];
 
 export default function StripeCreatorToolbar({
-  path,
-  form,
   color,
   setColor,
   swatches,
@@ -208,7 +195,7 @@ export default function StripeCreatorToolbar({
           <Tooltip label="Add next Frame" key={"plus-frame"}>
             <ActionIcon
               size={"lg"}
-              onClick={() => handleAddFrame(form.values.device.neoPixelCount)}
+              onClick={() => handleAddFrame(frames[0].length)}
             >
               <IconSquarePlus />
             </ActionIcon>
@@ -217,7 +204,7 @@ export default function StripeCreatorToolbar({
           <Tooltip label="Duplicate Frame as Next" key={"dup-frame"}>
             <ActionIcon
               size={"lg"}
-              onClick={() => handleDupFrame(form.values.device.neoPixelCount)}
+              onClick={() => handleDupFrame(frames[0].length)}
             >
               <IconCopy />
             </ActionIcon>

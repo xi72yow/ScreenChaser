@@ -1,21 +1,18 @@
 import { ActionIcon, Group, Modal } from "@mantine/core";
-import { UseFormReturnType } from "@mantine/form";
-import { useHotkeys } from "@mantine/hooks";
+import { useHotkeys, useLocalStorage } from "@mantine/hooks";
 import { PerspectiveCamera } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { IconPalette } from "@tabler/icons";
 import React, { useEffect, useRef, useState } from "react";
 import { reScale } from "screenchaser-core";
-import { ConfigInterface } from "../../../database/db";
 import StripeCreatorToolbar from "./stripeCreatorToolbar";
 
 interface BaseStripeInputProps {
-  form: UseFormReturnType<ConfigInterface>;
   path: string;
-  defaultValue: Array<string> | Array<Array<string>>;
+  data: Array<Array<string>>;
   singleFrame?: boolean;
-  lastIp: string;
-  setLastIp: React.Dispatch<React.SetStateAction<string>>;
+  handleChange: (path, data: Array<Array<string>>) => void;
+  currentNeoPixelCount: number;
 }
 
 function LED(props) {
@@ -62,7 +59,7 @@ function LED(props) {
   );
 }
 
-function prepareStripe(defaultValue, neoPixelCount) {
+export function prepareStripe(defaultValue, neoPixelCount) {
   let preparedStripe = [...defaultValue];
   const reScaledStripe = reScale(preparedStripe, neoPixelCount, false);
   if (reScaledStripe.length > 0)
@@ -71,38 +68,29 @@ function prepareStripe(defaultValue, neoPixelCount) {
 }
 
 export default function StripeCreator({
-  form,
   path,
-  defaultValue,
-  singleFrame = true,
-  lastIp,
-  setLastIp,
+  data,
+  handleChange,
+  singleFrame,
+  currentNeoPixelCount,
 }: BaseStripeInputProps) {
   const [activeFrame, setActiveFrame] = useState(1);
-
   const [frames, setFrames] = useState(
-    defaultValue.map((frame) => {
-      return prepareStripe(frame, form.values.device.neoPixelCount);
+    data.map((frame) => {
+      if (currentNeoPixelCount === null) return frame;
+      else return prepareStripe(frame, currentNeoPixelCount);
     })
   );
 
   useEffect(() => {
-    if (lastIp === form.values.device.ip) {
-      setFrames((prev) => {
-        return prev.map((frame, index) => {
-          return prepareStripe(frame, form.values.device.neoPixelCount);
-        });
+    setFrames((prev) => {
+      return prev.map((frame, index) => {
+        if (currentNeoPixelCount === null) return frame;
+        else return prepareStripe(frame, currentNeoPixelCount);
       });
-    } else {
-      setFrames(
-        defaultValue.map((frame) => {
-          return prepareStripe(frame, form.values.device.neoPixelCount);
-        })
-      );
-      setLastIp(form.values.device.ip);
-    }
+    });
     setChangeColorEvent((prev) => !prev);
-  }, [form.values.device.neoPixelCount, form.values.device.ip]);
+  }, [currentNeoPixelCount]);
 
   useEffect(() => {
     setChangeColorEvent((prev) => !prev);
@@ -112,54 +100,42 @@ export default function StripeCreator({
   const [color, setColor] = useState("#9B03FF");
   const [changeColorEvent, setChangeColorEvent] = useState(false);
 
-  const [swatches, setSwatches] = useState(form.values.globals.swatches);
+  const swatchesKey = "usr-swatches";
 
-  useEffect(() => {
-    form.setFieldValue("globals.swatches", swatches);
-  }, [swatches]);
+  const [swatches, setSwatches] = useLocalStorage({
+    key: swatchesKey,
+    defaultValue: ["#9B03FF", "#FF0000", "#00FF00", "#0000FF"],
+  });
 
-  const cameraPosKeyX = "cameraPosX" + path + form.values.device.ip;
-  const cameraPosKeyZ = "cameraPosZ" + path + form.values.device.ip;
+  const cameraPosKeyX = "cameraPosX" + path;
+  const cameraPosKeyZ = "cameraPosZ" + path;
 
-  const [cameraPosX, setCameraPosX] = useState(
-    localStorage.getItem(cameraPosKeyX)
-      ? parseInt(localStorage.getItem(cameraPosKeyX))
-      : 0
-  );
-  const [cameraPosZ, setCameraPosZ] = useState(
-    localStorage.getItem(cameraPosKeyZ)
-      ? parseInt(localStorage.getItem(cameraPosKeyZ))
-      : 5
-  );
+  const [cameraPosX, setCameraPosX] = useLocalStorage({
+    key: cameraPosKeyX,
+    defaultValue: 0,
+  });
+
+  const [cameraPosZ, setCameraPosZ] = useLocalStorage({
+    key: cameraPosKeyZ,
+    defaultValue: 5,
+  });
 
   useHotkeys([
     ["A", () => setCameraPosX(cameraPosX + 1)],
     ["D", () => setCameraPosX(cameraPosX - 1)],
     ["W", () => cameraPosZ > 4 && setCameraPosZ(cameraPosZ - 1)],
     ["S", () => cameraPosZ < 30 && setCameraPosZ(cameraPosZ + 1)],
-    [
-      "Q",
-      () => !singleFrame && activeFrame > 1 && setActiveFrame(activeFrame - 1),
-    ],
-    [
-      "E",
-      () =>
-        !singleFrame &&
-        activeFrame < frames.length &&
-        setActiveFrame(activeFrame + 1),
-    ],
+    ["Q", () => activeFrame > 1 && setActiveFrame(activeFrame - 1)],
+    ["E", () => activeFrame < frames.length && setActiveFrame(activeFrame + 1)],
     /*  ["ctrl+S", () => handleSave()], */
   ]);
 
   function handleClose() {
     setOpen(false);
-    localStorage.setItem(cameraPosKeyX, cameraPosX.toString());
-    localStorage.setItem(cameraPosKeyZ, cameraPosZ.toString());
   }
 
   function handleSave() {
-    if (singleFrame) form.setFieldValue(path, frames[activeFrame - 1]);
-    else form.setFieldValue(path, frames);
+    handleChange(path, frames);
   }
 
   return (
@@ -192,7 +168,7 @@ export default function StripeCreator({
             <directionalLight color="red" position={[0, 0, 5]} />
             {frames[activeFrame - 1].map((defaultColor, i) => (
               <LED
-                key={i + form.values.device.neoPixelCount + "led"}
+                key={i + "led"}
                 index={i}
                 changeColor={changeColorEvent}
                 position={[i * 1.2, 0, 0]}
@@ -206,8 +182,7 @@ export default function StripeCreator({
           </Canvas>
         </Group>
         <StripeCreatorToolbar
-          path={path}
-          form={form}
+          singleFrame={singleFrame}
           swatches={swatches}
           setSwatches={setSwatches}
           color={color}
@@ -217,7 +192,6 @@ export default function StripeCreator({
           activeFrame={activeFrame}
           frames={frames}
           setFrames={setFrames}
-          singleFrame={singleFrame}
         ></StripeCreatorToolbar>
       </Modal>
       <ActionIcon

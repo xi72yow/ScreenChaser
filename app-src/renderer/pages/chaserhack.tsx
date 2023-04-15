@@ -1,7 +1,7 @@
 import { useLiveQuery } from "dexie-react-hooks";
 import { ipcRenderer } from "electron";
 import React, { useEffect, useRef } from "react";
-import { db } from "../components/database/db";
+import { TaskTypes, db } from "../components/database/db";
 import { setAll, rgbToHex } from "screenchaser-core";
 import {
   createDownScaleCore,
@@ -147,6 +147,12 @@ function Next() {
 
   const configs = useLiveQuery(
     async () => {
+      const videoChaserTaskId = await db.tasks
+        .where("type")
+        .equals(TaskTypes.chaser)
+        .first()
+        .then((task) => task.id);
+
       return await db.configs.toArray();
     },
     null,

@@ -13,7 +13,7 @@ export interface BouncingBallsInterface {
   ballCount: number;
   baseStripe: string[];
 }
-///g
+
 export interface BauncingBallsEffectInterface
   extends CoreChaserEffectInterface,
     BouncingBallsInterface {}
@@ -59,8 +59,18 @@ class BauncingBalls implements EffectInterface {
     this.tail = tail;
     this.speed = 3; //slows down the animation
     this.ballCount = ballCount;
-    this.stripe = baseStripe ? baseStripe : setAll(0, 0, 0, neopixelCount);
-    this.baseStripe = baseStripe ? baseStripe : setAll(0, 0, 0, neopixelCount);
+    this.stripe = /* baseStripe ? baseStripe : */ setAll(
+      0,
+      0,
+      0,
+      neopixelCount
+    );
+    this.baseStripe = /* baseStripe ? baseStripe :  */ setAll(
+      0,
+      0,
+      0,
+      neopixelCount
+    );
     this.gravity = -9.81;
     this.startHeight = 1;
     this.impactVelocityStart = Math.sqrt(-2 * this.gravity * this.startHeight);

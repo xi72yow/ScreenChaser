@@ -9,16 +9,19 @@ import {
   TableNames,
   TaskTableInterface,
   TaskCodes,
+  dbBool,
 } from "../database/db";
 import useStyles from "../styles/styles";
 import GlobalSettings from "./globalSettings";
 
 type ToolbarProps = {
+  data: any;
   selectedTaskId: number;
   selectedDeviceId: number;
 };
 
 export default function Toolbar({
+  data,
   selectedTaskId,
   selectedDeviceId,
 }: ToolbarProps) {
@@ -77,7 +80,7 @@ export default function Toolbar({
                     taskId: selectedTaskId,
                   });
 
-                  if (currentDevice.exclude)
+                  if (currentDevice.exclude === dbBool.true)
                     showNotification({
                       title: "Saved Configuration",
                       message:

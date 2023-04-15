@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Autocomplete from "./inputs/autocomplete";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "../database/db";
@@ -29,6 +29,9 @@ import selectTester from "./inputs/selectTester";
 import select from "./inputs/select";
 import sourcePickerTester from "./inputs/sourcePickerTester";
 import sourcePicker from "./inputs/sourcePicker";
+import stripeInputTester from "./inputs/stripeInputTester";
+import stripeInput from "./inputs/stripeInput";
+import { FormContext, FormProvider } from "./formContext";
 
 const schema = {
   type: "object",
@@ -53,6 +56,10 @@ const schema = {
     },
     device: {
       type: "string",
+    },
+    baseStripe: {
+      type: "array",
+      singleFrame: true,
     },
   },
 };
@@ -93,6 +100,12 @@ const uischema = {
       scope: "#/properties/device",
       options: { device: true },
     },
+    {
+      type: "Control",
+      label: "Base Stripe",
+      scope: "#/properties/baseStripe",
+      options: { stripe: true },
+    },
   ],
 };
 const initialData = {
@@ -102,16 +115,19 @@ const initialData = {
   colors: ["#9B03FF", "#9B03FF", "#9B03FF", "#9B03FF", "#9B03FF"],
   ballMode: "foo",
   device: "food3l1m173r",
+  baseStripe: [["#9B03FF", "#9B03FF", "#9B03FF", "#9B03FF", "#9B03FF"]],
 };
 
 type Props = {
   selectedDeviceId: number;
   selectedTaskId: number;
+  setData: (data: any) => void;
 };
 
 export default function FormRenderer({
   selectedDeviceId,
   selectedTaskId,
+  setData,
 }: Props) {
   const configs = useLiveQuery(
     async () => {
@@ -125,16 +141,19 @@ export default function FormRenderer({
     []
   );
 
-  const currentTaskCode = useLiveQuery(
+  const currentTask = useLiveQuery(
     async () => {
-      return (await db.tasks.get(selectedTaskId)).taskCode;
+      return db.tasks.get(selectedTaskId);
     },
     [selectedTaskId],
     null
   );
 
-  const [data, setData] = useState(initialData);
-  console.log("🚀 ~ file: formRenderer.tsx:100 ~ data:", data);
+  const { setSelectedDeviceIdContext } = useContext(FormContext);
+
+  useEffect(() => {
+    setSelectedDeviceIdContext && setSelectedDeviceIdContext(selectedDeviceId);
+  }, [selectedDeviceId]);
 
   // list of renderers declared outside the App component
   const renderers = [
@@ -146,103 +165,24 @@ export default function FormRenderer({
     { tester: swatchesTester, renderer: swatches },
     { tester: selectTester, renderer: select },
     { tester: sourcePickerTester, renderer: sourcePicker },
+    { tester: stripeInputTester, renderer: stripeInput },
   ];
 
+  if (currentTask === null) {
+    return <div>loading</div>;
+  }
+
   return (
-    <>
+    <FormProvider>
       <Autocomplete data={configs}></Autocomplete>
       <JsonForms
-        schema={schema}
-        uischema={uischema}
-        data={data}
+        schema={currentTask.schema}
+        uischema={currentTask.uiSchema}
+        data={currentTask.defaultData}
         renderers={renderers}
         cells={vanillaCells}
         onChange={({ data }) => setData(data)}
       />
-      {(() => {
-        switch (currentTaskCode) {
-          /*           case "meteorRain":
-            return (
-              <MeteorRainForm
-                form={form}
-                key={selectedDeviceId + "meteorRain"}
-              ></MeteorRainForm>
-            );
-          case "bouncingBalls":
-            return (
-              <BouncingBallsForm
-                form={form}
-                key={selectedDeviceId + "bouncingBalls"}
-              ></BouncingBallsForm>
-            );
-          case "fireFlame":
-            return (
-              <FireFlameForm
-                form={form}
-                key={selectedDeviceId + "fireFlame"}
-              ></FireFlameForm>
-            );
-          case "colorWheel":
-            return (
-              <ColorWheelForm
-                form={form}
-                key={selectedDeviceId + "colorWheel"}
-              ></ColorWheelForm>
-            );
-          case "frostyPike":
-            return (
-              <FrostyPikeForm
-                form={form}
-                key={selectedDeviceId + "frostyPike"}
-              ></FrostyPikeForm>
-            );
-          case "dyingLights":
-            return (
-              <DyingLightsForm
-                form={form}
-                key={selectedDeviceId + "dyingLights"}
-              ></DyingLightsForm>
-            );
-          case "snake":
-            return (
-              <SnakeForm
-                key={selectedDeviceId + "snake"}
-                form={form}
-              ></SnakeForm>
-            );
-                case "chaser":
-            return (
-              <ChaserForm
-                key={selectedDeviceId + "chaser"}
-                selectedDevice={selectedDevice}
-                form={form}
-              ></ChaserForm>
-            ); 
-          case "bubbles":
-            return (
-              <BubblesForm
-                key={selectedDeviceId + "bubbles"}
-                form={form}
-              ></BubblesForm>
-            );
-          case "staticLight":
-            return (
-              <StaticLightForm
-                key={selectedDeviceId + "staticLight"}
-                form={form}
-              ></StaticLightForm>
-            );
-          case "animation":
-            return (
-              <AnimationForm
-                key={selectedDeviceId + "staticLight"}
-                form={form}
-              ></AnimationForm>
-            ); */
-          default:
-            return <div>Not implemented</div>;
-        }
-      })()}
-    </>
+    </FormProvider>
   );
 }

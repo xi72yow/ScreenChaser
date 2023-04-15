@@ -15,40 +15,26 @@ import {
   NotificationsProvider,
   showNotification,
 } from "@mantine/notifications";
-import React, { useEffect, useRef, useState } from "react";
-import Dashboard from "../components/boards/dashboard";
-import BouncingBallsForm from "../components/forms/bouncingBallsForm";
-import ColorWheelForm from "../components/forms/colorWheelForm";
-import DyingLightsForm from "../components/forms/dyingLightsForm";
-import FireFlameForm from "../components/forms/fireFlameForm";
-import FrostyPikeForm from "../components/forms/frostyPikeForm";
-import MeteorRainForm from "../components/forms/meteorRainForm";
-import SnakeForm from "../components/forms/snakeForm";
+import React from "react";
 import HeaderApp from "../components/header/header";
 import NavbarNested from "../components/navbar/navbar";
 
 import { IconAlertCircle } from "@tabler/icons";
 import { useLiveQuery } from "dexie-react-hooks";
-import { ipcRenderer, shell } from "electron";
+import { shell } from "electron";
 import { ErrorBoundary } from "react-error-boundary";
-import { setTimeout } from "timers";
+import package_json from "../../package.json";
+import Library from "../components/boards/library";
 import {
-  ConfigInterface,
-  db,
   DeviceTableInterface,
-  initilalValues,
   TaskCodes,
   TaskTableInterface,
+  db,
 } from "../components/database/db";
-import AnimationForm from "../components/forms/animationForm";
-import BubblesForm from "../components/forms/bubblesForm";
-import StaticLightForm from "../components/forms/staticLightForm";
+import FormRenderer from "../components/forms/formRenderer";
 import ConfirmationContextProvider from "../components/hooks/confirm";
 import Toolbar from "../components/toolbar/toolbar";
-import package_json from "../../package.json";
-import ChaserForm from "../components/forms/chaserForm";
-import Library from "../components/boards/library";
-import FormRenderer from "../components/forms/formRenderer";
+import Dashboard from "../components/boards/dashboard";
 
 function checkForUpdates() {
   fetch(
@@ -105,6 +91,7 @@ function ErrorFallback({ error, resetErrorBoundary }) {
 function App() {
   const [selectedDeviceId, setSelectedDeviceId] = React.useState<number>(1);
   const [selectedTaskId, setSelectedTaskiD] = React.useState<number>(1);
+  const [data, setData] = React.useState({});
 
   const currentDevice: DeviceTableInterface = useLiveQuery(
     async () => {
@@ -163,6 +150,7 @@ function App() {
       }
       footer={
         <Toolbar
+          data={data}
           selectedTaskId={selectedTaskId}
           selectedDeviceId={selectedDeviceId}
         ></Toolbar>
@@ -178,8 +166,8 @@ function App() {
     >
       {(() => {
         switch (currentTask?.taskCode) {
-          /*      case "dashboard":
-            return <Dashboard form={form}></Dashboard>; */
+          case "dashboard":
+            return <Dashboard></Dashboard>;
 
           case TaskCodes.library:
             return <Library></Library>;
@@ -187,6 +175,7 @@ function App() {
           default:
             return (
               <FormRenderer
+                setData={setData}
                 selectedDeviceId={selectedDeviceId}
                 selectedTaskId={selectedTaskId}
               ></FormRenderer>

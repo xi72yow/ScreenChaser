@@ -14,6 +14,41 @@ import {
   AnimationInterface,
   MeteorRainInterface,
 } from "screenchaser-core";
+import {
+  animationDefaultData,
+  animationSchema,
+  animationUiSchema,
+  bouncingBallsDefaultData,
+  bouncingBallsSchema,
+  bouncingBallsUiSchema,
+  bubblesDefaultData,
+  bubblesSchema,
+  bubblesUiSchema,
+  colorWheelDefaultData,
+  colorWheelSchema,
+  colorWheelUiSchema,
+  dyingLightsDefaultData,
+  dyingLightsSchema,
+  dyingLightsUiSchema,
+  fireFlameDefaultData,
+  fireFlameSchema,
+  fireFlameUiSchema,
+  frostyPikeDefaultData,
+  frostyPikeSchema,
+  frostyPikeUiSchema,
+  meteorRainDefaultData,
+  meteorRainSchema,
+  meteorRainUiSchema,
+  snakeDefaultData,
+  snakeSchema,
+  snakeUiSchema,
+  staticLightDefaultData,
+  staticLightSchema,
+  staticLightUiSchema,
+  videoChaserDefaultData,
+  videoChaserSchema,
+  videoChaserUiSchema,
+} from "./formSchemes";
 
 //defaut reusable values
 const baseStripe = ["#000000"];
@@ -152,7 +187,7 @@ export interface DeviceTableInterface {
   name: string;
   neoPixelCount: number;
   new: boolean;
-  exclude: boolean;
+  exclude: dbBool;
   configId: number;
 }
 
@@ -274,15 +309,16 @@ export class ScreenChaserDB extends Dexie {
   configs!: Table<ConfigsTableInterface>;
   devices!: Table<DeviceTableInterface>;
   tasks!: Table<TaskTableInterface>;
-  users!: Table<UserTableInterface>;
+  usr!: Table<UserTableInterface>;
 
   constructor() {
     super("ScreenChaserDatabase");
     this.version(Number(packageJson.databaseVersion)).stores({
       configs: "++id, deviceId, taskId, name, config",
       devices: "++id, ip, name, neoPixelCount, new, exclude, taskId",
-      tasks: "++id, taskCode, formScheme, label, type, favorite",
-      users: "++id, swatches",
+      tasks:
+        "++id, taskCode, schema, uiSchema, defaultData, label, type, favorite",
+      usrs: "++id",
     });
   }
 }
@@ -296,91 +332,117 @@ db.on("populate", (tx: Transaction) => {
       label: "Dashboard",
       type: TaskTypes.ui,
       favorite: "true",
-      formScheme: {},
+      schema: {},
+      uiSchema: {},
+      defaultData: {},
     },
     {
       taskCode: TaskCodes.library,
       label: "Library",
       type: TaskTypes.ui,
       favorite: "true",
-      formScheme: {},
+      schema: {},
+      uiSchema: {},
+      defaultData: {},
     },
     {
       taskCode: TaskCodes.videoChaser,
       label: "Video Chaser",
       type: TaskTypes.chaser,
       favorite: "true",
-      formScheme: {},
+      schema: { ...videoChaserSchema },
+      uiSchema: { ...videoChaserUiSchema },
+      defaultData: { ...videoChaserDefaultData },
     },
     {
       taskCode: TaskCodes.animation,
       label: "Animation",
       type: TaskTypes.render,
       favorite: "false",
-      formScheme: {},
+      schema: { ...animationSchema },
+      uiSchema: { ...animationUiSchema },
+      defaultData: { ...animationDefaultData },
     },
     {
       taskCode: TaskCodes.staticLight,
       label: "Static Light",
       type: TaskTypes.render,
       favorite: "false",
-      formScheme: {},
+      schema: { ...staticLightSchema },
+      uiSchema: { ...staticLightUiSchema },
+      defaultData: { ...staticLightDefaultData },
     },
     {
       taskCode: TaskCodes.dyingLights,
       label: "Dying Lights",
       type: TaskTypes.effect,
       favorite: "true",
-      formScheme: {},
+      schema: { ...dyingLightsSchema },
+      uiSchema: { ...dyingLightsUiSchema },
+      defaultData: { ...dyingLightsDefaultData },
     },
     {
       taskCode: TaskCodes.frostyPike,
       label: "Frosty Pike",
       type: TaskTypes.effect,
       favorite: "false",
-      formScheme: {},
+      schema: { ...frostyPikeSchema },
+      uiSchema: { ...frostyPikeUiSchema },
+      defaultData: { ...frostyPikeDefaultData },
     },
     {
       taskCode: TaskCodes.colorWheel,
       label: "Color Wheel",
       type: TaskTypes.effect,
       favorite: "false",
-      formScheme: {},
+      schema: { ...colorWheelSchema },
+      uiSchema: { ...colorWheelUiSchema },
+      defaultData: { ...colorWheelDefaultData },
     },
     {
       taskCode: TaskCodes.fireFlame,
       label: "Fire Flame",
       type: TaskTypes.effect,
       favorite: "false",
-      formScheme: {},
+      schema: { ...fireFlameSchema },
+      uiSchema: { ...fireFlameUiSchema },
+      defaultData: { ...fireFlameDefaultData },
     },
     {
       taskCode: TaskCodes.bouncingBalls,
       label: "Bouncing Balls",
       type: TaskTypes.effect,
       favorite: "false",
-      formScheme: {},
+      schema: { ...bouncingBallsSchema },
+      uiSchema: { ...bouncingBallsUiSchema },
+      defaultData: { ...bouncingBallsDefaultData },
     },
     {
       taskCode: TaskCodes.meteorRain,
       label: "Meteor Rain",
       type: TaskTypes.effect,
       favorite: "false",
-      formScheme: {},
+      schema: { ...meteorRainSchema },
+      uiSchema: { ...meteorRainUiSchema },
+      defaultData: { ...meteorRainDefaultData },
     },
     {
       taskCode: TaskCodes.snake,
       label: "Snake",
       type: TaskTypes.effect,
       favorite: "false",
-      formScheme: {},
+      schema: { ...snakeSchema },
+      uiSchema: { ...snakeUiSchema },
+      defaultData: { ...snakeDefaultData },
     },
     {
       taskCode: TaskCodes.bubbles,
       label: "Bubbles",
       type: TaskTypes.effect,
       favorite: "false",
-      formScheme: {},
+      schema: { ...bubblesSchema },
+      uiSchema: { ...bubblesUiSchema },
+      defaultData: { ...bubblesDefaultData },
     },
   ]);
 });

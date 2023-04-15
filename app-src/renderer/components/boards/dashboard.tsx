@@ -128,11 +128,9 @@ export function StatsGrid({ data }: StatsGridProps) {
   );
 }
 
-interface DashboardProps {
-  form: UseFormReturnType<ConfigInterface>;
-}
+interface DashboardProps {}
 
-export default function Dashboard({ form }: DashboardProps) {
+export default function Dashboard({}: DashboardProps) {
   const [dashBoardData, setDashboardData] = useState<
     { details: any; title: string; task: string }[]
   >([]);

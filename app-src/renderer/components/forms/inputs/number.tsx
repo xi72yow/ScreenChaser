@@ -87,7 +87,7 @@ export function QuantityInput({
         sx={{
           fontSize: theme.fontSizes.sm,
           fontWeight: 400,
-          marginTop: "0.5rem",
+          marginTop: "0.1rem",
         }}
       >
         {label}
