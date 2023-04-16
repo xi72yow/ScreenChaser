@@ -84,7 +84,7 @@ export default class TaskManager implements ManagerInterface {
 
     if (chaser) {
       let { config, device, emitter, interval } = chaser;
-      
+
       if (device.exclude === "true") return;
       const { neoPixelCount } = device;
       clearInterval(interval);
@@ -180,7 +180,8 @@ export default class TaskManager implements ManagerInterface {
   sendChasingStripe(deviceId: number, stripe: string[]): void {
     const chaser = this.chasers.get(deviceId);
     if (chaser) {
-      const { emitter, config } = chaser;
+      const { emitter, config, runningEffect } = chaser;
+      if (runningEffect) return;
       if (config.taskCode !== TaskCodes.videoChaser) return;
       emitter.emit(stripe);
     }
@@ -191,7 +192,9 @@ export default class TaskManager implements ManagerInterface {
       const { emitter, interval, device } = chaser;
       const { neoPixelCount } = device;
       clearInterval(interval);
-      emitter.emit(setAll(0, 0, 0, neoPixelCount));
+      setTimeout(() => {
+        emitter.emit(setAll(0, 0, 0, neoPixelCount));
+      }, 100);
     });
   }
 
