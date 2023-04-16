@@ -1,12 +1,13 @@
 import { useLiveQuery } from "dexie-react-hooks";
 import { ipcRenderer } from "electron";
 import React, { useEffect, useRef } from "react";
-import { TaskTypes, db } from "../components/database/db";
+import { TaskCodes, TaskTypes, db } from "../components/database/db";
 import { setAll, rgbToHex } from "screenchaser-core";
 import {
   createDownScaleCore,
   downScaleImageBitmap,
 } from "../components/resizer";
+import { parseSourceString } from "../components/forms/inputs/sourcePicker";
 
 type Props = {};
 
@@ -147,13 +148,19 @@ function Next() {
 
   const configs = useLiveQuery(
     async () => {
-      const videoChaserTaskId = await db.tasks
-        .where("type")
-        .equals(TaskTypes.chaser)
-        .first()
-        .then((task) => task.id);
-
-      return await db.configs.toArray();
+      const allDevices = await db.devices.toArray();
+      const prepardedData = allDevices.map(async (device) => {
+        return {
+          device,
+          config: await db.configs.get(device.configId).catch((e) => {
+            return { taskCode: "nothing to do" };
+          }),
+        };
+      });
+      const devices = await Promise.all(prepardedData);
+      return devices.filter(({ config }) => {
+        return !!config && config?.taskCode === TaskCodes.videoChaser;
+      });
     },
     null,
     []
@@ -164,159 +171,161 @@ function Next() {
       clearInterval(interval.interval)
     );
 
-    if (configs) {
-      configs
-        .filter((config) => config.task.taskCode === "chaser")
-        .forEach(async (config, i) => {
-          console.log(config.chaser.sourceId);
+    configs
+      .filter(({ config }) => {
+        if (!config) return false;
+        return config.taskCode === TaskCodes.videoChaser;
+      })
+      .forEach(async ({ device, config: taskConfig }, i) => {
+        const { config } = taskConfig;
 
-          const videoSelector =
-            "#" + "video" + config.chaser.sourceId.replaceAll(/[\W_]+/g, "");
+        const { name, id } = parseSourceString(config.sourceId);
 
-          setVideoSrcFromMediaStream(config.chaser.sourceId, videoSelector);
+        const { rowB, colR, rowT, colL } = config;
 
-          chaserIntervals.current[i] = {
-            interval: null,
-            downScaleCore: null,
-            canvas: null,
-            setUp: { ...config.chaser.setUp },
-            lastBarDetection: null,
-          };
+        const videoSelector = "#" + "video" + id.replaceAll(/[\W_]+/g, "");
 
-          chaserIntervals.current[i].canvas = new OffscreenCanvas(256, 256);
+        setVideoSrcFromMediaStream(id, videoSelector);
 
-          // this is for black bar detection, if there is only one black bar, i can detect, but i cant repair it xD
-          // in nano setups there is maybe a problem, we will see
-          const width = config.chaser.width < 10 ? 10 : config.chaser.width;
-          const height = config.chaser.height < 10 ? 10 : config.chaser.height;
+        chaserIntervals.current[i] = {
+          interval: null,
+          downScaleCore: null,
+          canvas: null,
+          setUp: {
+            rowB: rowB ? 0 : -1,
+            colR: colR ? 0 : -1,
+            rowT: rowT ? 0 : -1,
+            colL: colL ? 0 : -1,
+          },
+          lastBarDetection: null,
+        };
 
-          chaserIntervals.current[i].downScaleCore = createDownScaleCore(
-            chaserIntervals.current[i].canvas,
+        chaserIntervals.current[i].canvas = new OffscreenCanvas(256, 256);
+
+        // this is for black bar detection, if there is only one black bar, i can detect, but i cant repair it xD
+        // in nano setups there is maybe a problem, we will see
+        const width = config.width < 10 ? 10 : config.width;
+        const height = config.height < 10 ? 10 : config.height;
+
+        chaserIntervals.current[i].downScaleCore = createDownScaleCore(
+          chaserIntervals.current[i].canvas,
+          width,
+          height
+        );
+
+        chaserIntervals.current[i].interval = setInterval(async () => {
+          const video = document.querySelector(
+            videoSelector
+          ) as HTMLVideoElement;
+
+          if (!video || video.videoWidth === 0) return;
+
+          let imageBitmap = await createImageBitmap(video);
+
+          const frame = downScaleImageBitmap(
+            imageBitmap,
             width,
-            height
+            height,
+            chaserIntervals.current[i].downScaleCore
           );
 
-          chaserIntervals.current[i].setUp = { ...config.chaser.setUp };
+          //black bar detection
+          const { rowB, colR, rowT, colL } = chaserIntervals.current[i].setUp;
 
-          chaserIntervals.current[i].interval = setInterval(async () => {
-            const video = document.querySelector(
-              videoSelector
-            ) as HTMLVideoElement;
-
-            if (!video || video.videoWidth === 0) return;
-
-            let imageBitmap = await createImageBitmap(video);
-
-            const frame = downScaleImageBitmap(
-              imageBitmap,
-              width,
-              height,
-              chaserIntervals.current[i].downScaleCore
-            );
-
-            //black bar detection
-            const { rowB, colR, rowT, colL } = chaserIntervals.current[i].setUp;
-            // sorry Mr. Torvalds, i know this is ugly.
-            if (
-              Date.now() - chaserIntervals.current[i].lastBarDetection >
-              15000
-            ) {
-              if (rowB > -1) {
-                //find first black row from bottom
-                const buttonStartRow = height - 1;
-                for (let c = buttonStartRow; c >= 0; c--) {
-                  if (!checkBlackBarRow(frame, width, c)) {
-                    chaserIntervals.current[i].setUp.rowB = buttonStartRow - c;
-                    break;
-                  }
+          // sorry Mr. Torvalds, i know this is ugly.
+          if (
+            Date.now() - chaserIntervals.current[i].lastBarDetection >
+            15000
+          ) {
+            if (rowB > -1) {
+              //find first black row from bottom
+              const buttonStartRow = height - 1;
+              for (let c = buttonStartRow; c >= 0; c--) {
+                if (!checkBlackBarRow(frame, width, c)) {
+                  chaserIntervals.current[i].setUp.rowB = buttonStartRow - c;
+                  break;
                 }
               }
-
-              if (colR > -1) {
-                //find first black col from right
-                const rightStartCol = width - 1;
-                for (let c = rightStartCol; c >= 0; c--) {
-                  if (!checkBlackBarCol(frame, width, c)) {
-                    chaserIntervals.current[i].setUp.colR = rightStartCol - c;
-                    break;
-                  }
-                }
-              }
-
-              if (rowT > -1) {
-                //find first black row from top
-                for (let c = 0; c < height; c++) {
-                  if (!checkBlackBarRow(frame, width, c)) {
-                    chaserIntervals.current[i].setUp.rowT = c;
-                    break;
-                  }
-                }
-              }
-
-              if (colL > -1) {
-                //find first black col from left
-                for (let c = 0; c < width; c++) {
-                  if (!checkBlackBarCol(frame, width, c)) {
-                    chaserIntervals.current[i].setUp.colL = c;
-                    break;
-                  }
-                }
-              }
-              chaserIntervals.current[i].lastBarDetection = Date.now();
             }
 
-            /*const blackL = checkBlackBarCol(frame, width, 0);
+            if (colR > -1) {
+              //find first black col from right
+              const rightStartCol = width - 1;
+              for (let c = rightStartCol; c >= 0; c--) {
+                if (!checkBlackBarCol(frame, width, c)) {
+                  chaserIntervals.current[i].setUp.colR = rightStartCol - c;
+                  break;
+                }
+              }
+            }
+
+            if (rowT > -1) {
+              //find first black row from top
+              for (let c = 0; c < height; c++) {
+                if (!checkBlackBarRow(frame, width, c)) {
+                  chaserIntervals.current[i].setUp.rowT = c;
+                  break;
+                }
+              }
+            }
+
+            if (colL > -1) {
+              //find first black col from left
+              for (let c = 0; c < width; c++) {
+                if (!checkBlackBarCol(frame, width, c)) {
+                  chaserIntervals.current[i].setUp.colL = c;
+                  break;
+                }
+              }
+            }
+            chaserIntervals.current[i].lastBarDetection = Date.now();
+          }
+
+          /*const blackL = checkBlackBarCol(frame, width, 0);
             const blackR = checkBlackBarCol(frame, width, width - 1);
 
             const blackT = checkBlackBarRow(frame, width, 0);
             const blackB = checkBlackBarRow(frame, width, height - 1);*/
 
-            const stripeData = calculateStripeData(
-              frame,
-              width,
-              height,
-              chaserIntervals.current[i].setUp
-            );
+          const stripeData = calculateStripeData(
+            frame,
+            width,
+            height,
+            chaserIntervals.current[i].setUp
+          );
 
-            const adjustedStripeData = adjustStripeDataForSetup(
-              stripeData,
-              config.chaser.startLed,
-              config.chaser.clockWise
-            );
+          const adjustedStripeData = adjustStripeDataForSetup(
+            stripeData,
+            config.startLed,
+            config.clockWise
+          );
 
-            ipcRenderer.send(
-              "CHASER:SEND_STRIPE",
-              adjustedStripeData,
-              config.device.ip
-            );
-          }, 100);
-        });
-    }
+          ipcRenderer.send("CHASER:SEND_STRIPE", adjustedStripeData, device.id);
+        }, 100);
+      });
   }
 
   useEffect(() => {
-    console.log(configs);
     startChasers();
+    console.log(configs);
   }, [configs]);
 
   return (
     <div>
-      {/* filter configs for running chasers and create one video for each uniqe source */}
+      {/* filter configs to create one video for each uniqe source */}
       {configs
-        .filter((config) => config.task.taskCode === "chaser")
-        .filter((value, index, configs) => {
+        .filter(({ config }: any, index, configs) => {
           return (
             configs.findIndex(
-              (v) => v.chaser.sourceId === value.chaser.sourceId
+              (c: any) => c.config.config.sourceId === config.config.sourceId
             ) === index
           );
         })
-        .map((config) => {
+        .map(({ device, config }) => {
+          const { name, id } = parseSourceString(config.config.sourceId);
           return (
-            <div key={config.device.ip + "div"}>
-              <video
-                id={"video" + config.chaser.sourceId.replaceAll(/[\W_]+/g, "")}
-              ></video>
+            <div key={device.ip + "div"}>
+              <video id={"video" + id.replaceAll(/[\W_]+/g, "")}></video>
             </div>
           );
         })}

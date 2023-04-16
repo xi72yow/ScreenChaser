@@ -100,6 +100,8 @@ export default function ConfigPicker({
                 if (config.taskId === selectedTaskId) {
                   setData({ ...config.config });
                   setSelectedConfigId(device.configId);
+                } else {
+                  setSelectedConfigId(-1);
                 }
             })
             .catch(() => null);
@@ -214,6 +216,9 @@ export default function ConfigPicker({
                     )
                     .then((ans) => {
                       if (ans) {
+                        if (selectedConfigId === id) {
+                          setSelectedConfigId(-1);
+                        }
                         db.configs.delete(id);
                         showNotification({
                           message: "Configuration deleted",

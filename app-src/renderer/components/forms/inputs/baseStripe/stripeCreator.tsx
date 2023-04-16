@@ -83,6 +83,15 @@ export default function StripeCreator({
   );
 
   useEffect(() => {
+    setFrames(
+      data.map((frame) => {
+        if (currentNeoPixelCount === null) return frame;
+        else return prepareStripe(frame, currentNeoPixelCount);
+      })
+    );
+  }, [data]);
+
+  useEffect(() => {
     setFrames((prev) => {
       return prev.map((frame, index) => {
         if (currentNeoPixelCount === null) return frame;

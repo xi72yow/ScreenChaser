@@ -32,13 +32,13 @@ type SourcePickerProps = {
   handleChange: (path: string, value: any) => void;
 };
 
-const delimiter = "d3l1m173r";
+export const delimiter = "d3l1m173r";
 
-function createSourceString(source) {
+export function createSourceString(source) {
   return `${source.name}${delimiter}${source.id}`;
 }
 
-function parseSourceString(sourceString) {
+export function parseSourceString(sourceString) {
   const [name, id] = sourceString.split(delimiter);
   if (!name || !id) {
     return { name: "", id: "" };
@@ -79,6 +79,9 @@ export function SourcePicker({
 
   useEffect(() => {
     const item = parseSourceString(data);
+
+    if (item.id === "") return;
+
     getPreview(item.id);
   }, [data]);
 

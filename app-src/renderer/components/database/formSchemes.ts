@@ -308,10 +308,10 @@ export const videoChaserSchema = {
     rowB: {
       type: "boolean",
     },
-    rowL: {
+    colL: {
       type: "boolean",
     },
-    rowR: {
+    colR: {
       type: "boolean",
     },
     clockWise: {
@@ -356,13 +356,13 @@ export const videoChaserUiSchema = {
     },
     {
       type: "Control",
-      label: "Row L",
-      scope: "#/properties/rowL",
+      label: "Col L",
+      scope: "#/properties/colL",
     },
     {
       type: "Control",
-      label: "Row R",
-      scope: "#/properties/rowR",
+      label: "Col R",
+      scope: "#/properties/colR",
     },
     {
       type: "Control",

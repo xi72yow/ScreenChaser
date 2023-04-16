@@ -151,7 +151,6 @@ function App() {
         const videoChaserConfigs = await db.configs
           .filter((config) => config.taskId === task.id)
           .toArray();
-
         const ids = videoChaserConfigs.map((config) => config.id);
         const devices = await db.devices
           .filter((device) => ids.includes(device.configId))

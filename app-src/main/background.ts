@@ -149,8 +149,8 @@ if (isProd) {
     }
   });
 
-  ipcMain.on("CHASER:SEND_STRIPE", (event, stripe, ip) => {
-    ChaserManager.sendChasingStripe(stripe, ip);
+  ipcMain.on("CHASER:SEND_STRIPE", (event, stripe, id) => {
+    ChaserManager.sendChasingStripe(id, stripe);
   });
 
   ipcMain.handle("APP:SAVE_CONFIG", async function (event, configs) {
