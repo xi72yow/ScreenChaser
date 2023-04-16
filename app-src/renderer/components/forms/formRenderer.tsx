@@ -21,6 +21,7 @@ import stripeInput from "./inputs/stripeInput";
 import stripeInputTester from "./inputs/stripeInputTester";
 import swatches from "./inputs/swatches";
 import swatchesTester from "./inputs/swatchesTester";
+import { Box } from "@mantine/core";
 
 const schema = {
   type: "object",
@@ -165,15 +166,22 @@ export default function FormRenderer({
         data={data}
         setData={setData}
       ></ConfigPicker>
-      <JsonForms
-        key={selectedConfigId + "-JsonForms"}
-        schema={currentTask.schema}
-        uischema={currentTask.uiSchema}
-        data={selectedConfigId === -1 ? currentTask.defaultData : data}
-        renderers={renderers}
-        cells={vanillaCells}
-        onChange={({ data }) => setData(data)}
-      />
+      <Box
+        sx={{
+          pointerEvents: selectedConfigId === -1 ? "none" : "auto",
+          opacity: selectedConfigId === -1 ? 0.5 : 1,
+        }}
+      >
+        <JsonForms
+          key={selectedConfigId + "-JsonForms"}
+          schema={currentTask.schema}
+          uischema={currentTask.uiSchema}
+          data={selectedConfigId === -1 ? currentTask.defaultData : data}
+          renderers={renderers}
+          cells={vanillaCells}
+          onChange={({ data }) => setData(data)}
+        />
+      </Box>
     </FormProvider>
   );
 }

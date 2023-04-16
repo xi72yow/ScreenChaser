@@ -39,7 +39,7 @@ export default function StripeCreatorPreview({ data }) {
           if (frameCount === data.length - 1) {
             frameCount = 0;
           } else frameCount++;
-        }, 1);
+        }, 1500);
       };
       render();
     }

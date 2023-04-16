@@ -1,21 +1,31 @@
 import {
-    ActionIcon,
-    Button,
-    Group,
-    Modal,
-    Text,
-    TextInput,
-    useMantineTheme
+  Box,
+  Button,
+  Group,
+  Modal,
+  Text,
+  TextInput,
+  useMantineTheme,
 } from "@mantine/core";
-import { IconSettingsAutomation, IconTrash } from "@tabler/icons";
+import {
+  IconSettingsAutomation,
+  IconSquare,
+  IconSquareCheck,
+  IconSquareX,
+  IconTrash,
+} from "@tabler/icons";
 import { useLiveQuery } from "dexie-react-hooks";
 import React, { useEffect, useState } from "react";
 import {
-    TableNames,
-    TaskTableInterface,
-    addElementToTable,
-    db,
+  TableNames,
+  TaskTableInterface,
+  addElementToTable,
+  db,
 } from "../../database/db";
+import { showNotification } from "@mantine/notifications";
+import { useStyles } from "./inputStyles";
+import ActionIcon from "../helpers/actionIcon";
+import { useConfirm } from "../../hooks/confirm";
 
 type Props = {
   selectedDeviceId: number;
@@ -35,16 +45,20 @@ export default function ConfigPicker({
   setSelectedConfigId,
 }: Props) {
   const [opened, setOpened] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [name, setName] = useState("");
+
+  const confirm = useConfirm();
 
   const configs = useLiveQuery(
     async () => {
       return await db.configs
-        .filter(({ name: databasName }) => databasName.includes(name))
+        .filter(
+          ({ name: databasName, taskId }) =>
+            databasName.includes(name) && selectedTaskId === taskId
+        )
         .toArray();
     },
-    [name],
+    [name, selectedTaskId],
     []
   );
 
@@ -65,18 +79,38 @@ export default function ConfigPicker({
   );
 
   useEffect(() => {
-    if (currentConfig) {
-      console.log(
-        "🚀 ~ file: configPicker.tsx:67 ~ useEffect ~ currentConfig:",
-        currentConfig
-      );
-      setData((prev) => {
-        return { ...prev, ...currentConfig.config };
-      });
-    }
+    setName("");
+  }, [selectedConfigId]);
+
+  useEffect(() => {
+    db.configs.get(selectedConfigId).then((config) => {
+      if (config) setData({ ...config.config });
+    });
   }, [currentConfig]);
 
+  useEffect(() => {
+    db.devices
+      .get(selectedDeviceId)
+      .then((device) => {
+        if (device) {
+          db.configs
+            .get(device.configId)
+            .then((config) => {
+              if (config)
+                if (config.taskId === selectedTaskId) {
+                  setData({ ...config.config });
+                  setSelectedConfigId(device.configId);
+                }
+            })
+            .catch(() => null);
+        }
+      })
+      .catch(() => null);
+  }, [selectedDeviceId, selectedTaskId]);
+
   const theme = useMantineTheme();
+
+  const { classes } = useStyles();
 
   return (
     <React.Fragment>
@@ -84,39 +118,42 @@ export default function ConfigPicker({
         centered
         opened={opened}
         onClose={() => setOpened(false)}
-        title={"Choose a Configuration"}
+        title={`Choose a ${currentTask?.taskCode} Configuration`}
       >
         <TextInput
+          classNames={{ input: classes.input }}
           label="Configuration-Name"
           placeholder="Enter a name for the configuration"
           required
           rightSection={
             <ActionIcon
+              disabled={name === ""}
               onClick={() => {
                 setName("");
               }}
             >
-              <IconTrash size={18} stroke={1.5} />
+              <IconSquareX size={18} stroke={1.5} />
             </ActionIcon>
           }
           value={name}
           onChange={(event) => setName(event.currentTarget.value)}
         ></TextInput>
-        {configs.length === 0 && (
-          <Text
-            sx={{
-              fontSize: theme.fontSizes.sm,
-              fontWeight: 500,
-              margin: "0.5rem 0",
-              alignContent: "center",
-              textAlign: "center",
-            }}
-          >
-            No Configurations found
-          </Text>
-        )}
 
-        {configs.map(({ name: configName, id }) => (
+        <Text
+          sx={{
+            fontSize: theme.fontSizes.sm,
+            fontWeight: 500,
+            margin: "0.5rem 0",
+            alignContent: "center",
+            textAlign: "center",
+          }}
+        >
+          {configs.length === 0
+            ? "No Configurations found"
+            : "Choose a Configuration"}
+        </Text>
+
+        {configs.map(({ name: configName, id, deviceId }) => (
           <Group
             key={id + "-configPickerModal"}
             sx={{
@@ -127,10 +164,13 @@ export default function ConfigPicker({
                   ? "transparent"
                   : theme.colors.gray[3]
               }`,
-              ":hover": {
-                borderColor: theme.colors.blue[5],
-              },
-              cursor: "pointer",
+
+              borderColor:
+                selectedConfigId === id
+                  ? theme.colors.blue[5]
+                  : deviceId === selectedDeviceId
+                  ? theme.colors.green[7]
+                  : "transparent",
               backgroundColor:
                 theme.colorScheme === "dark"
                   ? theme.colors.dark[5]
@@ -139,30 +179,74 @@ export default function ConfigPicker({
               borderRadius: theme.radius.sm,
               justifyContent: "space-between",
             }}
-            onClick={() => {
-              setSelectedConfigId(id);
-              setOpened(false);
-              setName(configName);
-            }}
           >
+            <ActionIcon
+              tooltip={selectedConfigId === id ? "selected" : "select"}
+              disabled={selectedConfigId === id}
+              onClick={() => {
+                if (selectedConfigId === id) return;
+                setSelectedConfigId(id);
+                setOpened(false);
+                setName(configName);
+              }}
+            >
+              {selectedConfigId === id ? (
+                <IconSquareCheck size={20} stroke={1.5} />
+              ) : (
+                <IconSquare size={20} stroke={1.5} />
+              )}
+            </ActionIcon>
             {configName}
-            <IconSettingsAutomation size={18} stroke={1.5} />
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem",
+              }}
+            >
+              <ActionIcon
+                tooltip="Delete Configuration"
+                onClick={() => {
+                  confirm
+                    .showConfirmation(
+                      "Are you sure you want to delete this configuration? This action cannot be undone.",
+                      true
+                    )
+                    .then((ans) => {
+                      if (ans) {
+                        db.configs.delete(id);
+                        showNotification({
+                          message: "Configuration deleted",
+                          color: "red",
+                        });
+                      }
+                    });
+                }}
+              >
+                <IconTrash size={20} stroke={1.5} />{" "}
+              </ActionIcon>
+            </Box>
           </Group>
         ))}
 
         <Button
           onClick={() => {
-            addElementToTable(TableNames.configs, {
-              name: name,
-              deviceId: selectedDeviceId,
-              taskId: selectedTaskId,
-              taskCode: currentTask.taskCode,
-              config: { ...data },
-            }).then((value) => {
-              console.log("🚀 ~ file: configPicker.tsx:129 ~ value:", value);
-              setSelectedConfigId(value);
-              setOpened(false);
-            });
+            if (name === "")
+              showNotification({
+                message: "Name cannot be empty",
+                color: "red",
+              });
+            else
+              addElementToTable(TableNames.configs, {
+                name: name,
+                deviceId: selectedDeviceId,
+                taskId: selectedTaskId,
+                taskCode: currentTask.taskCode,
+                config: { ...data },
+              }).then((id) => {
+                setSelectedConfigId(id);
+                setOpened(false);
+              });
           }}
           fullWidth
         >
@@ -192,9 +276,9 @@ export default function ConfigPicker({
           justifyContent: "space-between",
         }}
       >
-        {name === "" ? "Choose a Configuration" : name}
+        {currentConfig?.name ? currentConfig?.name : "Choose a Configuration"}
         <ActionIcon
-          loading={loading}
+          tooltip="Choose a Configuration"
           onClick={() => {
             setOpened(true);
           }}

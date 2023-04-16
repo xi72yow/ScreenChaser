@@ -195,6 +195,7 @@ export interface ConfigsTableInterface {
   id: number;
   deviceId: number;
   taskId: number;
+  taskCode: TaskCodes;
   name: string;
   config:
     | AnimationInterface
@@ -439,7 +440,7 @@ db.on("populate", (tx: Transaction) => {
       taskCode: TaskCodes.bubbles,
       label: "Bubbles",
       type: TaskTypes.effect,
-      favorite: "false",
+      favorite: "true",
       schema: { ...bubblesSchema },
       uiSchema: { ...bubblesUiSchema },
       defaultData: { ...bubblesDefaultData },

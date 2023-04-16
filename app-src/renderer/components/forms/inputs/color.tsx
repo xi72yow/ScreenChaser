@@ -1,8 +1,7 @@
-import React from "react";
+import { withJsonFormsControlProps } from "@jsonforms/react";
 import { ActionIcon, ColorInput, createStyles } from "@mantine/core";
 import { IconWand } from "@tabler/icons";
 import { randomColor } from "screenchaser-core";
-import { JsonForms, withJsonFormsControlProps } from "@jsonforms/react";
 
 type Props = {
   path: string;

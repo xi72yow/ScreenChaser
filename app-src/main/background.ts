@@ -83,12 +83,40 @@ if (isProd) {
   });
 
   ipcMain.on("MANAGE_CHASER", (event, args: any) => {
-    console.log("MANAGE_CHASER");
     const { device, config } = args;
     if (device && config) ChaserManager.setChaser(args);
   });
 
   let chaserWindow: BrowserWindow = null;
+
+  ipcMain.on("CHASER:ON", async (event, args) => {
+    if (chaserWindow) return;
+    chaserWindow = new BrowserWindow({
+      webPreferences: {
+        nodeIntegration: true,
+        contextIsolation: false,
+      },
+      frame: !isProd,
+      transparent: isProd,
+      width: isProd ? 1 : 800,
+      height: isProd ? 1 : 600,
+    });
+
+    if (isProd) {
+      await chaserWindow.loadURL("app://./chaserhack.html");
+    } else {
+      const port = process.argv[2];
+      await chaserWindow.loadURL(`http://localhost:${port}/chaserhack`);
+      chaserWindow.webContents.openDevTools();
+    }
+  });
+
+  ipcMain.on("CHASER:OFF", async (event, args) => {
+    if (chaserWindow) {
+      await chaserWindow.close();
+      chaserWindow = null;
+    }
+  });
 
   ipcMain.on("LIGHTS_OFF", async (event, args) => {
     ChaserManager.lightsOff();
@@ -176,7 +204,6 @@ if (isProd) {
 
   //handle serial emit
   ipcMain.on("SERIAL:EMIT", async function (event, settings) {
-    console.log("🚀 ~ file: background.ts ~ line 163 ~ settings", settings);
     let sendSetting = { ...settings };
     const serialport = new SerialPort({
       path: sendSetting.path,

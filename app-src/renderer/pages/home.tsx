@@ -142,6 +142,29 @@ function App() {
         ipcRenderer.send("MANAGE_CHASER", deviceConfig);
       });
     }
+
+    db.tasks
+      .where("taskCode")
+      .equals(TaskCodes.videoChaser)
+      .first()
+      .then(async (task) => {
+        const videoChaserConfigs = await db.configs
+          .filter((config) => config.taskId === task.id)
+          .toArray();
+
+        const ids = videoChaserConfigs.map((config) => config.id);
+        const devices = await db.devices
+          .filter((device) => ids.includes(device.configId))
+          .toArray();
+        console.log("🚀 ~ file: home.tsx:159 ~ .then ~ devices:", devices)
+
+        if (devices.length > 0) {
+          ipcRenderer.send("CHASER:ON");
+        } else {
+          ipcRenderer.send("CHASER:OFF");
+        }
+        
+      });
   }, [deviceConfigs]);
 
   return (
@@ -164,6 +187,7 @@ function App() {
           data={data}
           selectedTaskId={selectedTaskId}
           selectedDeviceId={selectedDeviceId}
+          selectedConfigId={selectedConfigId}
         ></Toolbar>
       }
       styles={(theme) => ({

@@ -19,11 +19,13 @@ type ToolbarProps = {
   data: any;
   selectedTaskId: number;
   selectedDeviceId: number;
+  selectedConfigId: number;
 };
 
 export default function Toolbar({
   selectedTaskId,
   selectedDeviceId,
+  selectedConfigId,
   data,
 }: ToolbarProps) {
   const { classes } = useStyles();
@@ -75,16 +77,16 @@ export default function Toolbar({
           {currentTask?.taskCode !== TaskCodes.dashboard &&
             currentTask?.taskCode !== TaskCodes.library && (
               <Button
-                disabled={!currentDevice}
+                disabled={!currentDevice || selectedConfigId === -1}
                 onClick={() => {
-                  const { configId, ...rest } = data;
-                  console.log("🚀 ~ file: toolbar.tsx:81 ~ data:", data);
-
-                  return;
+                  console.log("🚀 ~ file: toolbar.tsx:86 ~ data:", data);
 
                   updateElementInTable(TableNames.devices, selectedDeviceId, {
-                    config: rest,
-                    deviceId: selectedDeviceId,
+                    configId: selectedConfigId,
+                  });
+
+                  updateElementInTable(TableNames.configs, selectedConfigId, {
+                    config: data,
                   });
 
                   if (currentDevice.exclude === dbBool.true)

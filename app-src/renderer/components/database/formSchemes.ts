@@ -57,7 +57,7 @@ export const frostyPikeUiSchema = {
 
 export const frostyPikeDefaultData = {
   delay: 10,
-  baseStripe: [["#000000"], ["#000000"]],
+  baseStripe: [["#000000"]],
 };
 
 export const colorWheelSchema = {
@@ -275,7 +275,7 @@ export const snakeUiSchema = {
 };
 
 export const snakeDefaultData = {
-  speed: 10,
+  speed: 1,
   maxSnakeSize: 10,
   appleCount: 3,
 };
