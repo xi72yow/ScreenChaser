@@ -6,7 +6,7 @@ import ColorWheel from "../colorWheel";
 import DyingLights from "../dyingLights";
 import FireFlame from "../fireFlame";
 import FrostyPike from "../frostyPike";
-import MeteorRain from "../meteorRain.js";
+import MeteorRain from "../meteorRain";
 import DataEmitter, { DataEmitterInterface } from "../network/dataEmitter";
 import Snake from "../snake";
 import { EffectInterface, TaskCodes } from "../types";
@@ -17,6 +17,7 @@ interface ManagedChaser {
   interval: NodeJS.Timeout | undefined;
   runningEffect: EffectInterface | undefined;
   emitter: DataEmitterInterface;
+  debounce: NodeJS.Timeout | null;
 }
 
 export interface ManagerInterface {
@@ -39,14 +40,20 @@ export default class TaskManager implements ManagerInterface {
 
   setChaser(param: { config: any; device: any }): void {
     const { config, device } = param;
-    const chaser = this.chasers.get(device.id);
+    let chaser = this.chasers.get(device.id);
+
+    if (chaser)
+      if (
+        this.deepEqual(chaser.config, config) &&
+        this.deepEqual(chaser.device, device)
+      )
+        return;
 
     if (chaser) {
-      const configChanged = !this.deepEqual(chaser.config, config);
-      const deviceChanged = !this.deepEqual(chaser.device, device);
-      if (configChanged) chaser.config = config;
-      if (deviceChanged) chaser.device = device;
-      if (configChanged || deviceChanged) this.chasers.set(device.id, chaser);
+      if (chaser.device.ip !== device.ip)
+        chaser.emitter = new DataEmitter(false, device.ip, this.onEmit);
+      chaser.config = config;
+      chaser.device = device;
     } else {
       this.chasers.set(device.id, {
         device,
@@ -54,90 +61,98 @@ export default class TaskManager implements ManagerInterface {
         interval: undefined,
         runningEffect: undefined,
         emitter: new DataEmitter(false, device.ip, this.onEmit),
+        debounce: null,
       });
     }
-    this.startChaserTask(device.id);
+
+    chaser = this.chasers.get(device.id);
+
+    if (!chaser) return;
+
+    if (chaser.debounce) {
+      clearTimeout(chaser.debounce);
+    }
+
+    chaser.debounce = setTimeout(() => {
+      this.startChaserTask(device.id);
+      if (chaser) chaser.debounce = null;
+    }, 1000);
   }
 
   startChaserTask(deviceId: number): void {
     const chaser = this.chasers.get(deviceId);
+
     if (chaser) {
-      const { config, device, emitter, interval, runningEffect } = chaser;
-      if (device.exclude) return;
+      let { config, device, emitter, interval } = chaser;
+      
+      if (device.exclude === "true") return;
       const { neoPixelCount } = device;
       clearInterval(interval);
 
+      const { config: effectConfig } = config;
+
       switch (config.taskCode) {
         case TaskCodes.meteorRain:
-          const { meteorRain } = config;
           chaser.runningEffect = new MeteorRain({
-            ...meteorRain,
+            ...effectConfig,
             neoPixelCount,
           });
           break;
 
         case TaskCodes.bouncingBalls:
-          const { bouncingBalls } = config;
           chaser.runningEffect = new BouncingBalls({
-            ...bouncingBalls,
+            ...effectConfig,
             neoPixelCount,
-            baseStripe: this.prepareBaseStipe(bouncingBalls.baseStripe),
+            //baseStripe: this.prepareBaseStipe(effectConfig.baseStripe),
           });
           break;
 
         case TaskCodes.fireFlame:
-          const { fireFlame } = config;
           chaser.runningEffect = new FireFlame({
-            ...fireFlame,
+            ...effectConfig,
             neoPixelCount,
           });
           break;
 
         case TaskCodes.colorWheel:
-          const { colorWheel } = config;
           chaser.runningEffect = new ColorWheel({
-            ...colorWheel,
+            ...effectConfig,
             neoPixelCount,
           });
           break;
 
         case TaskCodes.frostyPike:
-          const { frostyPike } = config;
           chaser.runningEffect = new FrostyPike({
-            ...frostyPike,
+            ...effectConfig,
             neoPixelCount,
-            baseStripe: this.prepareBaseStipe(frostyPike.baseStripe),
+            baseStripe: this.prepareBaseStipe(effectConfig.baseStripe[0]),
           });
           break;
 
         case TaskCodes.dyingLights:
-          const { dyingLights } = config;
           chaser.runningEffect = new DyingLights({
-            ...dyingLights,
+            ...effectConfig,
             neoPixelCount,
           });
           break;
 
         case TaskCodes.snake:
-          const { snake } = config;
           chaser.runningEffect = new Snake({
-            ...snake,
+            ...effectConfig,
             neoPixelCount,
           });
           break;
 
         case TaskCodes.bubbles:
-          const { bubbles } = config;
           chaser.runningEffect = new Bubbles({
-            ...bubbles,
+            ...effectConfig,
             neoPixelCount,
           });
           break;
 
         case TaskCodes.animation:
-          const { animation } = config;
           chaser.runningEffect = new Animation({
-            ...animation,
+            ...effectConfig,
             neoPixelCount,
           });
           break;
@@ -147,18 +162,18 @@ export default class TaskManager implements ManagerInterface {
           return;
 
         case TaskCodes.staticLight:
-          const { staticLight } = config;
           chaser.runningEffect = undefined;
-          emitter.emit(this.prepareBaseStipe(staticLight.baseStripe));
+          emitter.emit(this.prepareBaseStipe(effectConfig.baseStripe[0]));
           return;
 
         default:
           break;
       }
 
-      chaser.interval = setInterval(() => {
-        emitter.emit(runningEffect?.render());
-      }, this.calculateFrameTime());
+      if (chaser.runningEffect)
+        chaser.interval = setInterval(() => {
+          chaser.emitter.emit(chaser.runningEffect?.render());
+        }, this.calculateFrameTime());
     }
   }
 
