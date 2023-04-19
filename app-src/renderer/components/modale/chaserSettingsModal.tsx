@@ -12,7 +12,6 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { DataEmitter } from "screenchaser-core";
 import { TableNames, addElementToTable, db, dbBool } from "../database/db";
 import DeviceForm from "./chaserSettingsModalComponents/deviceForm";
-import NetworkForm from "./chaserSettingsModalComponents/networkForm";
 import OverviewTable from "./chaserSettingsModalComponents/overviewTable";
 
 interface scanNetworkModalProps {}

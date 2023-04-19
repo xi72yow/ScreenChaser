@@ -2,7 +2,7 @@
  * Generated type guards for "db.ts".
  * WARNING: Do not manually change this file.
  */
-import { StaticLightInterface, GlobalsInterface, ChaserInterface, DeviceInterface, TaskInterface, ConfigInterface } from "./db";
+import { StaticLightInterface, GlobalsInterface, ChaserInterface, DeviceInterface, TaskInterface, ConfigInterface, DeviceTableInterface, ConfigsTableInterface, TaskTypes, dbBool, TaskCodes, TaskTableInterface, UserTableInterface, TableNames } from "./db";
 
 export function isStaticLightInterface(obj: unknown): obj is StaticLightInterface {
     const typedObj = obj as StaticLightInterface
@@ -158,5 +158,183 @@ export function isConfigInterface(obj: unknown): obj is ConfigInterface {
             )
         ) &&
         typeof typedObj["animation"]["fps"] === "number"
+    )
+}
+
+export function isDeviceTableInterface(obj: unknown): obj is DeviceTableInterface {
+    const typedObj = obj as DeviceTableInterface
+    return (
+        (typedObj !== null &&
+            typeof typedObj === "object" ||
+            typeof typedObj === "function") &&
+        typeof typedObj["id"] === "number" &&
+        typeof typedObj["ip"] === "string" &&
+        typeof typedObj["name"] === "string" &&
+        typeof typedObj["neoPixelCount"] === "number" &&
+        typeof typedObj["new"] === "boolean" &&
+        isdbBool(typedObj["exclude"]) as boolean &&
+        typeof typedObj["configId"] === "number"
+    )
+}
+
+export function isConfigsTableInterface(obj: unknown): obj is ConfigsTableInterface {
+    const typedObj = obj as ConfigsTableInterface
+    return (
+        (typedObj !== null &&
+            typeof typedObj === "object" ||
+            typeof typedObj === "function") &&
+        typeof typedObj["id"] === "number" &&
+        typeof typedObj["deviceId"] === "number" &&
+        typeof typedObj["taskId"] === "number" &&
+        isTaskCodes(typedObj["taskCode"]) as boolean &&
+        typeof typedObj["name"] === "string" &&
+        (isStaticLightInterface(typedObj["config"]) as boolean ||
+            (typedObj["config"] !== null &&
+                typeof typedObj["config"] === "object" ||
+                typeof typedObj["config"] === "function") &&
+            typeof typedObj["config"]["lightColor"] === "string" ||
+            (typedObj["config"] !== null &&
+                typeof typedObj["config"] === "object" ||
+                typeof typedObj["config"] === "function") &&
+            typeof typedObj["config"]["delay"] === "number" &&
+            Array.isArray(typedObj["config"]["baseStripe"]) &&
+            typedObj["config"]["baseStripe"].every((e: any) =>
+                typeof e === "string"
+            ) ||
+            (typedObj["config"] !== null &&
+                typeof typedObj["config"] === "object" ||
+                typeof typedObj["config"] === "function") &&
+            typeof typedObj["config"]["speed"] === "number" ||
+            (typedObj["config"] !== null &&
+                typeof typedObj["config"] === "object" ||
+                typeof typedObj["config"] === "function") &&
+            typeof typedObj["config"]["cooling"] === "number" &&
+            typeof typedObj["config"]["sparking"] === "number" ||
+            (typedObj["config"] !== null &&
+                typeof typedObj["config"] === "object" ||
+                typeof typedObj["config"] === "function") &&
+            typeof typedObj["config"]["ballMode"] === "string" &&
+            typeof typedObj["config"]["mirrored"] === "boolean" &&
+            typeof typedObj["config"]["tail"] === "number" &&
+            typeof typedObj["config"]["ballCount"] === "number" &&
+            Array.isArray(typedObj["config"]["baseStripe"]) &&
+            typedObj["config"]["baseStripe"].every((e: any) =>
+                typeof e === "string"
+            ) ||
+            (typedObj["config"] !== null &&
+                typeof typedObj["config"] === "object" ||
+                typeof typedObj["config"] === "function") &&
+            typeof typedObj["config"]["meteorSize"] === "number" &&
+            typeof typedObj["config"]["meteorTrailDecay"] === "number" &&
+            typeof typedObj["config"]["meteorRandomDecay"] === "number" &&
+            typeof typedObj["config"]["rainbow"] === "boolean" &&
+            typeof typedObj["config"]["meteorColor"] === "string" ||
+            (typedObj["config"] !== null &&
+                typeof typedObj["config"] === "object" ||
+                typeof typedObj["config"] === "function") &&
+            typeof typedObj["config"]["speed"] === "number" &&
+            typeof typedObj["config"]["maxSnakeSize"] === "number" &&
+            typeof typedObj["config"]["appleCount"] === "number" ||
+            (typedObj["config"] !== null &&
+                typeof typedObj["config"] === "object" ||
+                typeof typedObj["config"] === "function") &&
+            typeof typedObj["config"]["maxParticles"] === "number" &&
+            typeof typedObj["config"]["fadeValue"] === "number" &&
+            Array.isArray(typedObj["config"]["colors"]) &&
+            typedObj["config"]["colors"].every((e: any) =>
+                typeof e === "string"
+            ) ||
+            (typedObj["config"] !== null &&
+                typeof typedObj["config"] === "object" ||
+                typeof typedObj["config"] === "function") &&
+            Array.isArray(typedObj["config"]["frames"]) &&
+            typedObj["config"]["frames"].every((e: any) =>
+                Array.isArray(e) &&
+                e.every((e: any) =>
+                    typeof e === "string"
+                )
+            ) &&
+            typeof typedObj["config"]["fps"] === "number")
+    )
+}
+
+export function isTaskTypes(obj: unknown): obj is TaskTypes {
+    const typedObj = obj as TaskTypes
+    return (
+        (typedObj === TaskTypes.chaser ||
+            typedObj === TaskTypes.effect ||
+            typedObj === TaskTypes.render ||
+            typedObj === TaskTypes.ui)
+    )
+}
+
+export function isdbBool(obj: unknown): obj is dbBool {
+    const typedObj = obj as dbBool
+    return (
+        (typedObj === dbBool.true ||
+            typedObj === dbBool.false)
+    )
+}
+
+export function isTaskCodes(obj: unknown): obj is TaskCodes {
+    const typedObj = obj as TaskCodes
+    return (
+        (typedObj === TaskCodes.dashboard ||
+            typedObj === TaskCodes.library ||
+            typedObj === TaskCodes.videoChaser ||
+            typedObj === TaskCodes.animation ||
+            typedObj === TaskCodes.dyingLights ||
+            typedObj === TaskCodes.frostyPike ||
+            typedObj === TaskCodes.colorWheel ||
+            typedObj === TaskCodes.fireFlame ||
+            typedObj === TaskCodes.bouncingBalls ||
+            typedObj === TaskCodes.meteorRain ||
+            typedObj === TaskCodes.snake ||
+            typedObj === TaskCodes.bubbles ||
+            typedObj === TaskCodes.staticLight)
+    )
+}
+
+export function isTaskTableInterface(obj: unknown): obj is TaskTableInterface {
+    const typedObj = obj as TaskTableInterface
+    return (
+        (typedObj !== null &&
+            typeof typedObj === "object" ||
+            typeof typedObj === "function") &&
+        typeof typedObj["id"] === "number" &&
+        isTaskCodes(typedObj["taskCode"]) as boolean &&
+        typeof typedObj["label"] === "string" &&
+        isTaskTypes(typedObj["type"]) as boolean &&
+        isdbBool(typedObj["favorite"]) as boolean &&
+        (typedObj["formScheme"] !== null &&
+            typeof typedObj["formScheme"] === "object" ||
+            typeof typedObj["formScheme"] === "function") &&
+        typeof typedObj["formScheme"]["parse"] === "function" &&
+        typeof typedObj["formScheme"]["stringify"] === "function" &&
+        typeof typedObj["formScheme"]["stringify"] === "function"
+    )
+}
+
+export function isUserTableInterface(obj: unknown): obj is UserTableInterface {
+    const typedObj = obj as UserTableInterface
+    return (
+        (typedObj !== null &&
+            typeof typedObj === "object" ||
+            typeof typedObj === "function") &&
+        typeof typedObj["id"] === "number" &&
+        Array.isArray(typedObj["swatches"]) &&
+        typedObj["swatches"].every((e: any) =>
+            typeof e === "string"
+        )
+    )
+}
+
+export function isTableNames(obj: unknown): obj is TableNames {
+    const typedObj = obj as TableNames
+    return (
+        (typedObj === TableNames.devices ||
+            typedObj === TableNames.configs ||
+            typedObj === TableNames.tasks ||
+            typedObj === TableNames.users)
     )
 }
