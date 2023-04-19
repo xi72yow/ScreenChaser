@@ -17,6 +17,7 @@ import {
   IconArrowUpRight,
   IconArrowDownRight,
   IconPackage,
+  IconArrowNarrowRight,
 } from "@tabler/icons";
 import { randomId, useHash, useInterval } from "@mantine/hooks";
 import { ipcRenderer } from "electron";
@@ -93,15 +94,22 @@ export function StatsGrid({ data }: StatsGridProps) {
               {stat.value.toFixed(2)}
               {stat.icon === "bolt" ? "W" : "%"}
             </Text>
-            <Text
-              color={stat.diff > 0 ? "red" : "teal"}
-              size="sm"
-              weight={500}
-              className={classes.diff}
-            >
-              {<span>{stat.diff.toFixed(2)}%</span>}
-              <DiffIcon size={16} stroke={1.5} />
-            </Text>
+            {stat.diff ? (
+              <Text
+                color={stat.diff > 0 ? "red" : "teal"}
+                size="sm"
+                weight={500}
+                className={classes.diff}
+              >
+                {<span>{stat.diff.toFixed(2)}%</span>}
+                <DiffIcon size={16} stroke={1.5} />
+              </Text>
+            ) : (
+              <Text size="sm" weight={500} className={classes.diff}>
+                {<span>0%</span>}
+                <IconArrowNarrowRight size={16} stroke={1.5} />
+              </Text>
+            )}
             <Text size="xs" color="dimmed" mt={7}>
               {stat.icon === "bolt"
                 ? "actual Power consumtion"

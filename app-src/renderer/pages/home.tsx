@@ -155,14 +155,12 @@ function App() {
         const devices = await db.devices
           .filter((device) => ids.includes(device.configId))
           .toArray();
-        console.log("🚀 ~ file: home.tsx:159 ~ .then ~ devices:", devices)
 
         if (devices.length > 0) {
           ipcRenderer.send("CHASER:ON");
         } else {
           ipcRenderer.send("CHASER:OFF");
         }
-        
       });
   }, [deviceConfigs]);
 

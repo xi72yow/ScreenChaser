@@ -192,9 +192,11 @@ export default class TaskManager implements ManagerInterface {
       const { emitter, interval, device } = chaser;
       const { neoPixelCount } = device;
       clearInterval(interval);
+      emitter.emit(setAll(0, 0, 0, neoPixelCount));
+      // make sure that the light is off
       setTimeout(() => {
         emitter.emit(setAll(0, 0, 0, neoPixelCount));
-      }, 100);
+      }, 1000);
     });
   }
 

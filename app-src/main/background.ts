@@ -118,7 +118,7 @@ if (isProd) {
     }
   });
 
-  ipcMain.on("LIGHTS_OFF", async (event, args) => {
+  ipcMain.on("LIGHTS:OFF", async (event, args) => {
     ChaserManager.lightsOff();
     if (chaserWindow) {
       await chaserWindow.close();
@@ -126,7 +126,7 @@ if (isProd) {
     }
   });
 
-  ipcMain.on("LIGHTS_ON", async (event, args) => {
+  ipcMain.on("LIGHTS:ON", async (event, args) => {
     ChaserManager.continueLight();
     if (chaserWindow) return;
     chaserWindow = new BrowserWindow({

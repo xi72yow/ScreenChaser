@@ -71,31 +71,29 @@ setTimeout(() => {
   });
 }, 5000);
 
-
-
 setTimeout(() => {
-    taskManager.setChaser({
-      device: {
-        ip: "192.168.2.113",
-        new: "false",
-        exclude: "false",
-        name: "Desk",
-        neoPixelCount: "114",
-        id: 2,
-        config: {
-          lightColor: "#8bb128",
-        },
-        configId: 5,
-      },
+  taskManager.setChaser({
+    device: {
+      ip: "192.168.2.113",
+      new: "false",
+      exclude: "false",
+      name: "Desk",
+      neoPixelCount: "114",
+      id: 2,
       config: {
-        name: "pppp",
-        deviceId: 1,
-        taskId: 6,
-        taskCode: "dyingLights",
-        config: {
-          lightColor: "#ff0000",
-        },
-        id: 5,
+        lightColor: "#8bb128",
       },
-    });
-  }, 10000);
+      configId: 5,
+    },
+    config: {
+      name: "pppp",
+      deviceId: 1,
+      taskId: 6,
+      taskCode: "dyingLights",
+      config: {
+        lightColor: "#ff0000",
+      },
+      id: 5,
+    },
+  });
+}, 10000);

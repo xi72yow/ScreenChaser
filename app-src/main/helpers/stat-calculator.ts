@@ -2,57 +2,57 @@ import { ManagerInterface } from "screenchaser-core";
 
 class StatCalculator {
   Manager: ManagerInterface;
-  lastStats: any[];
+  statistics: Map<number, any>;
   constructor(parameters) {
     this.Manager = parameters.Manager;
-    this.lastStats = [];
+    this.statistics = new Map();
   }
 
   calculateStats() {
-    const that = this;
-    let stats = [];
-    for (let i = 0; i < this.Manager.chasers.length; i++) {
-      const config = this.Manager.chasers[i].config;
-      const emitter = this.Manager.chasers[i].emitter;
-      const effect = this.Manager.chasers[i].runningEffect;
-      const data = emitter.getHealth();
+    this.Manager.chasers.forEach(
+      ({ config, device, emitter, runningEffect }) => {
+        const effect = runningEffect;
+        const data = emitter.getHealth();
 
-      stats.push({
-        title: emitter.getIp(),
-        task: effect
-          ? effect.getIdentifier()
-          : config.task.taskCode === "chaser"
-          ? "chaser"
-          : null,
-        details: [
-          {
-            title: "Power:",
-            value: data.power,
-            maxPower: data.maxPower,
-            icon: "bolt",
-            diff:
-              this.lastStats.length !== 0 && that.lastStats[i]
-                ? (data.power / that.lastStats[i].details[0]?.value) * 100 - 100
+        const lastStatisic = this.statistics.get(device.id);
+
+        const statisic = {
+          title: emitter.getIp(),
+          task: effect
+            ? effect.getIdentifier()
+            : config.taskCode === "videoChaser"
+            ? "chaser"
+            : null,
+          details: [
+            {
+              title: "Power:",
+              value: data.power,
+              maxPower: data.maxPower,
+              icon: "bolt",
+              diff: lastStatisic
+                ? (data.power / lastStatisic.details[0]?.value) * 100 - 100
                 : 0,
-          },
-          {
-            title: "Package Loss:",
-            value: data.packageloss,
-            icon: "package",
-            diff:
-              this.lastStats.length !== 0 && that.lastStats[i]
-                ? (data.packageloss / that.lastStats[i].details[1]?.value) *
-                    100 -
+            },
+            {
+              title: "Package Loss:",
+              value: data.packageloss,
+              icon: "package",
+              diff: lastStatisic
+                ? (data.packageloss / lastStatisic.details[1]?.value) * 100 -
                   100
                 : 0,
-          },
-        ],
-      });
-    }
+            },
+          ],
+        };
+        this.statistics.set(device.id, statisic);
+      }
+    );
 
-    this.lastStats = stats;
+    const arr = Array.from(this.statistics, function (entry) {
+      return { ...entry[1] };
+    });
 
-    return stats;
+    return JSON.parse(JSON.stringify(arr));
   }
 }
 

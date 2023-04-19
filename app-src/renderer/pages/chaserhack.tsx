@@ -172,6 +172,8 @@ function Next() {
           }
         });
       });
+    // could not handle error
+    else throw e;
   }
 
   const configs = useLiveQuery(

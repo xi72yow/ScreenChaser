@@ -67,8 +67,7 @@ export default function GlobalSettings({}: Props) {
               ),
               sx: { cursor: "pointer" },
             });
-
-            ipcRenderer.send("CHASER:" + lightsOff ? "ON" : "OFF");
+            ipcRenderer.send(`LIGHTS:${lightsOff ? "ON" : "OFF"}`);
           }}
           size="lg"
           sx={(theme) => ({
@@ -138,7 +137,7 @@ export default function GlobalSettings({}: Props) {
           >
             FAQ
           </Menu.Item>
-          <Menu.Divider />
+          {/* <Menu.Divider />
           <Menu.Label>Configuration</Menu.Label>
           <Menu.Item
             icon={<IconFileDownload size={18} />}
@@ -201,7 +200,7 @@ export default function GlobalSettings({}: Props) {
             }}
           >
             Load
-          </Menu.Item>
+          </Menu.Item> */}
           <Menu.Divider />
           <Menu.Label>Danger zone</Menu.Label>
           <Menu.Item
