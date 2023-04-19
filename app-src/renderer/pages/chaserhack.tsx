@@ -7,7 +7,10 @@ import {
   createDownScaleCore,
   downScaleImageBitmap,
 } from "../components/resizer";
-import { parseSourceString } from "../components/forms/inputs/sourcePicker";
+import {
+  createSourceString,
+  parseSourceString,
+} from "../components/forms/inputs/sourcePicker";
 
 type Props = {};
 
@@ -31,7 +34,7 @@ function Next() {
       video.srcObject = mediaStream;
       video.onloadedmetadata = (e) => video.play();
     } catch (e) {
-      handleError(e);
+      handleError(e, sourceId);
     }
   }
 
@@ -138,12 +141,37 @@ function Next() {
     ];
   }
 
-  function handleError(e) {
-    console.log("🚀 ~ file: chaserhack.tsx ~ line 106 ~ handleError ~ e", e);
+  function handleError(e, sourceId) {
+    console.error(e);
     chaserIntervals.current.forEach((interval) => clearInterval(interval));
-    setTimeout(() => {
-      window.location.reload();
-    }, 1000);
+    if (e.message === "Could not start video source" && sourceId)
+      ipcRenderer.invoke("GET_SOURCES").then(async (sources) => {
+        //if Could not start video source then try to find videosource by name
+        configs.forEach(({ config, device }) => {
+          const { name, id } = parseSourceString(config.config.sourceId);
+          if (id === sourceId) {
+            const source = sources.find((source) => source.name === name);
+            if (source) {
+              console.info(
+                `found source by name and set config (${config.id}) to new source: ${source}`
+              );
+              db.configs.update(config.id, {
+                config: {
+                  ...config.config,
+                  sourceId: createSourceString(source),
+                },
+              });
+            } else {
+              console.error(`could not find source by name: ${name}`);
+              new Notification("ScreenChaser Notification", {
+                body: `${
+                  device.name || device.ip
+                }: Could not find source by name: ${name}`,
+              });
+            }
+          }
+        });
+      });
   }
 
   const configs = useLiveQuery(
