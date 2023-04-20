@@ -128,7 +128,8 @@ if (isProd) {
 
   ipcMain.on("LIGHTS:ON", async (event, args) => {
     ChaserManager.continueLight();
-    if (chaserWindow) return;
+    
+    if (!ChaserManager.videoChaserExists()) return;
     chaserWindow = new BrowserWindow({
       webPreferences: {
         nodeIntegration: true,

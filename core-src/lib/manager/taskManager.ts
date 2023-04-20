@@ -25,6 +25,7 @@ export interface ManagerInterface {
   lightsOff(): void;
   continueLight(): void;
   chasers: Map<number, ManagedChaser>;
+  videoChaserExists(): boolean;
 }
 
 export default class TaskManager implements ManagerInterface {
@@ -175,6 +176,12 @@ export default class TaskManager implements ManagerInterface {
           chaser.emitter.emit(chaser.runningEffect?.render());
         }, this.calculateFrameTime());
     }
+  }
+
+  videoChaserExists(): boolean {
+    return Array.from(this.chasers.values()).some(
+      (chaser) => chaser.config.taskCode === TaskCodes.videoChaser
+    );
   }
 
   sendChasingStripe(deviceId: number, stripe: string[]): void {
