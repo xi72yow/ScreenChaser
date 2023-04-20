@@ -23,11 +23,12 @@ Note that the render below only gives an insight and does not show all functiona
 
 https://user-images.githubusercontent.com/65042627/210893593-29b303a0-6971-4d15-9e41-3c11cf5573cd.mp4
 
-## Roadmap:
+## Main features roadmap:
 
 - [ ] connect multiple controller to one virtual device
-- [ ] support for multiple languages
+- [ ] esp over the air firmware update from repo
 - [ ] custom theme colors
+- [ ] support for multiple languages
 - [ ] basic color fade effects
 - [ ] create a place where animations can share
 - [ ] optional user database sync
