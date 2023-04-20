@@ -23,91 +23,6 @@ import swatches from "./inputs/swatches";
 import swatchesTester from "./inputs/swatchesTester";
 import { Box } from "@mantine/core";
 
-const schema = {
-  type: "object",
-  properties: {
-    fadeValue: {
-      type: "integer",
-      maximum: 255,
-      minimum: 0,
-    },
-    meteorColor: {
-      type: "string",
-    },
-    rainbow: {
-      type: "boolean",
-    },
-    colors: {
-      type: "array",
-    },
-    ballMode: {
-      type: "string",
-      enum: ["foo", "bar", "foobar"],
-    },
-    device: {
-      type: "string",
-    },
-    baseStripe: {
-      type: "array",
-      singleFrame: true,
-    },
-  },
-};
-const uischema = {
-  type: "VerticalLayout",
-  elements: [
-    {
-      type: "Control",
-      label: "TestLabel",
-      scope: "#/properties/fadeValue",
-    },
-    {
-      type: "Control",
-      label: "Hallo",
-      scope: "#/properties/meteorColor",
-      options: { color: true },
-    },
-    {
-      type: "Control",
-      label: "Rainbow",
-      scope: "#/properties/rainbow",
-    },
-    {
-      type: "Control",
-      label: "Colors",
-      scope: "#/properties/colors",
-      options: { colors: true },
-    },
-    {
-      type: "Control",
-      label: "Ball Mode",
-      scope: "#/properties/ballMode",
-      options: { select: true },
-    },
-    {
-      type: "Control",
-      label: "Device",
-      scope: "#/properties/device",
-      options: { device: true },
-    },
-    {
-      type: "Control",
-      label: "Base Stripe",
-      scope: "#/properties/baseStripe",
-      options: { stripe: true },
-    },
-  ],
-};
-const initialData = {
-  fadeValue: 15,
-  meteorColor: "#9B03FF",
-  rainbow: false,
-  colors: ["#9B03FF", "#9B03FF", "#9B03FF", "#9B03FF", "#9B03FF"],
-  ballMode: "foo",
-  device: "food3l1m173r",
-  baseStripe: [["#9B03FF", "#9B03FF", "#9B03FF", "#9B03FF", "#9B03FF"]],
-};
-
 type Props = {
   selectedDeviceId: number;
   selectedTaskId: number;
@@ -133,16 +48,8 @@ export default function FormRenderer({
     null
   );
 
-  const { setSelectedDeviceIdContext } = useContext(FormContext);
-
-  useEffect(() => {
-    setSelectedDeviceIdContext && setSelectedDeviceIdContext(selectedDeviceId);
-  }, [selectedDeviceId]);
-
-  // list of renderers declared outside the App component
   const renderers = [
     ...vanillaRenderers,
-    //register custom renderers
     { tester: numberTester, renderer: number },
     { tester: colorTester, renderer: color },
     { tester: booleanTester, renderer: boolean },
@@ -157,7 +64,10 @@ export default function FormRenderer({
   }
 
   return (
-    <FormProvider>
+    <FormProvider
+      selectedDeviceId={selectedDeviceId}
+      selectedConfigId={selectedConfigId}
+    >
       <ConfigPicker
         selectedTaskId={selectedTaskId}
         selectedDeviceId={selectedDeviceId}

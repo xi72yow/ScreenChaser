@@ -27,29 +27,17 @@ export function StripeInput({
   const theme = useMantineTheme();
   const scrollRef = useHorizontalScroll();
 
-  const { selectedDeviceIdContext } = useContext(FormContext);
+  const { selectedDeviceId, selectedConfigId } = useContext(FormContext);
 
   const currentNeoPixelCount = useLiveQuery(
     async () => {
-      const device = await db.devices.get(selectedDeviceIdContext);
-      return device?.neoPixelCount;
+      if (!selectedDeviceId) return null;
+      const device = await db.devices.get(selectedDeviceId);
+      return parseInt(device?.neoPixelCount as unknown as string);
     },
-    [selectedDeviceIdContext],
+    [selectedDeviceId],
     null
   );
-  console.log("🚀 ~ file: stripeInput.tsx:40 ~ currentNeoPixelCount:", currentNeoPixelCount)
-
-  useEffect(() => {
-    if (currentNeoPixelCount) {
-      handleChange(
-        path,
-        data.map((frame, index) => {
-          if (currentNeoPixelCount === null) return frame;
-          else return prepareStripe(frame, currentNeoPixelCount);
-        })
-      );
-    }
-  }, [currentNeoPixelCount]);
 
   return (
     <React.Fragment>
@@ -85,6 +73,7 @@ export function StripeInput({
           path={path}
           singleFrame={singleFrame}
           currentNeoPixelCount={currentNeoPixelCount}
+          selectedConfigId={selectedConfigId}
         ></StripeCreator>
       </Group>
     </React.Fragment>

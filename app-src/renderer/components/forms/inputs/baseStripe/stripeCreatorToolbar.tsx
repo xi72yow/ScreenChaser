@@ -71,7 +71,6 @@ export default function StripeCreatorToolbar({
       setFrames((prev) => {
         const newFrames = [...prev];
         newFrames.splice(activeFrame - 1, 1);
-
         return [...newFrames];
       });
       setActiveFrame((prev) => {

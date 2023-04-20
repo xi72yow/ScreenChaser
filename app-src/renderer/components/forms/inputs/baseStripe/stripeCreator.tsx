@@ -6,6 +6,8 @@ import { IconPalette } from "@tabler/icons";
 import React, { useEffect, useRef, useState } from "react";
 import { reScale } from "screenchaser-core";
 import StripeCreatorToolbar from "./stripeCreatorToolbar";
+import { useConfirm } from "../../../hooks/confirm";
+import { showNotification } from "@mantine/notifications";
 
 interface BaseStripeInputProps {
   path: string;
@@ -13,6 +15,7 @@ interface BaseStripeInputProps {
   singleFrame?: boolean;
   handleChange: (path, data: Array<Array<string>>) => void;
   currentNeoPixelCount: number;
+  selectedConfigId: number;
 }
 
 function LED(props) {
@@ -73,34 +76,25 @@ export default function StripeCreator({
   handleChange,
   singleFrame,
   currentNeoPixelCount,
+  selectedConfigId,
 }: BaseStripeInputProps) {
   const [activeFrame, setActiveFrame] = useState(1);
-  const [frames, setFrames] = useState(
-    data.map((frame) => {
-      if (currentNeoPixelCount === null) return frame;
-      else return prepareStripe(frame, currentNeoPixelCount);
-    })
-  );
+  const [frames, setFrames] = useState(data);
+
+  const confirm = useConfirm();
 
   useEffect(() => {
-    setFrames(
-      data.map((frame) => {
-        if (currentNeoPixelCount === null) return frame;
-        else return prepareStripe(frame, currentNeoPixelCount);
-      })
-    );
-  }, [data]);
-
-  useEffect(() => {
-    setFrames((prev) => {
-      return prev.map((frame, index) => {
-        if (currentNeoPixelCount === null) return frame;
-        else return prepareStripe(frame, currentNeoPixelCount);
+    if (selectedConfigId > -1) {
+      setFrames((prev) => {
+        let frames = prev;
+        if (data) frames = data;
+        return frames;
       });
-    });
-    setChangeColorEvent((prev) => !prev);
-  }, [currentNeoPixelCount]);
+      setChangeColorEvent((prev) => !prev);
+    }
+  }, [data, currentNeoPixelCount]);
 
+  
   useEffect(() => {
     setChangeColorEvent((prev) => !prev);
   }, [activeFrame]);
@@ -205,7 +199,34 @@ export default function StripeCreator({
       </Modal>
       <ActionIcon
         onClick={() => {
-          setOpen(true);
+          if (data[0].length !== currentNeoPixelCount && currentNeoPixelCount)
+            confirm
+              .showConfirmation(
+                `The current Device has ${currentNeoPixelCount} NeoPixels. The Animation is for ${
+                  data[0].length
+                } Pixels. Do you want to rescale the current Frame${
+                  data.length > 1 ? "s" : ""
+                } the Device? This Action can results in a loss of data.`,
+                true
+              )
+              .then((ans) => {
+                if (ans) {
+                  setFrames((prev) =>
+                    prev.map((frame, index) => {
+                      return prepareStripe(frame, currentNeoPixelCount);
+                    })
+                  );
+                  showNotification({
+                    title: "Rescaling successful",
+                    message: `The current Frame${
+                      data.length > 1 && "s"
+                    } have been rescaled to ${currentNeoPixelCount} NeoPixels.`,
+                    color: "green",
+                  });
+                }
+                setOpen(true);
+              });
+          else setOpen(true);
         }}
       >
         <IconPalette size={18} stroke={1.5} />

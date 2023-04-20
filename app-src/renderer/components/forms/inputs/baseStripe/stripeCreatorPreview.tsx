@@ -34,12 +34,13 @@ export default function StripeCreatorPreview({ data }) {
 
     if (context && data) {
       const render = () => {
+        draw(frameCount);
         renderInterval.current = setInterval(() => {
           draw(frameCount);
           if (frameCount === data.length - 1) {
             frameCount = 0;
           } else frameCount++;
-        }, 1500);
+        }, 1000);
       };
       render();
     }
