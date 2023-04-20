@@ -91,7 +91,7 @@ export function StatsGrid({ data }: StatsGridProps) {
         <Box sx={{ display: "flex", justifyContent: "space-between" }}>
           <Group align="flex-end" spacing="xs" mt={25}>
             <Text className={classes.value}>
-              {stat.value.toFixed(2)}
+              {stat.value?.toFixed(2) || "0.00"}
               {stat.icon === "bolt" ? "W" : "%"}
             </Text>
             {stat.diff ? (

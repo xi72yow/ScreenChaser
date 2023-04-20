@@ -94,7 +94,6 @@ export default function StripeCreator({
     }
   }, [data, currentNeoPixelCount]);
 
-  
   useEffect(() => {
     setChangeColorEvent((prev) => !prev);
   }, [activeFrame]);
@@ -219,7 +218,7 @@ export default function StripeCreator({
                   showNotification({
                     title: "Rescaling successful",
                     message: `The current Frame${
-                      data.length > 1 && "s"
+                      data.length > 1 ? "s" : ""
                     } have been rescaled to ${currentNeoPixelCount} NeoPixels.`,
                     color: "green",
                   });

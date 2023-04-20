@@ -47,13 +47,15 @@ function DeviceRow({ device, theme, counter }: any) {
     });
   }, [debouncedName]);
 
-  const [neoPixelCount, setNeoPixelCount] = useState(device.neoPixelCount);
+  const [neoPixelCount, setNeoPixelCount] = useState<number>(
+    device.neoPixelCount
+  );
   const [debouncedNeoPixelCount] = useDebouncedValue(neoPixelCount, 200, {
     leading: true,
   });
 
   useEffect(() => {
-    if (debouncedNeoPixelCount.length === 0) {
+    if (debouncedNeoPixelCount === 0) {
       showNotification({
         title: "Error",
         message: "NeoPixel count must be a number",
@@ -124,7 +126,7 @@ function DeviceRow({ device, theme, counter }: any) {
                 });
                 return;
               }
-              setNeoPixelCount(e.currentTarget.value);
+              setNeoPixelCount(parseInt(e.currentTarget.value));
             }}
           />
         </td>

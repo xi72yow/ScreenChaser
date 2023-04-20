@@ -158,7 +158,7 @@ export const bouncingBallsSchema = {
   properties: {
     ballMode: {
       type: "string",
-      enum: ["random", "stripe"],
+      enum: ["random" /* , "stripe" */],
     },
     mirrored: {
       type: "boolean",

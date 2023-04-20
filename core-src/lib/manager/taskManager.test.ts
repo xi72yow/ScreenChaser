@@ -51,7 +51,7 @@ setTimeout(() => {
       new: "false",
       exclude: "false",
       name: "Desk",
-      neoPixelCount: "114",
+      neoPixelCount: 114,
       id: 2,
       config: {
         lightColor: "#8bb128",
@@ -78,7 +78,7 @@ setTimeout(() => {
       new: "false",
       exclude: "false",
       name: "Desk",
-      neoPixelCount: "114",
+      neoPixelCount: 114,
       id: 2,
       config: {
         lightColor: "#8bb128",
@@ -89,9 +89,11 @@ setTimeout(() => {
       name: "pppp",
       deviceId: 1,
       taskId: 6,
-      taskCode: "dyingLights",
+      taskCode: "bubbles",
       config: {
-        lightColor: "#ff0000",
+        fadeValue: 10,
+        maxParticles: 10,
+        colors: ["#ff0000", "#00ff00", "#0000ff"],
       },
       id: 5,
     },
