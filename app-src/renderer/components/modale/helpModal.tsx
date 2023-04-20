@@ -57,20 +57,14 @@ export default function HelpModal({ open, setOpen }: HelpModalProps) {
               scrolling the mouse wheel.{" "}
             </Accordion.Panel>
           </Accordion.Item>
-          <Accordion.Item className={classes.item} value="led-setup">
-            <Accordion.Control>Wich LED setup can I use?</Accordion.Control>
-            <Accordion.Panel>
-              Currently calculates the Script only color values for a Stripe at
-              the bottom of the screen/window.{" "}
-            </Accordion.Panel>
-          </Accordion.Item>
           <Accordion.Item className={classes.item} value="stripe-creator">
             <Accordion.Control>How the Stripe Creator works?</Accordion.Control>
             <Accordion.Panel>
               To move the viewport of the Stripe Creator use the <Kbd>A</Kbd>{" "}
               and <Kbd>D</Kbd> keys. To zoom in and out use <Kbd>W</Kbd> and{" "}
               <Kbd>S</Kbd>. Tipp: Hold <Kbd>ctrl</Kbd> and hover over the LED to
-              set colors faster. {/* To save your work simply hit <Kbd>ctrl</Kbd> +{" "}
+              set colors faster.{" "}
+              {/* To save your work simply hit <Kbd>ctrl</Kbd> +{" "}
               <Kbd>S</Kbd>. */}
             </Accordion.Panel>
           </Accordion.Item>

@@ -106,7 +106,7 @@ export function StatsGrid({ data }: StatsGridProps) {
               </Text>
             ) : (
               <Text size="sm" weight={500} className={classes.diff}>
-                {<span>0%</span>}
+                {<span>0.00%</span>}
                 <IconArrowNarrowRight size={16} stroke={1.5} />
               </Text>
             )}
