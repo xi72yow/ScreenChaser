@@ -378,7 +378,7 @@ export const videoChaserDefaultData = {
   height: 0,
   startLed: 0,
   rowT: false,
-  rowB: false,
+  rowB: true,
   rowL: false,
   rowR: false,
   clockWise: false,
