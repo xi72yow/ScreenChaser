@@ -319,10 +319,6 @@ export function deleteAllDatabases() {
   });
 }
 
-export function getAllDatabases() {
-  return Dexie.getDatabaseNames();
-}
-
 export class ScreenChaserDB extends Dexie {
   configs!: Table<ConfigsTableInterface>;
   devices!: Table<DeviceTableInterface>;
