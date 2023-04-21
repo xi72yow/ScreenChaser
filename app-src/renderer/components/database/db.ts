@@ -306,6 +306,23 @@ export function getElementFromTable(tableIdentifier: TableNames, id: number) {
   return db[tableIdentifier].get(id);
 }
 
+export function deleteAllDatabases() {
+  return new Promise(async (resolve, reject) => {
+    const dbNames = await Dexie.getDatabaseNames();
+    console.log("database names: ", dbNames);
+
+    for (const name of dbNames) {
+      const db = new Dexie(name);
+      await db.delete();
+    }
+    resolve("");
+  });
+}
+
+export function getAllDatabases() {
+  return Dexie.getDatabaseNames();
+}
+
 export class ScreenChaserDB extends Dexie {
   configs!: Table<ConfigsTableInterface>;
   devices!: Table<DeviceTableInterface>;
