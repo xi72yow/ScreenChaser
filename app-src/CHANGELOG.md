@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.4.0](https://github.com/xi72yow/ScreenChaser/compare/screenchaser-app@0.3.2...screenchaser-app@0.4.0) (2023-04-21)
+
+
+### Bug Fixes
+
+* **app:** avoid jumping in black bar detection ([8087b81](https://github.com/xi72yow/ScreenChaser/commit/8087b81f53a54c80e26831e60a26de66dd589585))
+* **app:** do not insert neoPixelCount as string in db ([bbd2189](https://github.com/xi72yow/ScreenChaser/commit/bbd2189df83da742cae5c9c916d2c3b292ecba1b))
+* **app:** not open chaser window when not used ([469055b](https://github.com/xi72yow/ScreenChaser/commit/469055bcabefd875cdd1daf5a394248cf47e122c))
+* **app:** video-chaser functionality on new db ([518a3de](https://github.com/xi72yow/ScreenChaser/commit/518a3de723fa09008c40f087c0827dee8591c1da))
+
+
+### Features
+
+* **app:** find video sources by name when id changed ([7182e37](https://github.com/xi72yow/ScreenChaser/commit/7182e3760f785e152278e8cc2f0e6301b3486681))
+* **app:** multi config app ([3aecc7e](https://github.com/xi72yow/ScreenChaser/commit/3aecc7ea3fda640ca263330078e3414f2f1604e0))
+* **app:** upgrade stripe creator usability ([35e079d](https://github.com/xi72yow/ScreenChaser/commit/35e079d0f6ed4bbacdc91f2da7cf402e60650c70))
+* **dev:** dynamic rendered task forms ([656401f](https://github.com/xi72yow/ScreenChaser/commit/656401ffa7853a9a0ca2104f1ee9f25a606fdaee))
+
+
+
+
+
 ## [0.3.2](https://github.com/xi72yow/ScreenChaser/compare/screenchaser-app@0.3.1...screenchaser-app@0.3.2) (2023-02-08)
 
 **Note:** Version bump only for package screenchaser-app

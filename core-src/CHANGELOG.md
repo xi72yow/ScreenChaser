@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.3.0](https://github.com/xi72yow/ScreenChaser/compare/screenchaser-core@0.2.3...screenchaser-core@0.3.0) (2023-04-21)
+
+
+### Bug Fixes
+
+* **app:** do not insert neoPixelCount as string in db ([bbd2189](https://github.com/xi72yow/ScreenChaser/commit/bbd2189df83da742cae5c9c916d2c3b292ecba1b))
+* **app:** not open chaser window when not used ([469055b](https://github.com/xi72yow/ScreenChaser/commit/469055bcabefd875cdd1daf5a394248cf47e122c))
+* **core:** debounce setConfig, adjust attributes for configs ([59da60b](https://github.com/xi72yow/ScreenChaser/commit/59da60b591bb731bf35d33d8daf034fd1aa9d995))
+* **core:** stop sending on running effect ([a6fba72](https://github.com/xi72yow/ScreenChaser/commit/a6fba723f11b74ce81cde5b3db349e4540b46aee))
+
+
+### Features
+
+* **dev:** dynamic rendered task forms ([656401f](https://github.com/xi72yow/ScreenChaser/commit/656401ffa7853a9a0ca2104f1ee9f25a606fdaee))
+
+
+
+
+
 ## [0.2.3](https://github.com/xi72yow/ScreenChaser/compare/screenchaser-core@0.2.2...screenchaser-core@0.2.3) (2023-02-08)
 
 
