@@ -8,6 +8,9 @@
     "dev:core": "lerna run dev --scope screenchaser-core",
     "build:app": "lerna run build --scope screenchaser-app",
     "build:core": "lerna run build --scope screenchaser-core",
+    "build:firmware": "lerna run build --scope screenchaser-firmware",
+    "flash:firmware": "lerna run flash --scope screenchaser-firmware",
+    "monitor:firmware": "lerna run monitor --scope screenchaser-firmware",
     "guard:app": "lerna run guard --scope screenchaser-app",
     "release": "lerna version --conventional-commits"
   },
@@ -15,7 +18,8 @@
     "packages": [
       "app-src/",
       "cli-src/",
-      "core-src/"
+      "core-src/",
+      "firmware-src/"
     ],
     "nohoist": [
       "**/react-native",
@@ -28,10 +32,10 @@
       "**/screenchaser-app/**",
       "**/screenchaser-cli/**",
       "**/screenchaser-cli",
+      "**/screenchaser-firmware/**",
+      "**/screenchaser-firmware",
       "**/ts-node",
       "**/ts-node/**"
-
-
     ]
   },
   "devDependencies": {

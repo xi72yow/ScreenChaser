@@ -5,7 +5,8 @@
   "packages": [
     "app-src/",
     "cli-src/",
-    "core-src/"
+    "core-src/",
+    "firmware-src/"
   ],
   "command": {
     "version": {
