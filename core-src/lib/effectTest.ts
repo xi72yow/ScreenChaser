@@ -1,5 +1,6 @@
 import MeteorRain from "./meteorRain";
 import DataEmitter from "./network/dataEmitter";
+import { WledHyperionEmitter } from "./network/wledEmitter";
 import BouncingBalls from "./bouncingBalls";
 import FireFlame from "./fireFlame";
 import ColorWheel from "./colorWheel";
@@ -68,6 +69,11 @@ const MeteorRainEffect = new MeteorRain({
   neoPixelCount: 114,
 });
 
+const ColorWheelEffect = new ColorWheel({
+  neoPixelCount: 114,
+  speed: 10,
+});
+
 /* const BouncingBallsEffect = new BouncingBalls({
   ballMode: "fixed",
   mirrored: true,
@@ -85,15 +91,20 @@ async function main() {
       console.log(ip, pixels.length);
     }
   );
+
+  const WledHyperionEmitterForIp = new WledHyperionEmitter({
+    ip: "192.168.2.165",
+  });
+
   //await DataEmitterForIP.init();
   setInterval(() => {
-    count++;
+    /*  count++;
     if (count % 60 === 0) {
       DataEmitterForIP.logHealth();
       DataEmitterForIP.logMaxPower();
-    }
-    DataEmitterForIP.emit(ChristmasEffect.render());
-  }, 110);
+    } */
+    WledHyperionEmitterForIp.emit(ColorWheelEffect.render());
+  }, 1000 / 60);
 }
 
 main();

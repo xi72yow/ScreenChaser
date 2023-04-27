@@ -8,7 +8,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "ts-node index.ts",
     "build": "tsc",
-    "dev": "nodemon lib/manager/taskManager.test.ts"
+    "dev": "nodemon lib/manager/taskManager.test.ts",
+    "dev-effect": "nodemon lib/effectTest.ts"
   },
   "keywords": [],
   "author": "xi72yow",
