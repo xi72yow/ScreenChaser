@@ -7,7 +7,7 @@ import DyingLights from "../dyingLights";
 import FireFlame from "../fireFlame";
 import FrostyPike from "../frostyPike";
 import MeteorRain from "../meteorRain";
-import DataEmitter, { DataEmitterInterface } from "../network/dataEmitter";
+import DataEmitter, { DataEmitterInterface } from "../network/wledEmitter";
 import Snake from "../snake";
 import { EffectInterface, TaskCodes } from "../types";
 
@@ -52,7 +52,10 @@ export default class TaskManager implements ManagerInterface {
 
     if (chaser) {
       if (chaser.device.ip !== device.ip)
-        chaser.emitter = new DataEmitter(false, device.ip, this.onEmit);
+        chaser.emitter = new DataEmitter({
+          ip: device.ip,
+          onEmit: this.onEmit,
+        });
       chaser.config = config;
       chaser.device = device;
     } else {
@@ -61,7 +64,7 @@ export default class TaskManager implements ManagerInterface {
         config,
         interval: undefined,
         runningEffect: undefined,
-        emitter: new DataEmitter(false, device.ip, this.onEmit),
+        emitter: new DataEmitter({ ip: device.ip, onEmit: this.onEmit }),
         debounce: null,
       });
     }

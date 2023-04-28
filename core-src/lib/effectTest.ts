@@ -1,6 +1,6 @@
 import MeteorRain from "./meteorRain";
 import DataEmitter from "./network/dataEmitter";
-import { WledHyperionEmitter } from "./network/wledEmitter";
+import WledHyperionEmitter from "./network/wledEmitter";
 import BouncingBalls from "./bouncingBalls";
 import FireFlame from "./fireFlame";
 import ColorWheel from "./colorWheel";
@@ -96,6 +96,10 @@ async function main() {
     ip: "192.168.2.165",
   });
 
+  WledHyperionEmitterForIp.scanNetwork().then((ips: any) => {
+    console.log(ips);
+  });
+
   //await DataEmitterForIP.init();
   setInterval(() => {
     /*  count++;
@@ -104,7 +108,7 @@ async function main() {
       DataEmitterForIP.logMaxPower();
     } */
     WledHyperionEmitterForIp.emit(ColorWheelEffect.render());
-  }, 1000 / 60);
+  }, 1000 / 35);
 }
 
 main();

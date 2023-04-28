@@ -18,7 +18,7 @@ export { default as Manager, ManagerInterface } from "./manager/taskManager";
 export {
   default as DataEmitter,
   DataEmitterInterface,
-} from "./network/dataEmitter";
+} from "./network/wledEmitter";
 
 // export some functions
 export { reScale } from "./basics/reScale";

@@ -47,10 +47,9 @@ export default function ScanNetworkModal({}: scanNetworkModalProps) {
 
   function scanNetwork() {
     setScanning(true);
-    const DataEmitterForIP = new DataEmitter(false);
-    DataEmitterForIP.init()
-      .then((value) => {
-        const detectedDevices = DataEmitterForIP.getSlaves();
+    const DataEmitterForIP = new DataEmitter({});
+    DataEmitterForIP.scanNetwork()
+      .then((detectedDevices) => {
         checkForNewDevices(devices, detectedDevices);
         setScanning(false);
       })

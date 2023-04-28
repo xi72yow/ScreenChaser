@@ -331,7 +331,7 @@ function Next() {
           );
 
           ipcRenderer.send("CHASER:SEND_STRIPE", adjustedStripeData, device.id);
-        }, 100);
+        }, 1000 / config.fps);
       });
   }
 

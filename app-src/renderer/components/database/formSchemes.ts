@@ -317,6 +317,11 @@ export const videoChaserSchema = {
     clockWise: {
       type: "boolean",
     },
+    fps: {
+      type: "integer",
+      minimum: 10,
+      maximum: 60,
+    },
   },
 };
 
@@ -369,6 +374,11 @@ export const videoChaserUiSchema = {
       label: "Clock Wise",
       scope: "#/properties/clockWise",
     },
+    {
+      type: "Control",
+      label: "Fps",
+      scope: "#/properties/fps",
+    },
   ],
 };
 
@@ -382,6 +392,7 @@ export const videoChaserDefaultData = {
   rowL: false,
   rowR: false,
   clockWise: false,
+  fps: 30,
 };
 
 export const staticLightSchema = {

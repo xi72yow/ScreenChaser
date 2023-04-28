@@ -181,7 +181,7 @@ export default function OverviewTable({ scanNetwork, scanning }: Props) {
 
   function sendIdentifyColor() {
     devices.forEach(({ ip, neoPixelCount }, index, array) => {
-      const DataEmitterForIP = new DataEmitter(false, ip);
+      const DataEmitterForIP = new DataEmitter({ ip });
       const rgb = IdentifyColors[index].color;
       DataEmitterForIP.emit(setAll(rgb.r, rgb.g, rgb.b, neoPixelCount || 60));
     });
