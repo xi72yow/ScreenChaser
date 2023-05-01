@@ -25,20 +25,9 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
-## [0.3.2](https://github.com/xi72yow/ScreenChaser/compare/screenchaser-app@0.3.1...screenchaser-app@0.3.2) (2023-02-08)
+## [0.3.1](https://github.com/xi72yow/ScreenChaser/compare/screenchaser-app@0.3.1...screenchaser-app@0.3.2) (2023-02-08)
 
 **Note:** Version bump only for package screenchaser-app
-
-
-
-
-
-## [0.3.1](https://github.com/xi72yow/ScreenChaser/compare/screenchaser-app@0.3.0...screenchaser-app@0.3.1) (2023-02-05)
-
-
-### Performance Improvements
-
-* **app:** video first, webgl powered chasing ([9bde33a](https://github.com/xi72yow/ScreenChaser/commit/9bde33aab6d4a163d251ea98f4e8cd402a57e410))
 
 
 

@@ -9,6 +9,5 @@
     "strict": true,
     "esModuleInterop": true,
     "allowJs": true
-
   }
 }

@@ -5,10 +5,8 @@ directories:
   output: dist
   buildResources: resources
 files:
-  - from: .
-    filter:
-      - package.json
-      - app
+  - main/**/*
+  - next-src/out/**/*
 #Linux Configuration
 linux:
   target:

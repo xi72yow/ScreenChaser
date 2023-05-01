@@ -1,0 +1,15 @@
+{
+    "name": "screenchaser-firmware",
+    "version": "0.0.0",
+    "description": "description",
+    "main": "index.js",
+    "scripts": {
+        "build": "",
+        "clean": ""
+    },
+    "author": "xi72yow",
+    "devDependencies": {
+        "concurrently": "^8.0.1",
+        "rimraf": "^5.0.0"
+    }
+}

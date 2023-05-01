@@ -9,11 +9,13 @@
     "start": "ts-node index.ts",
     "build": "tsc",
     "dev": "nodemon lib/manager/taskManager.test.ts",
-    "dev-effect": "nodemon lib/effectTest.ts"
+    "dev-effect": "nodemon lib/effectTest.ts",
+    "clean": "rimraf dist"
   },
   "keywords": [],
   "author": "xi72yow",
   "devDependencies": {
+    "rimraf": "^5.0.0",
     "@types/node": "^18.11.10",
     "nodemon": "^2.0.20",
     "ts-node": "^10.9.1",

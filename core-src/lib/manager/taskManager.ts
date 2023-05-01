@@ -55,6 +55,7 @@ export default class TaskManager implements ManagerInterface {
         chaser.emitter = new DataEmitter({
           ip: device.ip,
           onEmit: this.onEmit,
+          type: device.type,
         });
       chaser.config = config;
       chaser.device = device;
@@ -64,7 +65,11 @@ export default class TaskManager implements ManagerInterface {
         config,
         interval: undefined,
         runningEffect: undefined,
-        emitter: new DataEmitter({ ip: device.ip, onEmit: this.onEmit }),
+        emitter: new DataEmitter({
+          ip: device.ip,
+          onEmit: this.onEmit,
+          type: device.type,
+        }),
         debounce: null,
       });
     }

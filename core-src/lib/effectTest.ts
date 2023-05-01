@@ -12,6 +12,7 @@ import Bubbles from "./bubbles";
 
 import setAll from "./basics/setAll";
 import setPixel from "./basics/setPixel";
+import { ChaserTypes } from "./types";
 
 let count = 0;
 
@@ -93,7 +94,8 @@ async function main() {
   );
 
   const WledHyperionEmitterForIp = new WledHyperionEmitter({
-    ip: "192.168.2.165",
+    ip: "192.168.2.113",
+    type: ChaserTypes.ScreenChaser,
   });
 
   WledHyperionEmitterForIp.scanNetwork().then((ips: any) => {

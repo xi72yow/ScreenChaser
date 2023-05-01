@@ -1,5 +1,4 @@
 //defaut reusable values
-
 type EffectsIdentifier =
   | "meteorRain"
   | "bouncingBalls"
@@ -36,3 +35,24 @@ export enum TaskCodes {
   bubbles = "bubbles",
   staticLight = "staticLight",
 }
+
+export enum ChaserTypes {
+  WLED = "WLED",
+  ScreenChaser = "ScreenChaser",
+}
+
+//export all effects types
+export type { SpaceShuttleInterface } from "../spaceShuttle";
+export type { ColorWheelInterface } from "../colorWheel";
+export type { FrostyPikeInterface } from "../frostyPike";
+export type { DyingLightsInterface } from "../dyingLights";
+export type { SnakeInterface } from "../snake";
+export type { BubblesInterface } from "../bubbles";
+export type { AnimationInterface } from "../animation";
+export type { MeteorRainInterface } from "../meteorRain";
+export type { BouncingBallsInterface } from "../bouncingBalls";
+export type { FireFlameInterface } from "../fireFlame";
+
+// export complex core utils types
+export type { ManagerInterface } from "../manager/taskManager";
+export type { DataEmitterInterface } from "../network/wledEmitter";

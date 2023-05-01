@@ -7,12 +7,12 @@
     "dev:app": "lerna run dev --scope screenchaser-app",
     "dev:core": "lerna run dev --scope screenchaser-core",
     "build:app": "lerna run build --scope screenchaser-app",
+    "dist:app": "lerna run dist --scope screenchaser-app",
     "build:core": "lerna run build --scope screenchaser-core",
     "build:firmware": "lerna run build --scope screenchaser-firmware",
-    "flash:firmware": "lerna run flash --scope screenchaser-firmware",
-    "monitor:firmware": "lerna run monitor --scope screenchaser-firmware",
     "guard:app": "lerna run guard --scope screenchaser-app",
-    "release": "lerna version --conventional-commits"
+    "release": "lerna version --conventional-commits",
+    "nuke": "lerna run clean && pnpm store prune && lerna clean -y"
   },
   "workspaces": {
     "packages": [
@@ -20,25 +20,9 @@
       "cli-src/",
       "core-src/",
       "firmware-src/"
-    ],
-    "nohoist": [
-      "**/react-native",
-      "**/react-native/**",
-      "**/electron",
-      "**/electron/**",
-      "**/jest",
-      "**/jest/**",
-      "**/screenchaser-app",
-      "**/screenchaser-app/**",
-      "**/screenchaser-cli/**",
-      "**/screenchaser-cli",
-      "**/screenchaser-firmware/**",
-      "**/screenchaser-firmware",
-      "**/ts-node",
-      "**/ts-node/**"
     ]
   },
   "devDependencies": {
-    "lerna": "^6.1.0"
+    "lerna": "6.6.1"
   }
 }

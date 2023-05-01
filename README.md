@@ -25,6 +25,7 @@ https://user-images.githubusercontent.com/65042627/210893593-29b303a0-6971-4d15-
 
 ## Main features roadmap:
 
+- [ ] create better serial credentials API
 - [ ] connect multiple controller to one virtual device
 - [ ] esp over the air firmware update from repo
 - [ ] custom theme colors

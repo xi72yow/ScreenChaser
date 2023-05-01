@@ -1,6 +1,7 @@
 import dgram from "dgram";
 import { hexToRgb } from "../basics/convertRgbHex";
 import os from "os";
+import { ChaserTypes } from "../types";
 
 interface Chaser {
   ip: string;
@@ -27,17 +28,20 @@ export default class WledHyperionEmitter implements DataEmitterInterface {
   optimisticStripeData: any[];
   scanningNetwork: boolean;
   onEmit: ((ip: string, pixelArray: string | any[]) => void) | undefined;
+  type: ChaserTypes;
 
   constructor(param: {
     ip?: string;
     onEmit?: (ip: string, pixelArray: string | any[]) => void;
+    type: ChaserTypes;
   }) {
-    const { ip, onEmit } = param;
+    const { ip, onEmit, type } = param;
     this.ip = ip;
     this.server = dgram.createSocket("udp4");
     this.optimisticStripeData = [];
     this.scanningNetwork = false;
     this.onEmit = onEmit;
+    this.type = type;
   }
 
   getHealth(): {
@@ -175,6 +179,9 @@ export default class WledHyperionEmitter implements DataEmitterInterface {
               const message = Buffer.from("02ff000000", "hex");
               this.server.send(message, 21324, ip);
             }
+            if (text.includes("ScreenChaser")) {
+              ledSlaves.push({ ip, type: "ScreenChaser" });
+            }
           }
         } catch (e) {
           // this device is probably not a led stripe
@@ -193,7 +200,11 @@ export default class WledHyperionEmitter implements DataEmitterInterface {
     if (this.onEmit) this.onEmit(this.ip, data);
 
     this.optimisticStripeData = data;
-    const message = Buffer.from(data.join(""), "hex");
+    let hexString = data.join("");
+    
+    if (this.type === "ScreenChaser") hexString = "00" + hexString;
+
+    const message = Buffer.from(hexString, "hex");
     this.server.send(message, 19446, this.ip, function (err, bytes) {
       if (err) throw err;
     });
