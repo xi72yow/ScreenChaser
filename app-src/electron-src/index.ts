@@ -14,8 +14,9 @@ import {
 } from "electron";
 import { createWindow, StatCalculator } from "./helpers";
 import { Manager, DataEmitter } from "screenchaser-core";
+import { ChaserTypes } from "screenchaser-core/dist/types";
 
-const hostname = "localhost";
+const hostname = "127.0.0.1";
 const port = 3000;
 
 const ChaserManager = new Manager();
@@ -35,7 +36,6 @@ app.on("ready", async () => {
       preload: join(__dirname, "preload.js"),
     },
   });
-
   mainWindow.setMenuBarVisibility(false);
 
   mainWindow.webContents.setZoomFactor(1.0);
@@ -122,7 +122,7 @@ app.on("ready", async () => {
       }),
       port
     );
-    mainWindow.loadURL(`http://127.0.0.1:${port}/home`);
+    mainWindow.loadURL(`http://${hostname}:${port}/home`);
     mainWindow.webContents.openDevTools();
   } else {
     const url = format({
@@ -153,6 +153,11 @@ ipcMain.handle("GET_SOURCES", async (event, ...args) => {
   return sources;
 });
 
+ipcMain.handle("SCAN_NETWORK", async (event, ...args) => {
+  const DataEmitterForIP = new DataEmitter({ type: ChaserTypes.Scanner });
+  return DataEmitterForIP.scanNetwork();
+});
+
 ipcMain.handle("GET_STATS", () => {
   return ChaserStatCalculator.calculateStats();
 });
@@ -164,17 +169,24 @@ ipcMain.on("MANAGE_CHASER", (event, args: any) => {
 
 let chaserWindow: BrowserWindow | null = null;
 
-ipcMain.on("CHASER:ON", async (event, args) => {
+async function manageChaserWindow() {
+  if (!ChaserManager.videoChaserExists() && chaserWindow) {
+    await chaserWindow.close();
+    chaserWindow = null;
+    return;
+  }
+
   if (chaserWindow) return;
   chaserWindow = new BrowserWindow({
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: false,
+      preload: join(__dirname, "preload.js"),
     },
     frame: isDev,
     transparent: !isDev,
-    width: isDev ? 1 : 800,
-    height: isDev ? 1 : 600,
+    width: !isDev ? 1 : 800,
+    height: !isDev ? 1 : 600,
   });
 
   if (isDev) {
@@ -188,6 +200,14 @@ ipcMain.on("CHASER:ON", async (event, args) => {
     });
     chaserWindow.loadURL(url);
   }
+
+  chaserWindow.on("closed", () => {
+    chaserWindow = null;
+  });
+}
+
+ipcMain.on("CHASER:ON", async (event, args) => {
+  manageChaserWindow();
 });
 
 ipcMain.on("CHASER:OFF", async (event, args) => {
@@ -207,34 +227,15 @@ ipcMain.on("LIGHTS:OFF", async (event, args) => {
 
 ipcMain.on("LIGHTS:ON", async (event, args) => {
   ChaserManager.continueLight();
-
-  if (!ChaserManager.videoChaserExists()) return;
-  chaserWindow = new BrowserWindow({
-    webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: false,
-    },
-    frame: isDev,
-    transparent: !isDev,
-    width: !isDev ? 1 : 800,
-    height: !isDev ? 1 : 600,
-  });
-
-  if (isDev) {
-    chaserWindow.loadURL(`http://${hostname}:${port}/chaserhack`);
-    chaserWindow.webContents.openDevTools();
-  } else {
-    const url = format({
-      pathname: join(__dirname, "../next-src/out/chaserhack.html"),
-      protocol: "file:",
-      slashes: true,
-    });
-    chaserWindow.loadURL(url);
-  }
+  manageChaserWindow();
 });
 
 ipcMain.on("CHASER:SEND_STRIPE", (event, stripe, id) => {
   ChaserManager.sendChasingStripe(id, stripe);
+});
+
+ipcMain.on("CHASER:SEND_STATIC_STRIPE", (event, stripe, id) => {
+  ChaserManager.sendStaticStripe(id, stripe);
 });
 
 app.on("window-all-closed", () => {

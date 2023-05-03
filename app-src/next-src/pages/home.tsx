@@ -117,12 +117,16 @@ function App() {
     async () => {
       const allDevices = await db.devices.toArray();
       const prepardedData = allDevices.map(async (device) => {
-        return {
-          device,
-          config: await db.configs.get(device.configId).catch((e) => {
-            return { taskCode: "nothing to do" };
-          }),
-        };
+        if (!device.configId) {
+          return {
+            device,
+            config: { taskCode: "nothing to do" },
+          };
+        } else
+          return {
+            device,
+            config: await db.configs.get(device.configId),
+          };
       });
       return Promise.all(prepardedData);
     },

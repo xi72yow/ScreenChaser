@@ -8,7 +8,7 @@ import {
 import { showNotification } from "@mantine/notifications";
 import { IconAccessPoint } from "@tabler/icons";
 import { useLiveQuery } from "dexie-react-hooks";
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { TableNames, addElementToTable, db, dbBool } from "../database/db";
 import DeviceForm from "./chaserSettingsModalComponents/deviceForm";
 import OverviewTable from "./chaserSettingsModalComponents/overviewTable";
@@ -46,21 +46,18 @@ export default function ScanNetworkModal({}: scanNetworkModalProps) {
 
   function scanNetwork() {
     setScanning(true);
-    /*  const DataEmitterForIP = new DataEmitter({});
-    DataEmitterForIP.scanNetwork()
-      .then((detectedDevices) => {
-        checkForNewDevices(devices, detectedDevices);
-        setScanning(false);
-      })
-      .catch((err) => {
-        console.log(err);
+    global.ipcRenderer.invoke("SCAN_NETWORK").then((detectedDevices) => {
+      if (typeof detectedDevices !== "object") {
         showNotification({
-          title: "Chaser Error",
-          message: "Error while scanning network: " + err,
-          color: "red",
+          title: "Chaser Notification",
+          message: `Error while scanning network: ${detectedDevices}`,
         });
         setScanning(false);
-      }); */
+        return;
+      }
+      checkForNewDevices(devices, detectedDevices);
+      setScanning(false);
+    });
   }
 
   function checkForNewDevices(old, newDevices): void {
@@ -76,7 +73,6 @@ export default function ScanNetworkModal({}: scanNetworkModalProps) {
       ) {
         newD.new = dbBool.true;
         newD.exclude = dbBool.false;
-        delete newD.type;
         delete newD.port;
         newD.name = "";
         newD.neoPixelCount = 60;
@@ -104,7 +100,7 @@ export default function ScanNetworkModal({}: scanNetworkModalProps) {
   useEffect(() => {
     if (devices === undefined) return;
     if (firstUpdate.current) {
-      //scanNetwork();
+      scanNetwork();
       firstUpdate.current = false;
     }
   }, [devices]);

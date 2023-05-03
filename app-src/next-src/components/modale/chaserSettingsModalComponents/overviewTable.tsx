@@ -1,29 +1,26 @@
 import {
-  Table,
-  Text,
-  Group,
   Button,
-  Loader,
   ColorSwatch,
+  Group,
+  Loader,
+  Table,
+  TextInput,
   Tooltip,
   useMantineTheme,
-  TextInput,
-  createStyles,
 } from "@mantine/core";
+import { useDebouncedValue } from "@mantine/hooks";
 import { showNotification } from "@mantine/notifications";
 import { IconFocus2, IconRefresh } from "@tabler/icons";
 import { useLiveQuery } from "dexie-react-hooks";
-import React, { useEffect, useState } from "react";
-import { setAll } from "screenchaser-core";
+import { useEffect, useState } from "react";
+import { setAll } from "screenchaser-core/dist/helpers";
 import {
   DeviceTableInterface,
   TableNames,
   db,
   dbBool,
-  updateElementDebouncedInTable,
   updateElementInTable,
 } from "../../database/db";
-import { useDebouncedValue } from "@mantine/hooks";
 
 const IdentifyColors = {
   "0": { name: "gray", color: { r: 50, g: 50, b: 50 } },
@@ -179,10 +176,13 @@ export default function OverviewTable({ scanNetwork, scanning }: Props) {
   );
 
   function sendIdentifyColor() {
-    devices.forEach(({ ip, neoPixelCount }, index, array) => {
-      /*  const DataEmitterForIP = new DataEmitter({ ip });
+    devices.forEach(({ ip, neoPixelCount, id }, index, array) => {
       const rgb = IdentifyColors[index].color;
-      DataEmitterForIP.emit(setAll(rgb.r, rgb.g, rgb.b, neoPixelCount || 60)); */
+      global.ipcRenderer.send(
+        "CHASER:SEND_STATIC_STRIPE",
+        setAll(rgb.r, rgb.g, rgb.b, neoPixelCount),
+        id
+      );
     });
     showNotification({
       title: "Chaser Notification",

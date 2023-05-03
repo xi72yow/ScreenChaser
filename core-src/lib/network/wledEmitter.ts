@@ -167,6 +167,8 @@ export default class WledHyperionEmitter implements DataEmitterInterface {
 
       const trys = this.combinations(32 - netmaskCount);
 
+      if (trys.length > 300) reject("To many Ips in Network.");
+
       const fetchPomises = trys.map(async (tryy) => {
         const ip = this.binToIp(baseAddressBin + tryy);
         try {
@@ -174,13 +176,13 @@ export default class WledHyperionEmitter implements DataEmitterInterface {
           if (response.status === 200) {
             const text = await response.text();
             if (text.includes("WLED")) {
-              ledSlaves.push({ ip, type: "WLED" });
+              ledSlaves.push({ ip, type: ChaserTypes.WLED });
               // this prevents the led stripe from turning back to the other mode
               const message = Buffer.from("02ff000000", "hex");
               this.server.send(message, 21324, ip);
             }
-            if (text.includes("ScreenChaser")) {
-              ledSlaves.push({ ip, type: "ScreenChaser" });
+            if (text.includes("ScreenChaser") || text.includes("ESP8266")) {
+              ledSlaves.push({ ip, type: ChaserTypes.ScreenChaser });
             }
           }
         } catch (e) {
@@ -201,8 +203,8 @@ export default class WledHyperionEmitter implements DataEmitterInterface {
 
     this.optimisticStripeData = data;
     let hexString = data.join("");
-    
-    if (this.type === "ScreenChaser") hexString = "00" + hexString;
+
+    if (this.type === ChaserTypes.ScreenChaser) hexString = "00" + hexString;
 
     const message = Buffer.from(hexString, "hex");
     this.server.send(message, 19446, this.ip, function (err, bytes) {

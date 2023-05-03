@@ -39,6 +39,7 @@ export enum TaskCodes {
 export enum ChaserTypes {
   WLED = "WLED",
   ScreenChaser = "ScreenChaser",
+  Scanner = "Scanner",
 }
 
 //export all effects types

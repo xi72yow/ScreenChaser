@@ -13,6 +13,7 @@ import {
   BubblesInterface,
   AnimationInterface,
   MeteorRainInterface,
+  ChaserTypes,
 } from "screenchaser-core/dist/types";
 import {
   animationDefaultData,
@@ -189,6 +190,7 @@ export interface DeviceTableInterface {
   new: boolean;
   exclude: dbBool;
   configId: number;
+  type: ChaserTypes;
 }
 
 export interface ConfigsTableInterface {
@@ -329,7 +331,7 @@ export class ScreenChaserDB extends Dexie {
     super(`ScreenChaserDatabase_v${packageJson.databaseVersion}`);
     this.version(Number(packageJson.databaseVersion)).stores({
       configs: "++id, deviceId, taskId, taskCode, name, config",
-      devices: "++id, ip, name, neoPixelCount, new, exclude, configId",
+      devices: "++id, ip, name, neoPixelCount, new, exclude, configId, type",
       tasks:
         "++id, taskCode, schema, uiSchema, defaultData, label, type, favorite",
       usrs: "++id",

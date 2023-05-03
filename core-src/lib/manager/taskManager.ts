@@ -202,6 +202,14 @@ export default class TaskManager implements ManagerInterface {
     }
   }
 
+  sendStaticStripe(deviceId: number, stripe: string[]): void {
+    const chaser = this.chasers.get(deviceId);
+    if (chaser) {
+      const { emitter } = chaser;
+      emitter.emit(stripe);
+    }
+  }
+
   lightsOff(): void {
     this.chasers.forEach((chaser) => {
       const { emitter, interval, device } = chaser;
