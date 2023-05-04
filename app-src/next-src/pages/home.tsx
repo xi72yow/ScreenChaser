@@ -50,7 +50,7 @@ function checkForUpdates() {
               {`Version ${NEW_VERSION} is available. You are running version ${package_json.version}. Download `}
               <span
                 onClick={() => {
-                  //shell.openExternal(data.html_url);
+                  global.ipcRenderer.send("SHELL:OPEN_LINK", data.html_url);
                 }}
                 style={{ color: "#09ADC3", cursor: "pointer" }}
               >
@@ -138,9 +138,9 @@ function App() {
     setSelectedConfigId(-1);
   }, [selectedTaskId]);
 
-  /* React.useEffect(() => {
+  React.useEffect(() => {
     checkForUpdates();
-  }, []); */
+  }, []);
 
   React.useEffect(() => {
     if (deviceConfigs) {

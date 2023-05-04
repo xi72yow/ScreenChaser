@@ -11,6 +11,7 @@ import {
   desktopCapturer,
   ipcMain,
   IpcMainEvent,
+  shell,
 } from "electron";
 import { createWindow, StatCalculator } from "./helpers";
 import { Manager, DataEmitter } from "screenchaser-core";
@@ -236,6 +237,10 @@ ipcMain.on("CHASER:SEND_STRIPE", (event, stripe, id) => {
 
 ipcMain.on("CHASER:SEND_STATIC_STRIPE", (event, stripe, id) => {
   ChaserManager.sendStaticStripe(id, stripe);
+});
+
+ipcMain.on("SHELL:OPEN_LINK", (event, link) => {
+  shell.openExternal(link);
 });
 
 app.on("window-all-closed", () => {
