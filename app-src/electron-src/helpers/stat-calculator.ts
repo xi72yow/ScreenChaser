@@ -16,26 +16,29 @@ class StatCalculator {
 
       const statisic = {
         title: device.name || device.ip,
+        deviceId: device.id,
         task: config.taskCode,
-        details: [
-          {
+        details: {
+          power: {
             title: "Power:",
             value: data.power,
             maxPower: data.maxPower,
             icon: "bolt",
             diff: lastStatisic
-              ? (data.power / lastStatisic.details[0]?.value) * 100 - 100
+              ? (data.power / lastStatisic.details.power?.value) * 100 - 100
               : 0,
           },
-          {
+          packageLoss: {
             title: "Package Loss:",
             value: data.packageloss,
             icon: "package",
             diff: lastStatisic
-              ? (data.packageloss / lastStatisic.details[1]?.value) * 100 - 100
+              ? (data.packageloss / lastStatisic.details.packageloss?.value) *
+                  100 -
+                100
               : 0,
           },
-        ],
+        },
       };
       this.statistics.set(device.id, statisic);
     });

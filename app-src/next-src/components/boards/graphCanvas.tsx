@@ -163,8 +163,8 @@ export const GraphCanvas = React.memo((props: GraphCanvasProps) => {
       {
         shownPoints: 5,
         lineWidth: 2,
-        width: 100,
-        height: 50,
+        width: 250,
+        height: 120,
       }
     );
     stampRef.current.startDrawing();
@@ -182,7 +182,7 @@ export const GraphCanvas = React.memo((props: GraphCanvasProps) => {
     stampRef.current.setColors({
       evenLevelColor: theme.colorScheme === "dark" ? "#ffffff99" : "#33333399",
       oddLevelColor: theme.colorScheme === "dark" ? "#bbbbbb99" : "#aaaaaa99",
-      graphColor: theme.colorScheme === "dark" ? "#ffffffaa" : "#000000aa",
+      graphColor: theme.colorScheme === "dark" ? "#339af0aa" : "#339af0aa",
     });
   }, [theme]);
 

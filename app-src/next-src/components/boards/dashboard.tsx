@@ -1,33 +1,54 @@
-import React, { useEffect, useRef, useState } from "react";
 import {
   Badge,
   Box,
-  createStyles,
   Group,
+  Modal,
   Paper,
   SimpleGrid,
   Skeleton,
   Text,
+  Tooltip,
+  createStyles,
 } from "@mantine/core";
+import { useInterval } from "@mantine/hooks";
 import {
-  IconUserPlus,
-  IconDiscount2,
-  IconReceipt2,
-  IconBolt,
-  IconArrowUpRight,
   IconArrowDownRight,
-  IconPackage,
-  IconArrowNarrowRight,
+  IconArrowUpRight,
+  IconBolt,
+  IconInfoCircle,
+  IconSettings,
 } from "@tabler/icons";
-import { randomId, useHash, useInterval } from "@mantine/hooks";
-import { UseFormReturnType } from "@mantine/form";
-import { ConfigInterface, db } from "../database/db";
 import { useLiveQuery } from "dexie-react-hooks";
+import { useEffect, useState } from "react";
+import { db } from "../database/db";
+import ActionIcon from "../forms/helpers/actionIcon";
 import { GraphCanvas } from "./graphCanvas";
 
 const useStyles = createStyles((theme) => ({
   root: {
     padding: theme.spacing.xl * 1.5,
+  },
+  wrapper: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    alignContent: "center",
+    padding: `6px ${theme.spacing.xs}px`,
+    margin: "0.5rem",
+    borderRadius: theme.radius.sm,
+    border: `1px solid ${
+      theme.colorScheme === "dark" ? "transparent" : theme.colors.gray[3]
+    }`,
+    backgroundColor:
+      theme.colorScheme === "dark" ? theme.colors.dark[5] : theme.white,
+
+    "&:focus-within": {
+      borderColor: theme.colors[theme.primaryColor][6],
+    },
+    "&:hover": {
+      borderColor: theme.colors[theme.primaryColor][6],
+      cursor: "pointer",
+    },
   },
 
   value: {
@@ -50,92 +71,177 @@ const useStyles = createStyles((theme) => ({
   },
 
   title: {
-    fontWeight: 700,
+    fontWeight: 800,
+    fontSize: 20,
     textTransform: "uppercase",
+  },
+  description: {
+    fontSize: 14,
+    color: theme.colorScheme === "dark" ? theme.colors.dark[2] : theme.black,
   },
 }));
 
-const icons = {
-  user: IconUserPlus,
-  discount: IconDiscount2,
-  package: IconPackage,
-  bolt: IconBolt,
-};
+interface DashboardProps {}
 
-interface StatsGridProps {
-  data: {
-    title: string;
-    icon: keyof typeof icons;
-    value: number;
-    diff: number;
-  }[];
-}
-
-export function StatsGrid({ data }: StatsGridProps) {
+function QuickConfigModal({ deviceId, opened, setOpened }) {
+  const configs = useLiveQuery(() => db.configs.toArray(), []);
   const { classes } = useStyles();
 
-  if (!data) return null;
-
-  const stats = data.map((stat, i) => {
-    const Icon = icons[stat.icon];
-    const DiffIcon = stat.diff > 0 ? IconArrowUpRight : IconArrowDownRight;
-    return (
-      <Paper withBorder p="md" radius="md" key={stat.title + i}>
-        <Group position="apart">
-          <Text size="xs" color="dimmed" className={classes.title}>
-            {stat.title}
-          </Text>
-          <Icon className={classes.icon} size={22} stroke={1.5} />
-        </Group>
-        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-          <Group align="flex-end" spacing="xs" mt={25}>
-            <Text className={classes.value}>
-              {stat.value?.toFixed(2) || "0.00"}
-              {stat.icon === "bolt" ? "W" : "%"}
-            </Text>
-            {stat.diff ? (
-              <Text
-                color={stat.diff > 0 ? "red" : "teal"}
-                size="sm"
-                weight={500}
-                className={classes.diff}
-              >
-                {<span>{stat.diff.toFixed(2)}%</span>}
-                <DiffIcon size={16} stroke={1.5} />
-              </Text>
-            ) : (
-              <Text size="sm" weight={500} className={classes.diff}>
-                {<span>0.00%</span>}
-                <IconArrowNarrowRight size={16} stroke={1.5} />
-              </Text>
-            )}
-            <Text size="xs" color="dimmed" mt={7}>
-              {stat.icon === "bolt"
-                ? "actual Power consumtion"
-                : "packageloss over lifetime"}
-            </Text>
-          </Group>
+  return (
+    <Modal
+      opened={opened}
+      onClose={() => setOpened(false)}
+      title="Quick Config"
+      size="xl"
+      centered
+    >
+      <Group position="apart">
+        <Text size="sm" weight={500}>
+          Select a config:
+        </Text>
+      </Group>
+      <SimpleGrid cols={2}>
+        {configs?.map((config) => (
           <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
+            key={config.id + "config_quick_modal"}
+            className={classes.wrapper}
+            onClick={() => {
+              db.devices
+                .where("id")
+                .equals(deviceId)
+                .modify({ configId: config.id });
+              setOpened(false);
             }}
           >
-            <GraphCanvas stat={stat} />
+            <Text size="xs" weight={600}>
+              {config.name}
+            </Text>
+            <Badge color="teal" size="sm">
+              <Text size="xs" weight={600}>
+                {config.taskCode}
+              </Text>
+            </Badge>
           </Box>
-        </Box>
-      </Paper>
-    );
-  });
-  return (
-    <div className={classes.root}>
-      <SimpleGrid cols={2}>{stats}</SimpleGrid>
-    </div>
+        ))}
+      </SimpleGrid>
+    </Modal>
   );
 }
 
-interface DashboardProps {}
+function DeviceCard({ dashBoardData, device }) {
+  const { classes } = useStyles();
+
+  const [opened, setOpened] = useState(false);
+  const [modalDeviceId, setModalDeviceId] = useState<number>(0);
+
+  const powerColor = "#339af0";
+
+  const [deviceData, setDeviceData] = useState<{
+    details: any;
+    title: string;
+    task: string;
+  }>({ details: { power: null }, title: "", task: "" });
+
+  useEffect(() => {
+    setDeviceData({
+      ...dashBoardData.find((data) => data.deviceId === device.id),
+    });
+  }, [dashBoardData]);
+
+  const DiffPowerIcon =
+    deviceData.details?.power?.diff > 0 ? IconArrowUpRight : IconArrowDownRight;
+
+  return (
+    <>
+      <QuickConfigModal
+        deviceId={modalDeviceId}
+        opened={opened}
+        setOpened={setOpened}
+      />
+      <Paper withBorder p="md" radius="md" key={device.id + "dash"}>
+        <Group position="apart">
+          <Group>
+            <Text size="xs" color="dimmed" className={classes.title}>
+              {device.name || device.ip}
+            </Text>
+            {deviceData.details && (
+              <Badge color={deviceData.task ? "lime" : "grape"} size="sm">
+                {deviceData.task || "nothing to do"}
+              </Badge>
+            )}
+          </Group>
+          <ActionIcon
+            onClick={() => {
+              setModalDeviceId(device.id);
+              setOpened(true);
+            }}
+            tooltip="Quick Config"
+          >
+            <IconSettings size={22} stroke={1.5} />
+          </ActionIcon>
+        </Group>
+        <SimpleGrid cols={2}>
+          {deviceData.details ? (
+            <>
+              <Group>
+                <Badge
+                  variant="outline"
+                  p={15}
+                  color={powerColor}
+                  leftSection={
+                    <Group position="center">
+                      <IconBolt></IconBolt>
+                    </Group>
+                  }
+                >
+                  <Group position="left">
+                    <Text className={classes.value}>
+                      {deviceData.details?.power?.value?.toFixed(2) || "0.00"}
+                      {"W"}
+                    </Text>
+                    <Text
+                      color={
+                        deviceData.details?.power?.diff > 0 ? "red" : "teal"
+                      }
+                      size="sm"
+                      weight={500}
+                      className={classes.diff}
+                    >
+                      {
+                        <span>
+                          {deviceData.details?.power?.diff?.toFixed(2)}%
+                        </span>
+                      }
+                      <DiffPowerIcon size={16} stroke={1.5} />
+                    </Text>
+                    <Tooltip label="current power consumption">
+                      <Group position="center">
+                        <IconInfoCircle size={15}></IconInfoCircle>
+                      </Group>
+                    </Tooltip>
+                  </Group>
+                </Badge>
+              </Group>
+              <Group>
+                <GraphCanvas stat={deviceData.details.power} />
+              </Group>
+            </>
+          ) : (
+            <>
+              <Group>
+                <Skeleton height={25} width="80%" radius="xl" />
+                <Skeleton height={25} width="80%" radius="xl" />
+              </Group>
+              <Group>
+                <Skeleton height={110} width={300} radius="md" />
+              </Group>
+            </>
+          )}
+        </SimpleGrid>
+      </Paper>
+    </>
+  );
+}
 
 export default function Dashboard({}: DashboardProps) {
   const [dashBoardData, setDashboardData] = useState<
@@ -153,33 +259,17 @@ export default function Dashboard({}: DashboardProps) {
     return interval.stop;
   }, []);
 
+  const devices = useLiveQuery(() => db.devices.toArray(), []);
+
   return (
-    <Box>
-      {dashBoardData.map((data, i) => (
-        <Box key={data.title}>
-          <Group position="apart">
-            <Text size="xl" mt={4} mb={1} weight={900}>
-              {data.title}:
-            </Text>
-            <Badge color={data.task ? "lime" : "grape"} size="sm">
-              {data.task || "nothing to do"}
-            </Badge>
-          </Group>
-          <StatsGrid data={data?.details} />
-        </Box>
+    <SimpleGrid cols={2}>
+      {devices?.map((device) => (
+        <DeviceCard
+          dashBoardData={dashBoardData}
+          device={device}
+          key={device.id}
+        />
       ))}
-      {dashBoardData.length === 0 && (
-        <Box>
-          <Group position="apart" m={9}>
-            <Skeleton height={20} mt={8} width="25%" radius="xl" />
-            <Skeleton height={20} mt={8} width="5%" radius="xl" />
-          </Group>
-          <Group position="center" m={9} mt={15}>
-            <Skeleton height={130} mt={8} width="40%" radius="md" />
-            <Skeleton height={130} mt={8} width="40%" radius="md" />
-          </Group>
-        </Box>
-      )}
-    </Box>
+    </SimpleGrid>
   );
 }
