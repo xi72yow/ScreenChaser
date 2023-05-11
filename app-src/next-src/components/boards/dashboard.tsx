@@ -1,6 +1,7 @@
 import {
   Badge,
   Box,
+  Button,
   Group,
   Modal,
   Paper,
@@ -20,9 +21,10 @@ import {
 } from "@tabler/icons";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useEffect, useState } from "react";
-import { db } from "../database/db";
+import { TableNames, db, deleteElementFromTable } from "../database/db";
 import ActionIcon from "../forms/helpers/actionIcon";
 import { GraphCanvas } from "./graphCanvas";
+import { useConfirm } from "../hooks/confirm";
 
 const useStyles = createStyles((theme) => ({
   root: {
@@ -87,6 +89,8 @@ function QuickConfigModal({ deviceId, opened, setOpened }) {
   const configs = useLiveQuery(() => db.configs.toArray(), []);
   const { classes } = useStyles();
 
+  const confirm = useConfirm();
+
   return (
     <Modal
       opened={opened}
@@ -124,6 +128,24 @@ function QuickConfigModal({ deviceId, opened, setOpened }) {
           </Box>
         ))}
       </SimpleGrid>
+      <Group position="right">
+        <Button
+          onClick={() => {
+            confirm
+              .showConfirmation(
+                "Are you sure you want to delete the current Frame?",
+                true
+              )
+              .then((confirmed) => {
+                deleteElementFromTable(TableNames.devices, deviceId);
+                setOpened(false);
+              });
+          }}
+          color="red"
+        >
+          Delete Device
+        </Button>
+      </Group>
     </Modal>
   );
 }

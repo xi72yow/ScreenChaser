@@ -156,30 +156,12 @@ export interface DeviceInterface {
   ip: string;
   name: string;
   neoPixelCount: number;
-  new: boolean;
-  exclude: boolean;
+  new: dbBool;
+  exclude: dbBool;
 }
 
 export interface TaskInterface {
   taskCode: string;
-}
-
-export interface ConfigInterface {
-  id?: number;
-  device: DeviceInterface;
-  chaser: ChaserInterface;
-  globals: GlobalsInterface;
-  dyingLights: DyingLightsInterface;
-  frostyPike: FrostyPikeInterface;
-  colorWheel: ColorWheelInterface;
-  fireFlame: FireFlameInterface;
-  bouncingBalls: BouncingBallsInterface;
-  meteorRain: MeteorRainInterface;
-  snake: SnakeInterface;
-  bubbles: BubblesInterface;
-  task: TaskInterface;
-  staticLight: StaticLightInterface;
-  animation: AnimationInterface;
 }
 
 export interface DeviceTableInterface {
@@ -187,7 +169,7 @@ export interface DeviceTableInterface {
   ip: string;
   name: string;
   neoPixelCount: number;
-  new: boolean;
+  new: dbBool;
   exclude: dbBool;
   configId: number;
   type: ChaserTypes;

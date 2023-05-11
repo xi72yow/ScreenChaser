@@ -5,20 +5,88 @@ import {
   Group,
   Header,
   Menu,
+  Modal,
   Text,
+  TextInput,
   useMantineTheme,
 } from "@mantine/core";
-import { IconChevronDown, IconCpu } from "@tabler/icons";
+import { IconChevronDown, IconCpu, IconPlus } from "@tabler/icons";
 import { useLiveQuery } from "dexie-react-hooks";
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import package_json from "../../../package.json";
-import { DeviceTableInterface, db } from "../database/db";
+import {
+  DeviceTableInterface,
+  TableNames,
+  addElementToTable,
+  db,
+  dbBool,
+} from "../database/db";
 import ScanNetworkModal from "../modale/chaserSettingsModal";
 import Logo from "../styles/Logo.js";
+import { error } from "console";
+import { useForm } from "@mantine/form";
 
 interface HeaderAppProps {
   setSelectedDeviceId: Dispatch<SetStateAction<Number>>;
   selectedDeviceId: any;
+}
+
+function NewDeviceModal({ open, setOpen }) {
+  const form = useForm({
+    initialValues: {
+      ip: "",
+    },
+
+    validate: {
+      ip: (value) => {
+        if (value.length === 0) {
+          return "IP Address is required";
+        }
+        if (!value.match(/^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/)) {
+          return "IP Address is not valid";
+        }
+
+        return null;
+      },
+    },
+  });
+  return (
+    <Modal
+      opened={open}
+      onClose={() => {
+        setOpen(false);
+      }}
+      title="Add new device"
+      size="md"
+    >
+      <form
+        onSubmit={form.onSubmit((values) => {
+          addElementToTable(TableNames.devices, {
+            ip: values.ip,
+            name: "",
+            neoPixelCount: 60,
+            new: dbBool.true,
+            exclude: dbBool.false,
+          });
+          setOpen(false);
+          form.reset();
+        })}
+      >
+        <TextInput
+          withAsterisk
+          placeholder="192.178.168.100"
+          label="Device IP Address"
+          {...form.getInputProps("ip")}
+        />
+
+        <Group position="right" mt="md">
+          <Button variant="light" type="submit">
+            Add
+          </Button>
+        </Group>
+      </form>
+    </Modal>
+  );
 }
 
 export default function HeaderApp({
@@ -26,6 +94,8 @@ export default function HeaderApp({
   selectedDeviceId,
 }: HeaderAppProps) {
   const theme = useMantineTheme();
+
+  const [open, setOpen] = useState(false);
 
   const devices: DeviceTableInterface[] = useLiveQuery(
     async () => {
@@ -92,6 +162,7 @@ export default function HeaderApp({
         justifyContent: "space-between",
       }}
     >
+      <NewDeviceModal open={open} setOpen={setOpen}></NewDeviceModal>
       <Group
         sx={{
           display: "flex",
@@ -144,7 +215,41 @@ export default function HeaderApp({
                 <Text>{`@${currentDevice?.ip}` || ""}</Text>
               </Button>
             </Menu.Target>
-            <Menu.Dropdown>{items}</Menu.Dropdown>
+            <Menu.Dropdown>
+              {items}
+              <Menu.Item
+                key={"addNewDeviceManual"}
+                onClick={() => {
+                  setOpen(true);
+                  //setSelectedDeviceId(-1);
+                }}
+                icon={
+                  <IconPlus
+                    size={16}
+                    color={theme.colors.blue[6]}
+                    stroke={1.5}
+                  />
+                }
+                rightSection={
+                  <Group position="center">
+                    <Text
+                      size="xs"
+                      transform="uppercase"
+                      weight={700}
+                      color="dimmed"
+                      ml={8}
+                      sx={{
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      {"Add new device"}
+                    </Text>
+                  </Group>
+                }
+              ></Menu.Item>
+            </Menu.Dropdown>
           </Menu>
           <ScanNetworkModal></ScanNetworkModal>
         </Group>
