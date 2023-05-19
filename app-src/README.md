@@ -10,11 +10,9 @@ This app use Next.js inside an Electron application to avoid a lot of configurat
 
 For development it's going to run a HTTP server and let Next.js handle routing. In production it use `output: 'export'` to pre-generate HTML static files and use them in your app instead of running an HTTP server.
 
-## How to use
+## How to develop
 
-```bash
-pnpm create next-app --example with-electron-typescript with-electron-typescript-app
-```
+Run `bash pnpm dev` in this folder, or run `bash pnpm dev:app` at the projects root. Then an electron app opens, and you can develop in next-src folder with hot reload. When you change the code in the electron-src folder, you must rerun the command.
 
 Available commands:
 
@@ -31,7 +29,7 @@ Available commands:
 
 ## Notes
 
-You can create the production app using `pnpm build:app`.
+You can create the production app using `pnpm build:app` at the projects root. 
 
 _note regarding types:_
 
