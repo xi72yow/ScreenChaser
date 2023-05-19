@@ -21,7 +21,6 @@ import {
 import { useLiveQuery } from "dexie-react-hooks";
 import { useState } from "react";
 import { db, deleteAllDatabases } from "../database/db";
-import { isConfigInterface } from "../database/db.guard";
 import { useConfirm } from "../hooks/confirm";
 import HelpModal from "../modale/helpModal";
 
