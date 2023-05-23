@@ -11,6 +11,7 @@
   <img src="https://img.shields.io/github/license/xi72yow/ScreenChaser?style=for-the-badge">
   <img src="https://img.shields.io/github/stars/xi72yow/ScreenChaser?style=for-the-badge">
   <img src="https://img.shields.io/github/issues/xi72yow/ScreenChaser?color=violet&style=for-the-badge">
+  <img alt="Discord" src="https://img.shields.io/discord/1061688839418163241?style=for-the-badge">
 </p>
 
 ## What is the ScreenChaser
