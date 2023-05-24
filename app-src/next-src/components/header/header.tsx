@@ -25,6 +25,7 @@ import ScanNetworkModal from "../modale/chaserSettingsModal";
 import Logo from "../styles/Logo.js";
 import { error } from "console";
 import { useForm } from "@mantine/form";
+import { ChaserTypes } from "screenchaser-core/dist/types";
 
 interface HeaderAppProps {
   setSelectedDeviceId: Dispatch<SetStateAction<Number>>;
@@ -66,6 +67,7 @@ function NewDeviceModal({ open, setOpen }) {
             name: "",
             neoPixelCount: 60,
             new: dbBool.true,
+            type: ChaserTypes.WLED,
             exclude: dbBool.false,
           });
           setOpen(false);

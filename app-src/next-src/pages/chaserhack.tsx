@@ -118,11 +118,11 @@ function Next() {
     let stripeDataAround = [];
 
     if (!clockWise) {
-      clockWiseRotStripeData[0] = stripeData[0].reverse();
-      clockWiseRotStripeData[2] = stripeData[1].reverse();
+      clockWiseRotStripeData[0] = [...stripeData[0].reverse()];
+      clockWiseRotStripeData[2] = [...stripeData[2].reverse()];
     } else {
-      clockWiseRotStripeData[1] = stripeData[2].reverse();
-      clockWiseRotStripeData[3] = stripeData[3].reverse();
+      clockWiseRotStripeData[1] = [...stripeData[1].reverse()];
+      clockWiseRotStripeData[3] = [...stripeData[3].reverse()];
     }
 
     stripeDataAround = [
@@ -131,6 +131,8 @@ function Next() {
       ...clockWiseRotStripeData[2],
       ...clockWiseRotStripeData[0],
     ];
+
+    console.log(stripeData,clockWiseRotStripeData,stripeDataAround)
 
     if (clockWise) stripeDataAround = stripeDataAround.reverse();
 
@@ -322,19 +324,21 @@ function Next() {
             height,
             chaserIntervals.current[i].setUp
           );
+          
 
           const adjustedStripeData = adjustStripeDataForSetup(
             stripeData,
             config.startLed,
             config.clockWise
           );
+         
 
-          global.ipcRenderer.send(
+       /* global.ipcRenderer.send(
             "CHASER:SEND_STRIPE",
             adjustedStripeData,
             device.id
-          );
-        }, 1000 / config.fps);
+          );  */
+        }, 5000 /* / config.fps */);
       });
   }
 
