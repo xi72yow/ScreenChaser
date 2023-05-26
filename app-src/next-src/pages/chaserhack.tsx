@@ -118,10 +118,10 @@ function Next() {
     let stripeDataAround = [];
 
     if (!clockWise) {
-      clockWiseRotStripeData[0] = [...stripeData[0].reverse()];
+      clockWiseRotStripeData[1] = [...stripeData[1].reverse()];
       clockWiseRotStripeData[2] = [...stripeData[2].reverse()];
     } else {
-      clockWiseRotStripeData[1] = [...stripeData[1].reverse()];
+      clockWiseRotStripeData[0] = [...stripeData[0].reverse()];
       clockWiseRotStripeData[3] = [...stripeData[3].reverse()];
     }
 
@@ -132,7 +132,7 @@ function Next() {
       ...clockWiseRotStripeData[0],
     ];
 
-    console.log(stripeData,clockWiseRotStripeData,stripeDataAround)
+    //console.log(stripeData,clockWiseRotStripeData,stripeDataAround)
 
     if (clockWise) stripeDataAround = stripeDataAround.reverse();
 
@@ -333,12 +333,12 @@ function Next() {
           );
          
 
-       /* global.ipcRenderer.send(
+        global.ipcRenderer.send(
             "CHASER:SEND_STRIPE",
             adjustedStripeData,
             device.id
-          );  */
-        }, 5000 /* / config.fps */);
+          );  
+        }, 1000  / config.fps );
       });
   }
 
