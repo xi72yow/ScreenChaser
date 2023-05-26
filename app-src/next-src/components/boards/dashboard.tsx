@@ -23,8 +23,9 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { useEffect, useState } from "react";
 import { TableNames, db, deleteElementFromTable } from "../database/db";
 import ActionIcon from "../forms/helpers/actionIcon";
-import { GraphCanvas } from "./graphCanvas";
 import { useConfirm } from "../hooks/confirm";
+import SpeedoMeter from "./speedoMeter";
+import { GraphCanvas } from "./graphCanvas";
 
 const useStyles = createStyles((theme) => ({
   root: {
@@ -202,63 +203,17 @@ function DeviceCard({ dashBoardData, device }) {
             <IconSettings size={22} stroke={1.5} />
           </ActionIcon>
         </Group>
-        <SimpleGrid cols={2}>
-          {deviceData.details ? (
-            <>
-              <Group>
-                <Badge
-                  variant="outline"
-                  p={15}
-                  color={powerColor}
-                  leftSection={
-                    <Group position="center">
-                      <IconBolt></IconBolt>
-                    </Group>
-                  }
-                >
-                  <Group position="left">
-                    <Text className={classes.value}>
-                      {deviceData.details?.power?.value?.toFixed(2) || "0.00"}
-                      {"W"}
-                    </Text>
-                    <Text
-                      color={
-                        deviceData.details?.power?.diff > 0 ? "red" : "teal"
-                      }
-                      size="sm"
-                      weight={500}
-                      className={classes.diff}
-                    >
-                      {
-                        <span>
-                          {deviceData.details?.power?.diff?.toFixed(2)}%
-                        </span>
-                      }
-                      <DiffPowerIcon size={16} stroke={1.5} />
-                    </Text>
-                    <Tooltip label="current power consumption">
-                      <Group position="center">
-                        <IconInfoCircle size={15}></IconInfoCircle>
-                      </Group>
-                    </Tooltip>
-                  </Group>
-                </Badge>
-              </Group>
-              <Group>
-                <GraphCanvas stat={deviceData.details.power} />
-              </Group>
-            </>
-          ) : (
-            <>
-              <Group>
-                <Skeleton height={25} width="80%" radius="xl" />
-                <Skeleton height={25} width="80%" radius="xl" />
-              </Group>
-              <Group>
-                <Skeleton height={110} width={300} radius="md" />
-              </Group>
-            </>
-          )}
+        <SimpleGrid cols={3}>
+          <GraphCanvas stat={deviceData?.details?.power} />
+          <SpeedoMeter
+            percent={
+              (deviceData?.details?.power?.value /
+                deviceData?.details?.power?.maxPower) *
+                100 || 0
+            }
+            label={`${Math.round(deviceData?.details?.power?.value) || 0} W`}
+          ></SpeedoMeter>
+          <SpeedoMeter percent={0} label={`0 %`}></SpeedoMeter>
         </SimpleGrid>
       </Paper>
     </>
