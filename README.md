@@ -10,7 +10,7 @@
   <img src="https://img.shields.io/badge/Maintained%3F-Yes-green?style=for-the-badge">
   <img alt="GitHub all releases" src="https://img.shields.io/github/downloads/xi72yow/ScreenChaser/total?style=for-the-badge">
   <img src="https://img.shields.io/github/stars/xi72yow/ScreenChaser?style=for-the-badge">
-  <a href="https://discord.gg/VG23TgVE"><img alt="Discord" src="https://img.shields.io/discord/1061688839418163241?label=Discord&logo=discord&style=for-the-badge"></a>
+  <a href="https://discord.gg/g85QvUsyj9"><img alt="Discord" src="https://img.shields.io/discord/1061688839418163241?label=Discord&logo=discord&style=for-the-badge"></a>
 </p>
 
 ## What is the ScreenChaser
