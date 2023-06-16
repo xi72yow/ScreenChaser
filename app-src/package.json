@@ -54,8 +54,7 @@
     "react-dom": "^18.2.0",
     "react-error-boundary": "^3.1.4",
     "screenchaser-core": "^0.3.0",
-    "three": "^0.146.0",
-    "victory": "^36.6.10"
+    "three": "^0.146.0"
   },
   "devDependencies": {
     "@types/node": "^18.16.3",

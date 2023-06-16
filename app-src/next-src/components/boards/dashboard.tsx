@@ -5,6 +5,7 @@ import {
   Group,
   Modal,
   Paper,
+  RingProgress,
   SimpleGrid,
   Skeleton,
   Text,
@@ -24,7 +25,6 @@ import { useEffect, useState } from "react";
 import { TableNames, db, deleteElementFromTable } from "../database/db";
 import ActionIcon from "../forms/helpers/actionIcon";
 import { useConfirm } from "../hooks/confirm";
-import SpeedoMeter from "./speedoMeter";
 import { GraphCanvas } from "./graphCanvas";
 
 const useStyles = createStyles((theme) => ({
@@ -203,17 +203,41 @@ function DeviceCard({ dashBoardData, device }) {
             <IconSettings size={22} stroke={1.5} />
           </ActionIcon>
         </Group>
-        <SimpleGrid cols={3}>
-          <GraphCanvas stat={deviceData?.details?.power} />
-          <SpeedoMeter
-            percent={
-              (deviceData?.details?.power?.value /
-                deviceData?.details?.power?.maxPower) *
-                100 || 0
+        <SimpleGrid cols={2}>
+          <RingProgress
+            sections={[
+              {
+                value:
+                  (deviceData?.details?.power?.value /
+                    deviceData?.details?.power?.maxPower) *
+                    100 || 0,
+                color: "green",
+              },
+            ]}
+            label={
+              <Tooltip label="Actual Power Consumption">
+                <Text color="" weight={700} align="center" size="xl">
+                  {Math.round(deviceData?.details?.power?.value) || 0} W
+                </Text>
+              </Tooltip>
             }
-            label={`${Math.round(deviceData?.details?.power?.value) || 0} W`}
-          ></SpeedoMeter>
-          <SpeedoMeter percent={0} label={`0 %`}></SpeedoMeter>
+          />
+
+          <RingProgress
+            sections={[
+              {
+                value: 0,
+                color: "blue",
+              },
+            ]}
+            label={
+              <Tooltip label="Actual Packet Loss">
+                <Text color="" weight={700} align="center" size="xl">
+                  {0} %
+                </Text>
+              </Tooltip>
+            }
+          />
         </SimpleGrid>
       </Paper>
     </>
