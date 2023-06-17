@@ -7,7 +7,7 @@ import {
   Paper,
   RingProgress,
   SimpleGrid,
-  Skeleton,
+  Stack,
   Text,
   Tooltip,
   createStyles,
@@ -16,16 +16,13 @@ import { useInterval } from "@mantine/hooks";
 import {
   IconArrowDownRight,
   IconArrowUpRight,
-  IconBolt,
-  IconInfoCircle,
   IconSettings,
 } from "@tabler/icons";
 import { useLiveQuery } from "dexie-react-hooks";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { TableNames, db, deleteElementFromTable } from "../database/db";
 import ActionIcon from "../forms/helpers/actionIcon";
 import { useConfirm } from "../hooks/confirm";
-import { GraphCanvas } from "./graphCanvas";
 
 const useStyles = createStyles((theme) => ({
   root: {
@@ -138,6 +135,7 @@ function QuickConfigModal({ deviceId, opened, setOpened }) {
                 true
               )
               .then((confirmed) => {
+                if (!confirmed) return;
                 deleteElementFromTable(TableNames.devices, deviceId);
                 setOpened(false);
               });
@@ -156,8 +154,9 @@ function DeviceCard({ dashBoardData, device }) {
 
   const [opened, setOpened] = useState(false);
   const [modalDeviceId, setModalDeviceId] = useState<number>(0);
+  const [cardWidth, setCardWidth] = useState<number>(0);
 
-  const powerColor = "#339af0";
+  const cardRef = useRef(null);
 
   const [deviceData, setDeviceData] = useState<{
     details: any;
@@ -166,13 +165,24 @@ function DeviceCard({ dashBoardData, device }) {
   }>({ details: { power: null }, title: "", task: "" });
 
   useEffect(() => {
+    function handleResize() {
+      setCardWidth(cardRef.current.offsetWidth);
+    }
+
+    window.addEventListener("resize", handleResize);
+
+    handleResize();
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  useEffect(() => {
     setDeviceData({
       ...dashBoardData.find((data) => data.deviceId === device.id),
     });
   }, [dashBoardData]);
-
-  const DiffPowerIcon =
-    deviceData.details?.power?.diff > 0 ? IconArrowUpRight : IconArrowDownRight;
 
   return (
     <>
@@ -181,18 +191,31 @@ function DeviceCard({ dashBoardData, device }) {
         opened={opened}
         setOpened={setOpened}
       />
-      <Paper withBorder p="md" radius="md" key={device.id + "dash"}>
-        <Group position="apart">
-          <Group>
-            <Text size="xs" color="dimmed" className={classes.title}>
+      <Paper
+        withBorder
+        p="md"
+        radius="md"
+        key={device.id + "dash"}
+        ref={cardRef}
+      >
+        <Group position="apart" mb={5}>
+          <Stack spacing={0}>
+            <Text color="dimmed" className={classes.title}>
               {device.name || device.ip}
             </Text>
             {deviceData.details && (
-              <Badge color={deviceData.task ? "lime" : "grape"} size="sm">
-                {deviceData.task || "nothing to do"}
-              </Badge>
+              <Text size="xs" color="dimmed">
+                <Badge
+                  color={deviceData.task ? "grape" : "lime"}
+                  radius={"sm"}
+                  size="xs"
+                >
+                  {deviceData.task || "nothing to do"}
+                </Badge>
+              </Text>
             )}
-          </Group>
+          </Stack>
+
           <ActionIcon
             onClick={() => {
               setModalDeviceId(device.id);
@@ -205,12 +228,15 @@ function DeviceCard({ dashBoardData, device }) {
         </Group>
         <SimpleGrid cols={2}>
           <RingProgress
+            size={cardWidth / 2 - 20}
+            thickness={cardWidth / 25}
             sections={[
               {
-                value:
+                value: Math.abs(
                   (deviceData?.details?.power?.value /
                     deviceData?.details?.power?.maxPower) *
-                    100 || 0,
+                    100 || 0
+                ),
                 color: "green",
               },
             ]}
@@ -224,6 +250,8 @@ function DeviceCard({ dashBoardData, device }) {
           />
 
           <RingProgress
+            size={cardWidth / 2 - 20}
+            thickness={cardWidth / 25}
             sections={[
               {
                 value: 0,
@@ -256,14 +284,25 @@ export default function Dashboard({}: DashboardProps) {
   }, 3000);
 
   useEffect(() => {
-    interval.start();
+    global.ipcRenderer.invoke("GET_STATS").then((dashboardData) => {
+      setDashboardData(dashboardData);
+      interval.start();
+    });
     return interval.stop;
   }, []);
 
   const devices = useLiveQuery(() => db.devices.toArray(), []);
 
   return (
-    <SimpleGrid cols={2}>
+    <SimpleGrid
+      cols={4}
+      spacing="xl"
+      breakpoints={[
+        { minWidth: "sm", cols: 1 },
+        { minWidth: "md", cols: 2 },
+        { minWidth: 1200, cols: 3 },
+      ]}
+    >
       {devices?.map((device) => (
         <DeviceCard
           dashBoardData={dashBoardData}
