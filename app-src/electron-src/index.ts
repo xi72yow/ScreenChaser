@@ -92,10 +92,8 @@ app.on("ready", async () => {
 
   mainWindow.webContents.session.setPermissionCheckHandler(
     (webContents, permission, requestingOrigin, details) => {
-      console.log("🚀 ~ file: background.ts:252 ~ details:", details);
-
       if (
-        (permission === "serial" &&
+        ((permission === "serial" || permission === "media") &&
           details.securityOrigin === "file:///" &&
           process.env.NODE_ENV === "production") ||
         process.env.NODE_ENV !== "production"

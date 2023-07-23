@@ -21,6 +21,8 @@ import stripeInput from "./inputs/stripeInput";
 import stripeInputTester from "./inputs/stripeInputTester";
 import swatches from "./inputs/swatches";
 import swatchesTester from "./inputs/swatchesTester";
+import ledFields from "./inputs/ledFields";
+import ledFieldsTester from "./inputs/ledFieldsTester";
 import { Box } from "@mantine/core";
 
 type Props = {
@@ -57,6 +59,7 @@ export default function FormRenderer({
     { tester: selectTester, renderer: select },
     { tester: sourcePickerTester, renderer: sourcePicker },
     { tester: stripeInputTester, renderer: stripeInput },
+    { tester: ledFieldsTester, renderer: ledFields },
   ];
 
   if (currentTask === null) {

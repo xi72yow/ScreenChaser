@@ -286,41 +286,18 @@ export const videoChaserSchema = {
     sourceId: {
       type: "string",
     },
-    width: {
-      type: "integer",
-      minimum: 0,
-      maximum: 255,
-    },
-    height: {
-      type: "integer",
-      minimum: 0,
-      maximum: 255,
-    },
-
-    startLed: {
-      type: "integer",
-      minimum: 0,
-      maximum: 255,
-    },
-    rowT: {
-      type: "boolean",
-    },
-    rowB: {
-      type: "boolean",
-    },
-    colL: {
-      type: "boolean",
-    },
-    colR: {
-      type: "boolean",
-    },
-    clockWise: {
-      type: "boolean",
-    },
     fps: {
       type: "integer",
       minimum: 10,
       maximum: 60,
+    },
+    bufferdFrames: {
+      type: "integer",
+      minimum: 1,
+      maximum: 10,
+    },
+    ledFields: {
+      type: "array",
     },
   },
 };
@@ -336,63 +313,28 @@ export const videoChaserUiSchema = {
     },
     {
       type: "Control",
-      label: "Width",
-      scope: "#/properties/width",
-    },
-    {
-      type: "Control",
-      label: "Height",
-      scope: "#/properties/height",
-    },
-    {
-      type: "Control",
-      label: "Start Led",
-      scope: "#/properties/startLed",
-    },
-    {
-      type: "Control",
-      label: "Row T",
-      scope: "#/properties/rowT",
-    },
-    {
-      type: "Control",
-      label: "Row B",
-      scope: "#/properties/rowB",
-    },
-    {
-      type: "Control",
-      label: "Col L",
-      scope: "#/properties/colL",
-    },
-    {
-      type: "Control",
-      label: "Col R",
-      scope: "#/properties/colR",
-    },
-    {
-      type: "Control",
-      label: "Clock Wise",
-      scope: "#/properties/clockWise",
-    },
-    {
-      type: "Control",
       label: "Fps",
       scope: "#/properties/fps",
+    },
+    {
+      type: "Control",
+      label: "Bufferd Frames",
+      scope: "#/properties/bufferdFrames",
+    },
+    {
+      type: "Control",
+      label: "Led Fields",
+      scope: "#/properties/ledFields",
+      options: { fields: true },
     },
   ],
 };
 
 export const videoChaserDefaultData = {
   sourceId: "",
-  width: 114,
-  height: 0,
-  startLed: 0,
-  rowT: false,
-  rowB: true,
-  rowL: false,
-  rowR: false,
-  clockWise: false,
   fps: 30,
+  bufferdFrames: 1,
+  ledFields: [],
 };
 
 export const staticLightSchema = {
