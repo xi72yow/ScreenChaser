@@ -1,6 +1,6 @@
 import { withJsonFormsControlProps } from "@jsonforms/react";
 import { ActionIcon, ColorInput, createStyles } from "@mantine/core";
-import { IconWand } from "@tabler/icons";
+import { IconWand } from "@tabler/icons-react";
 import { randomColor } from "screenchaser-core/dist/helpers";
 
 type Props = {

@@ -22,7 +22,7 @@ import {
 } from "screenchaser-core/dist/bias/ledFields";
 import { useJsonForms } from "@jsonforms/react";
 import ActionIcon from "../helpers/actionIcon";
-import { IconLayoutCards } from "@tabler/icons";
+import { IconLayoutCards } from "@tabler/icons-react";
 import { useForm } from "@mantine/form";
 import { useDisclosure } from "@mantine/hooks";
 import { showNotification } from "@mantine/notifications";

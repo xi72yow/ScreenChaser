@@ -17,7 +17,7 @@ import {
   IconSettings,
   IconSun,
   IconTrash,
-} from "@tabler/icons";
+} from "@tabler/icons-react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useState } from "react";
 import { db, deleteAllDatabases } from "../database/db";

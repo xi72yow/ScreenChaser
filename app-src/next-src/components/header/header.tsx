@@ -10,7 +10,7 @@ import {
   TextInput,
   useMantineTheme,
 } from "@mantine/core";
-import { IconChevronDown, IconCpu, IconPlus } from "@tabler/icons";
+import { IconChevronDown, IconCpu, IconPlus } from "@tabler/icons-react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { Dispatch, SetStateAction, useState } from "react";
 import package_json from "../../../package.json";

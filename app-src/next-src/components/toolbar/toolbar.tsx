@@ -1,6 +1,6 @@
 import { Button, Footer, Group } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
-import { IconBulb, IconInfoCircle } from "@tabler/icons";
+import { IconBulb, IconInfoCircle } from "@tabler/icons-react";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
   db,

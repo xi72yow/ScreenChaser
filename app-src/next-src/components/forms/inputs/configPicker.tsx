@@ -13,7 +13,7 @@ import {
   IconSquareCheck,
   IconSquareX,
   IconTrash,
-} from "@tabler/icons";
+} from "@tabler/icons-react";
 import { useLiveQuery } from "dexie-react-hooks";
 import React, { useEffect, useState } from "react";
 import {

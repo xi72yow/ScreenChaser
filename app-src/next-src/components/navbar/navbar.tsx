@@ -6,12 +6,11 @@ import {
   IconDeviceTv,
   IconTool,
   IconStar,
-  TablerIcon,
   IconDeviceAnalytics,
   IconBooks,
   IconPlayerPlay,
   IconFrame,
-} from "@tabler/icons";
+} from "@tabler/icons-react";
 import LinksGroup from "./navbarLinksGroup";
 import useStyles from "../styles/styles";
 import React from "react";
@@ -48,12 +47,12 @@ export function getTaskTypeIcon(task: TaskTableInterface) {
 
 interface MenueInterfcae extends TaskTableInterface {
   initiallyOpened?: boolean;
-  icon: TablerIcon;
+  icon: typeof IconGauge;
   links?: {
     label: string;
     taskCode: TaskCodes;
     id: number;
-    icon: TablerIcon;
+    icon: typeof IconGauge;
   }[];
 }
 

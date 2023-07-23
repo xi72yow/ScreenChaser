@@ -6,7 +6,7 @@ import {
   Text,
   useMantineTheme,
 } from "@mantine/core";
-import { IconMinus, IconPlus } from "@tabler/icons";
+import { IconMinus, IconPlus } from "@tabler/icons-react";
 import React, { useRef, useState } from "react";
 import { withJsonFormsControlProps } from "@jsonforms/react";
 

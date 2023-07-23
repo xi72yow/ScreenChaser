@@ -6,7 +6,7 @@ import {
   SegmentedControl,
 } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
-import { IconAccessPoint } from "@tabler/icons";
+import { IconAccessPoint } from "@tabler/icons-react";
 import { useLiveQuery } from "dexie-react-hooks";
 import React, { useEffect, useRef, useState } from "react";
 import { TableNames, addElementToTable, db, dbBool } from "../database/db";

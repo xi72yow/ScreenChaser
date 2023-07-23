@@ -2,7 +2,7 @@ import { ActionIcon, Group, Modal } from "@mantine/core";
 import { useHotkeys, useLocalStorage } from "@mantine/hooks";
 import { PerspectiveCamera } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
-import { IconPalette } from "@tabler/icons";
+import { IconPalette } from "@tabler/icons-react";
 import React, { useEffect, useRef, useState } from "react";
 import { reScale } from "screenchaser-core/dist/helpers";
 import StripeCreatorToolbar from "./stripeCreatorToolbar";

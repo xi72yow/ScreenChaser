@@ -10,7 +10,7 @@ import {
   useMantineTheme,
 } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
-import { IconEdit, IconSquareX, IconWand } from "@tabler/icons";
+import { IconEdit, IconSquareX, IconWand } from "@tabler/icons-react";
 import React, { useState } from "react";
 import { random, randomColor } from "screenchaser-core/dist/helpers";
 import { withJsonFormsControlProps } from "@jsonforms/react";

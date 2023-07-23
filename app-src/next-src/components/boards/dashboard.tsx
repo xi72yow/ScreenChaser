@@ -17,7 +17,7 @@ import {
   IconArrowDownRight,
   IconArrowUpRight,
   IconSettings,
-} from "@tabler/icons";
+} from "@tabler/icons-react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useEffect, useRef, useState } from "react";
 import { TableNames, db, deleteElementFromTable } from "../database/db";

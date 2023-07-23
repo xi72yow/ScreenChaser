@@ -1,6 +1,6 @@
 import { JsonForms, withJsonFormsControlProps } from "@jsonforms/react";
 import { ActionIcon, createStyles, Text, useMantineTheme } from "@mantine/core";
-import { IconCheck, IconMinus, IconX } from "@tabler/icons";
+import { IconCheck, IconMinus, IconX } from "@tabler/icons-react";
 import React, { useState } from "react";
 
 const useStyles = createStyles((theme) => ({

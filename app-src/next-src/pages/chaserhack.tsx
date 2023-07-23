@@ -7,6 +7,8 @@ import {
 } from "../components/forms/inputs/sourcePicker";
 import { BiasCore } from "screenchaser-core/dist/bias/biasCore";
 
+const isDev = process.env.NODE_ENV === "development";
+
 async function setVideoSrcFromMediaStream(sourceId, id, fps) {
   try {
     const mediaStream = await (navigator.mediaDevices as any).getUserMedia({
@@ -15,8 +17,8 @@ async function setVideoSrcFromMediaStream(sourceId, id, fps) {
         mandatory: {
           chromeMediaSource: "desktop",
           chromeMediaSourceId: sourceId,
-          minFrameRate: fps,
-          maxFrameRate: fps,
+          minFrameRate: isDev ? 30 : fps,
+          maxFrameRate: isDev ? 30 : fps,
           maxWidth: 1920,
           maxHeight: 1080,
         },

@@ -7,7 +7,7 @@ import {
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { showNotification } from "@mantine/notifications";
-import { IconRefresh, IconSend } from "@tabler/icons";
+import { IconRefresh, IconSend } from "@tabler/icons-react";
 import React, { useEffect, useState } from "react";
 
 type Props = {};

@@ -10,7 +10,7 @@ import {
 } from "@mantine/core";
 import { useDebouncedValue } from "@mantine/hooks";
 import { showNotification } from "@mantine/notifications";
-import { IconFocus2, IconRefresh } from "@tabler/icons";
+import { IconFocus2, IconRefresh } from "@tabler/icons-react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useEffect, useState } from "react";
 import { setAll } from "screenchaser-core/dist/helpers";

@@ -5,7 +5,7 @@ import {
   ThemeIcon,
   useMantineTheme,
 } from "@mantine/core";
-import { IconStar, IconStarOff } from "@tabler/icons";
+import { IconStar, IconStarOff } from "@tabler/icons-react";
 import { useLiveQuery } from "dexie-react-hooks";
 import React from "react";
 import {

@@ -8,7 +8,7 @@ import {
   UnstyledButton,
 } from "@mantine/core";
 import { useLocalStorage } from "@mantine/hooks";
-import { IconChevronLeft, IconChevronRight, TablerIcon } from "@tabler/icons";
+import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
 import { TaskCodes } from "../database/db";
 
 const useStyles = createStyles((theme) => ({
@@ -68,14 +68,14 @@ const useStyles = createStyles((theme) => ({
 }));
 
 interface LinksGroupProps {
-  icon: TablerIcon;
+  icon: typeof IconChevronRight;
   label: string;
   initiallyOpened?: boolean;
   links?: {
     label: string;
     taskCode: TaskCodes;
     id: number;
-    icon: TablerIcon;
+    icon: typeof IconChevronRight;
   }[];
   selectedTaskId: number;
   setSelectedTaskId: (taskCode: number) => void;

@@ -19,7 +19,7 @@ import React from "react";
 import HeaderApp from "../components/header/header";
 import NavbarNested from "../components/navbar/navbar";
 
-import { IconAlertCircle } from "@tabler/icons";
+import { IconAlertCircle } from "@tabler/icons-react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { ErrorBoundary } from "react-error-boundary";
 import package_json from "../../package.json";

@@ -11,7 +11,7 @@ import {
   Text,
   useMantineTheme,
 } from "@mantine/core";
-import { IconDeviceTv } from "@tabler/icons";
+import { IconDeviceTv } from "@tabler/icons-react";
 import React, { useEffect, useState } from "react";
 
 const PreviewImage = styled(MantineImage)`
