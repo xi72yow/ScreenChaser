@@ -181,7 +181,7 @@ export default class WledHyperionEmitter implements DataEmitterInterface {
               const message = Buffer.from("02ff000000", "hex");
               this.server.send(message, 21324, ip);
             }
-            if (text.includes("ScreenChaser") || text.includes("ESP8266")) {
+            if (text.includes("ScreenChaser")) {
               ledSlaves.push({ ip, type: ChaserTypes.ScreenChaser });
             }
           }
