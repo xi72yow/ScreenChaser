@@ -1,5 +1,4 @@
 import { LedField } from "./ledFields";
-import { rgbToHex } from "../helpers";
 
 function createShader(
   gl: WebGL2RenderingContext,
@@ -151,16 +150,7 @@ function readPixels(gl: WebGL2RenderingContext | undefined) {
 
   gl.readPixels(0, 0, gl.canvas.width, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
 
-  const result = [];
-
-  for (let i = 0; i < gl.canvas.width; i++) {
-    result.push(
-      rgbToHex(pixels[i * 4]) +
-        rgbToHex(pixels[i * 4 + 1]) +
-        rgbToHex(pixels[i * 4 + 2])
-    );
-  }
-  return result;
+  return pixels;
 }
 
 function logPixels(pixels: string[]) {
@@ -361,12 +351,12 @@ export class BiasCore {
   video: HTMLVideoElement | undefined;
   canvas: HTMLCanvasElement | undefined;
   videoFrameCallback: () => void = () => {};
-  frameCalculationCallback = (data: string[]) => {};
+  frameCalculationCallback = (data: Uint8Array) => {};
   videoCallbackIndikator: number | undefined;
   constructor(
     id: string,
     ledFields: LedField[],
-    frameCalculationCallback: (data: string[]) => void
+    frameCalculationCallback: (data: Uint8Array) => void
   ) {
     this.video = document.getElementById("video" + id) as HTMLVideoElement;
     this.id = id;

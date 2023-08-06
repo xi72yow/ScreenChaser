@@ -2,14 +2,18 @@
  * @type {import('next').NextConfig}
  */
 
+const baseConfig = {
+  output: "export",
+};
+
 function generateConfig() {
   const prodConfig = {
-    output: "export",
+    ...baseConfig,
     assetPrefix: ".",
   };
 
   const devConfig = {
-    output: "export",
+    ...baseConfig,
   };
 
   return process.env.NODE_ENV === "production" ? prodConfig : devConfig;

@@ -22,6 +22,8 @@ const port = 3000;
 
 const ChaserManager = new Manager();
 
+const showChaserWindowInProd = true;
+
 const ChaserStatCalculator = new StatCalculator({
   Manager: ChaserManager,
 });
@@ -181,11 +183,12 @@ async function manageChaserWindow() {
       nodeIntegration: false,
       contextIsolation: false,
       preload: join(__dirname, "preload.js"),
+      backgroundThrottling: false,
     },
-    frame: isDev,
-    transparent: !isDev,
-    width: !isDev ? 1 : 800,
-    height: !isDev ? 1 : 600,
+    frame: showChaserWindowInProd,
+    transparent: !showChaserWindowInProd,
+    width: !showChaserWindowInProd ? 1 : 800,
+    height: !showChaserWindowInProd ? 1 : 600,
   });
 
   if (isDev) {
@@ -228,6 +231,10 @@ ipcMain.on("LIGHTS:ON", async (event, args) => {
   ChaserManager.continueLight();
   manageChaserWindow();
 });
+
+/* ipcMain.on("CHASER:DECAY_CHANGE", (event, ledCount, bufferSize, id) => {
+  createLedDecay(ledCount, bufferSize, id);
+}); */
 
 ipcMain.on("CHASER:SEND_STRIPE", (event, stripe, id) => {
   ChaserManager.sendChasingStripe(id, stripe);

@@ -9,5 +9,6 @@
     "strict": true,
     "esModuleInterop": true,
     "allowJs": true
-  }
+  },
+  "exclude": ["lib/decay"]
 }

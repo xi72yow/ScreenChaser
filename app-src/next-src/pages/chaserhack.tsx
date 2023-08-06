@@ -1,11 +1,16 @@
 import { useLiveQuery } from "dexie-react-hooks";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { TaskCodes, db } from "../components/database/db";
 import {
   createSourceString,
   parseSourceString,
 } from "../components/forms/inputs/sourcePicker";
 import { BiasCore } from "screenchaser-core/dist/bias/biasCore";
+
+/* import {
+  createLedDecay,
+  calculateFrame,
+} from "screenchaser-core/dist/ledDecayRelease"; */
 
 const isDev = process.env.NODE_ENV === "development";
 
@@ -32,7 +37,7 @@ async function setVideoSrcFromMediaStream(sourceId, id, fps) {
   }
 }
 
-function CaserPair({ device, config }) {
+function ChaserPair({ device, config }) {
   const { name, id } = parseSourceString(config.config.sourceId);
   const cleanedId = id.replaceAll(/[\W_]+/g, "");
   const biasCore = useRef(null as BiasCore);
@@ -45,6 +50,11 @@ function CaserPair({ device, config }) {
 
   useEffect(() => {
     const video = videoRef.current;
+
+    /*     createLedDecay(1, 8, 1);
+
+    const test = calculateFrame(1, new Uint8Array([125, 80, 152]));
+    console.log(test); */
 
     if (biasCore.current) {
       biasCore.current.destroy();
@@ -166,11 +176,11 @@ function Next() {
         })
         .map(({ device, config }) => {
           return (
-            <CaserPair
+            <ChaserPair
               key={device.id + "div"}
               config={config}
               device={device}
-            ></CaserPair>
+            ></ChaserPair>
           );
         })}
     </div>

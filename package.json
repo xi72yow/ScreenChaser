@@ -9,6 +9,7 @@
     "build:app": "lerna run build --scope screenchaser-app",
     "dist:app": "lerna run dist --scope screenchaser-app",
     "build:core": "lerna run build --scope screenchaser-core",
+    "build:core-as": "lerna run asbuild:debug --scope screenchaser-core",
     "build:firmware": "lerna run build --scope screenchaser-firmware",
     "guard:app": "lerna run guard --scope screenchaser-app",
     "release": "lerna version --conventional-commits",
