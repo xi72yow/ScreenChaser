@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev:app": "lerna run dev --scope screenchaser-app",
+    "dev:app": "lerna --scope screenchaser-app run dev",
     "dev:core": "lerna run dev --scope screenchaser-core",
     "build:app": "lerna run build --scope screenchaser-app",
     "dist:app": "lerna run dist --scope screenchaser-app",
@@ -15,15 +15,7 @@
     "release": "lerna version --conventional-commits",
     "nuke": "lerna run clean && pnpm store prune && lerna clean -y"
   },
-  "workspaces": {
-    "packages": [
-      "app-src/",
-      "cli-src/",
-      "core-src/",
-      "firmware-src/"
-    ]
-  },
   "devDependencies": {
-    "lerna": "6.6.1"
+    "release-please": "15.12.0"
   }
 }

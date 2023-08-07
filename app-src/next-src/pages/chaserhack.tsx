@@ -7,10 +7,9 @@ import {
 } from "../components/forms/inputs/sourcePicker";
 import { BiasCore } from "screenchaser-core/dist/bias/biasCore";
 
-/* import {
-  createLedDecay,
-  calculateFrame,
-} from "screenchaser-core/dist/ledDecayRelease"; */
+import { instantiate } from "screenchaser-core/dist/ledDecayRelease";
+
+import base64 from "screenchaser-core/dist/ledDecayDebug.wasm.js";
 
 const isDev = process.env.NODE_ENV === "development";
 
@@ -37,6 +36,39 @@ async function setVideoSrcFromMediaStream(sourceId, id, fps) {
   }
 }
 
+function base64ToArrayBuffer(base64) {
+  const binaryString = globalThis.atob(base64);
+  const len = binaryString.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; ++i) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes.buffer;
+}
+
+async function initDecay() {
+  const { memory, createLedDecay, calculateFrame } = await instantiate(
+    await (async () => {
+      try {
+        return await globalThis.WebAssembly.compile(
+          base64ToArrayBuffer(base64)
+        );
+      } catch (e) {
+        throw new Error(`Unable to compile WebAssembly module: ${e.message}`);
+      }
+    })(),
+    undefined
+  );
+
+  return {
+    createLedDecay,
+    calculateFrame,
+    memory,
+  };
+}
+
+const { memory, createLedDecay, calculateFrame } = await initDecay();
+
 function ChaserPair({ device, config }) {
   const { name, id } = parseSourceString(config.config.sourceId);
   const cleanedId = id.replaceAll(/[\W_]+/g, "");
@@ -51,10 +83,11 @@ function ChaserPair({ device, config }) {
   useEffect(() => {
     const video = videoRef.current;
 
-    /*     createLedDecay(1, 8, 1);
-
-    const test = calculateFrame(1, new Uint8Array([125, 80, 152]));
-    console.log(test); */
+    createLedDecay(
+      config.config.ledFields.length,
+      config.config.bufferdFrames,
+      device.id
+    );
 
     if (biasCore.current) {
       biasCore.current.destroy();
