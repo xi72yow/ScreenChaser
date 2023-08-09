@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "description": "Basic UI for ScreenChaser",
   "main": "index.js",
-  "preferGlobal": true,
   "bin": {
     "sc": "index.js"
   },

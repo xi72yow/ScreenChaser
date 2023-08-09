@@ -10,5 +10,5 @@
     "esModuleInterop": true,
     "allowJs": true
   },
-  "exclude": ["lib/decay", "dist-as", "build-as.js"]
+  "exclude": ["lib/decay", "dist", "build-as.js"]
 }

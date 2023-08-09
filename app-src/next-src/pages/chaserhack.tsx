@@ -9,7 +9,7 @@ import { BiasCore } from "screenchaser-core/dist/bias/biasCore";
 
 import { instantiate } from "screenchaser-core/dist/ledDecayRelease";
 
-import base64 from "screenchaser-core/dist/ledDecayDebug.wasm.js";
+import base64 from "screenchaser-core/dist/ledDecayRelease.wasm.js";
 
 const isDev = process.env.NODE_ENV === "development";
 
@@ -98,7 +98,8 @@ function ChaserPair({ device, config }) {
       cleanedId,
       config.config.ledFields,
       (data) => {
-        global.ipcRenderer.send("CHASER:SEND_STRIPE", data, device.id);
+        const arr = calculateFrame(device.id, data);
+        global.ipcRenderer.send("CHASER:SEND_STRIPE", arr, device.id);
       }
     );
 

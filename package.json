@@ -4,18 +4,18 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev:app": "lerna --scope screenchaser-app run dev",
-    "dev:core": "lerna run dev --scope screenchaser-core",
-    "build:app": "lerna run build --scope screenchaser-app",
-    "dist:app": "lerna run dist --scope screenchaser-app",
-    "build:core": "lerna run build --scope screenchaser-core",
-    "build:core-as": "lerna run asbuild:debug --scope screenchaser-core",
-    "build:firmware": "lerna run build --scope screenchaser-firmware",
-    "guard:app": "lerna run guard --scope screenchaser-app",
-    "release": "lerna version --conventional-commits",
-    "nuke": "lerna run clean && pnpm store prune && lerna clean -y"
+    "dev:app": "nx --project screenchaser-app run dev",
+    "dev:core": "nx run dev --project screenchaser-core",
+    "build:app": "nx run build --project screenchaser-app",
+    "dist:app": "nx run dist --project screenchaser-app",
+    "build:core": "nx run build --project screenchaser-core",
+    "build:core-as": "nx run asbuild:debug --project screenchaser-core",
+    "build:firmware": "nx run build --project screenchaser-firmware",
+    "guard:app": "nx run guard --project screenchaser-app",
+    "release": "nx version --conventional-commits",
+    "nuke": "nx run-many -t clean && pnpm store prune"
   },
   "devDependencies": {
-    "release-please": "15.12.0"
+    "nx": "16.6.0"
   }
 }

@@ -7,10 +7,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "ts-node index.ts",
-    "asbuild:debug": "asc lib/decay/index.ts --target debug && node build-as.js",
+    "asbuild:debug": "asc lib/decay/index.ts --target debug",
     "asbuild:release": "asc lib/decay/index.ts --target release",
     "build:assembly": "pnpm run asbuild:debug && pnpm run asbuild:release",
-    "build": "tsc && pnpm run build:assembly",
+    "build": "tsc && pnpm run build:assembly && node build-as.js",
     "dev": "nodemon lib/manager/taskManager.test.ts",
     "dev-effect": "nodemon lib/effectTest.ts",
     "clean": "rimraf dist"

@@ -6,7 +6,8 @@
   "scripts": {
     "build": "docker run --rm -v $PWD:/project -w /project espressif/idf idf.py build",
     "flash": "concurrently -k \"esp_rfc2217_server.py -v -p 4000 /dev/ttyUSB0\" \"docker run --rm -v $PWD:/project -w /project espressif/idf idf.py --port rfc2217://host.docker.internal:4000?ign_set_control flash\"",
-    "monitor": "screen /dev/ttyUSB0 115200"
+    "monitor": "screen /dev/ttyUSB0 115200",
+    "clean": "echo \"TODO: clean\""
   },
   "author": "xi72yow",
   "devDependencies": {
