@@ -46,12 +46,6 @@ class LedDecay {
     this._initFrameBuffer(this._frameCount, ledCount);
   }
 
-  public changeFrameBufferSize(frameCount: i32): void {
-    this._frameCount = frameCount;
-    this._initFrameBuffer(frameCount, this._calculatedFrame.length);
-    this._initDecayWeights(frameCount);
-  }
-
   public calculateFrameDecay(frame: Uint8Array): Array<string> {
     if (frame.length / 4 !== this._calculatedFrame.length) {
       this._reactToLedCountChange(frame.length / 4);
@@ -87,16 +81,9 @@ class LedDecay {
 const LedDecayMap = new Map<i32, LedDecay>();
 
 export function createLedDecay(ledCount: i32, frameCount: i32, id: i32): bool {
-  let ledDecayExists = LedDecayMap.has(id);
-  if (ledDecayExists) {
-    let ledDecay = LedDecayMap.get(id);
-    ledDecay.changeFrameBufferSize(frameCount);
-    return true;
-  } else {
-    let ledDecay = new LedDecay(ledCount, frameCount);
-    LedDecayMap.set(id, ledDecay);
-    return true;
-  }
+  let ledDecay = new LedDecay(ledCount, frameCount);
+  LedDecayMap.set(id, ledDecay);
+  return true;
 }
 
 export function calculateFrame(id: i32, frame: Uint8Array): Array<string> {

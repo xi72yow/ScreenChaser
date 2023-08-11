@@ -13,6 +13,10 @@ import base64 from "screenchaser-core/dist/ledDecayRelease.wasm.js";
 
 const isDev = process.env.NODE_ENV === "development";
 
+let totalCalculatedFrames = 0;
+
+let calculationStartTime = 0;
+
 async function setVideoSrcFromMediaStream(sourceId, id, fps) {
   try {
     const mediaStream = await (navigator.mediaDevices as any).getUserMedia({
@@ -21,7 +25,7 @@ async function setVideoSrcFromMediaStream(sourceId, id, fps) {
         mandatory: {
           chromeMediaSource: "desktop",
           chromeMediaSourceId: sourceId,
-          idealFrameRate: fps,
+          /*minFrameRate: 80,*/
           maxWidth: 1920,
           maxHeight: 1080,
         },
@@ -29,7 +33,10 @@ async function setVideoSrcFromMediaStream(sourceId, id, fps) {
     });
     const video: HTMLVideoElement = document.querySelector(id);
     video.srcObject = mediaStream;
-    video.onloadedmetadata = (e) => video.play();
+    video.onloadedmetadata = (e) => {
+      video.play();
+      calculationStartTime = Date.now();
+    };
   } catch (e) {
     throw e;
   }
@@ -77,6 +84,16 @@ function ChaserPair({ device, config }) {
 
   function snapshot() {
     biasCore.current?.renderSituationPreview(cleanedId);
+    const time = Date.now() - calculationStartTime;
+    console.log(
+      `fps-setup: ${
+        config.config.fps
+      } - calculated frames: ${totalCalculatedFrames} - time: ${time}ms - fps: ${(
+        totalCalculatedFrames /
+        (time / 1000)
+      ).toFixed(2)}
+          `
+    );
   }
 
   useEffect(() => {
@@ -97,21 +114,24 @@ function ChaserPair({ device, config }) {
       cleanedId,
       config.config.ledFields,
       (data) => {
+        totalCalculatedFrames++;
         const arr = calculateFrame(device.id, data);
         global.ipcRenderer.send("CHASER:SEND_STRIPE", arr, device.id);
       }
     );
 
-    if (process.env.NODE_ENV === "development")
+    if (process.env.NODE_ENV === "development") {
       video.addEventListener("click", snapshot);
+    }
 
     return () => {
       if (biasCore.current) {
         biasCore.current.destroy();
       }
 
-      if (process.env.NODE_ENV === "development")
+      if (process.env.NODE_ENV === "development") {
         video.removeEventListener("click", snapshot);
+      }
     };
   }, [config]);
 
