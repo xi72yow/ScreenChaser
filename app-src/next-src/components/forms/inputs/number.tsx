@@ -61,11 +61,11 @@ interface QuantityInputProps {
   path: string;
   sx?: any;
   onChange?: (value: number) => void;
+  schema: any;
 }
 
 export function QuantityInput({
-  min = 0,
-  max = 255,
+  schema,
   handleChange,
   label = "",
   path,
@@ -98,7 +98,7 @@ export function QuantityInput({
           size={28}
           variant="transparent"
           onClick={() => handlers.current?.decrement()}
-          disabled={value === min}
+          disabled={value === schema.minimum}
           className={classes.control}
           onMouseDown={(event) => event.preventDefault()}
         >
@@ -107,8 +107,8 @@ export function QuantityInput({
 
         <NumberInput
           variant="unstyled"
-          min={min}
-          max={max}
+          min={schema.minimum}
+          max={schema.maximum}
           sx={sx}
           value={value}
           handlersRef={handlers}
@@ -119,7 +119,7 @@ export function QuantityInput({
         <ActionIcon<"button">
           size={28}
           variant="transparent"
-          disabled={value === max}
+          disabled={value === schema.maximum}
           className={classes.control}
           onClick={() => handlers.current?.increment()}
           onMouseDown={(event) => event.preventDefault()}

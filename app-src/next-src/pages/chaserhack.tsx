@@ -21,8 +21,7 @@ async function setVideoSrcFromMediaStream(sourceId, id, fps) {
         mandatory: {
           chromeMediaSource: "desktop",
           chromeMediaSourceId: sourceId,
-          minFrameRate: isDev ? 30 : fps,
-          maxFrameRate: isDev ? 30 : fps,
+          idealFrameRate: fps,
           maxWidth: 1920,
           maxHeight: 1080,
         },

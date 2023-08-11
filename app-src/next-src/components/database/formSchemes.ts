@@ -294,7 +294,7 @@ export const videoChaserSchema = {
     bufferdFrames: {
       type: "integer",
       minimum: 1,
-      maximum: 10,
+      maximum: 255,
     },
     ledFields: {
       type: "array",

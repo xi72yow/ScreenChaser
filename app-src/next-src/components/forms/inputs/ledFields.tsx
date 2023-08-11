@@ -36,7 +36,6 @@ type Props = {
 };
 
 export function LedFields({ data, path, handleChange, label, schema }: Props) {
-  console.log("🚀 ~ file: ledFields.tsx:21 ~ LedFields ~ data:", data);
   const ctx = useJsonForms();
 
   const form = useForm({
