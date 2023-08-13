@@ -10,12 +10,15 @@ import { BiasCore } from "screenchaser-core/dist/bias/biasCore";
 import { instantiate } from "screenchaser-core/dist/ledDecayRelease";
 
 import base64 from "screenchaser-core/dist/ledDecayRelease.wasm.js";
+import { setAll } from "screenchaser-core/dist/helpers";
 
 const isDev = process.env.NODE_ENV === "development";
 
 let totalCalculatedFrames = 0;
 
 let calculationStartTime = 0;
+
+const allBlack = setAll(0, 0, 0, 114);
 
 async function setVideoSrcFromMediaStream(sourceId, id, fps) {
   try {
@@ -76,6 +79,7 @@ async function initDecay() {
 const { memory, createLedDecay, calculateFrame } = await initDecay();
 
 function ChaserPair({ device, config }) {
+  console.log("🚀 ~ file: chaserhack.tsx:79 ~ ChaserPair ~ config:", config);
   const { name, id } = parseSourceString(config.config.sourceId);
   const cleanedId = id.replaceAll(/[\W_]+/g, "");
   const biasCore = useRef(null as BiasCore);
@@ -116,7 +120,9 @@ function ChaserPair({ device, config }) {
       (data) => {
         totalCalculatedFrames++;
         const arr = calculateFrame(device.id, data);
-        global.ipcRenderer.send("CHASER:SEND_STRIPE", arr, device.id);
+        if (config.id === 4)
+          global.ipcRenderer.send("CHASER:SEND_STRIPE", allBlack, device.id);
+        else global.ipcRenderer.send("CHASER:SEND_STRIPE", arr, device.id);
       }
     );
 

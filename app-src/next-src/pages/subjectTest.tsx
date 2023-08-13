@@ -44,8 +44,9 @@ const videoSourceList = [
 ];
 
 const breakVideoSourceList = [
-  { name: "Pause Habitutation", src: "videos/pause_evaluation.mp4" },
-  { name: "Pause Evaluation", src: "videos/pause_evaluation.mp4" },
+  { name: "Pause Habitutation", src: "videos/pause_habitutation.mp4" },
+  { name: "Pause Evaluation Short", src: "videos/pause_evaluation_short.mp4" },
+  { name: "Pause Evaluation Long", src: "videos/pause_evaluation_long.mp4" },
 ];
 
 const configList = [
@@ -96,23 +97,20 @@ async function generateTestConfig() {
 export default function SubjectTest({}: Props) {
   const videoRef = React.useRef<HTMLVideoElement>(null);
 
-  const [testConfig, setTestConfig] = React.useState(null);
+  const [playlist, setPlaylist] = React.useState(null);
 
   React.useEffect(() => {
-    if (!testConfig) {
+    if (!playlist) {
       return;
-      /* generateTestConfig().then((data) => {
-        setTestConfig(data);
-      }); */
     }
 
     const video = videoRef.current;
-    video.src = encodeURI(videoSourceList[testConfig[0].videoIdx]["src"]);
+    video.src = encodeURI(playlist[0].src);
 
     const vidPlay = (idx, nostart) => {
       currentVideo = idx;
       videoStart = nostart ? false : true;
-      video.src = encodeURI(videoSourceList[idx]["src"]);
+      video.src = encodeURI(playlist[idx]["src"]);
     };
 
     const setConfig = (idx) => {
@@ -128,45 +126,151 @@ export default function SubjectTest({}: Props) {
 
     video.addEventListener("ended", () => {
       currentVideo++;
-      if (currentVideo == videoSourceList.length) {
+      if (currentVideo == playlist.length) {
         currentVideo = 0;
         video.pause();
         videoStart = true;
       }
       vidPlay(currentVideo, videoStart);
+
+      const configId = playlist[currentVideo].configId;
+      setConfig(configId);
     });
 
+    setConfig(playlist[0].configId);
     vidPlay(0, true);
+  }, [playlist]);
 
-    video.addEventListener("click", () => {
-      if (video.paused) {
-        video.play();
-        video.requestFullscreen();
-      } else {
-        video.pause();
-      }
-    });
-  }, [testConfig]);
+  function saveAs(blob, fileName) {
+    var url = window.URL.createObjectURL(blob);
+    var anchorElem = document.createElement("a");
+    anchorElem.style.display = "none";
+
+    anchorElem.href = url;
+    anchorElem.download = fileName;
+
+    document.body.appendChild(anchorElem);
+    anchorElem.click();
+
+    document.body.removeChild(anchorElem);
+  }
 
   return (
     <div>
-      <video id="vVid" className={styles.vVid} ref={videoRef}></video>
+      <video
+        style={{ width: "100%" }}
+        id={"video"}
+        ref={videoRef}
+        className={styles.vVid}
+      ></video>
       <button
         onClick={() => {
           generateTestConfig().then((data) => {
+            const playlist = [];
+
             console.log(data);
+
+            const pushToPlaylist = (name, src, configId) => {
+              playlist.push({ name, src: encodeURI(src), configId });
+            };
+
+            function generateSplit(
+              video,
+              config,
+              startWithReferenz,
+              evaluation
+            ) {
+              const indikator = evaluation ? "(Evaluation)" : "(Habitutation)";
+              const pauseIndexes = evaluation ? [1, 2] : [0, 0];
+              if (startWithReferenz) {
+                pushToPlaylist(
+                  `Referenz ${video.name} ${indikator}`,
+                  video.src,
+                  4
+                );
+                pushToPlaylist(
+                  "Pause " + indikator,
+                  breakVideoSourceList[pauseIndexes[0]]["src"],
+                  4
+                );
+                pushToPlaylist(
+                  `Test ${video.name} ${indikator}`,
+                  video.src,
+                  config.id
+                );
+                pushToPlaylist(
+                  "Pause " + indikator,
+                  breakVideoSourceList[pauseIndexes[1]]["src"],
+                  4
+                );
+              } else {
+                pushToPlaylist(
+                  `Test ${video.name} ${indikator}`,
+                  video.src,
+                  config.id
+                );
+                pushToPlaylist(
+                  "Pause " + indikator,
+                  breakVideoSourceList[pauseIndexes[0]]["src"],
+                  4
+                );
+                pushToPlaylist(
+                  `Referenz ${video.name} ${indikator}`,
+                  video.src,
+                  4
+                );
+                pushToPlaylist(
+                  "Pause " + indikator,
+                  breakVideoSourceList[pauseIndexes[1]]["src"],
+                  4
+                );
+              }
+            }
+
             for (let i = 0; i < data.length; i++) {
               const video = videoSourceList[data[i].videoIdx];
-              const config = configList[data[i].configIdx];
               const startWithReferenz = data[i].startWithReferenz;
-              console.log(
-                `Video: ${video.name}, Config: ${config.name}, StartWithReferenz: ${startWithReferenz}`
-              );
+              const config = configList[data[i].configIdx];
+
+              // create Double Stimulus Continuous Quality Scale (DSCQS) playlist
+              generateSplit(video, config, startWithReferenz, false);
+              generateSplit(video, config, startWithReferenz, true);
             }
+            console.log(playlist);
+
+            setPlaylist(playlist);
           });
         }}
       >
         Generate Test Config
+      </button>
+      <button
+        onClick={() => {
+          const video = videoRef.current;
+          if (video.paused) {
+            video.play();
+            video.requestFullscreen();
+          } else {
+            video.pause();
+          }
+        }}
+      >
+        Play
+      </button>
+
+      <button
+        onClick={() => {
+          if (!playlist) {
+            return;
+          }
+          const playlistString = JSON.stringify(playlist);
+          const blob = new Blob([playlistString], {
+            type: "text/plain;charset=utf-8",
+          });
+          saveAs(blob, "playlist.json");
+        }}
+      >
+        Download Playlist
       </button>
     </div>
   );
