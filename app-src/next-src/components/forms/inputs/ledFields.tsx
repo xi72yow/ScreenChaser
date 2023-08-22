@@ -104,6 +104,7 @@ export function LedFields({ data, path, handleChange, label, schema }: Props) {
         <Collapse in={generatorOpen}>
           <form
             onSubmit={form.onSubmit((values) => {
+              console.log("🚀 ~ file: ledFields.tsx:107 ~ onSubmit={form.onSubmit ~ values:", values)
               const generatedLedFields = generateLedFields(values);
               setLedFields(JSON.stringify(generatedLedFields, null, 2));
             })}
@@ -126,12 +127,17 @@ export function LedFields({ data, path, handleChange, label, schema }: Props) {
               />
               <NumberInput
                 min={0}
+                precision={5}
+                step={0.0001}
                 max={100}
                 label="Field Width (in %)"
                 {...form.getInputProps("fieldWidth")}
               />
               <NumberInput
                 min={0}
+                precision={5}
+                step={0.0001}
+
                 max={100}
                 label="Field Height (in %)"
                 {...form.getInputProps("fieldHeight")}
