@@ -148,9 +148,9 @@ export function generateLedFields({
 
   const fields = [
     ...(clockwise ? bottomFields.reverse() : bottomFields),
-    ...(!clockwise ? rightFields : rightFields.reverse()),
+    ...(clockwise ? rightFields : rightFields.reverse()),
     ...(!clockwise ? topFields.reverse() : topFields),
-    ...(clockwise ? leftFields : leftFields.reverse()),
+    ...(!clockwise ? leftFields : leftFields.reverse()),
   ];
 
   const fieldsAround = clockwise ? fields.reverse() : fields;
