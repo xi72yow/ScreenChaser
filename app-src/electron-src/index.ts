@@ -22,7 +22,7 @@ const port = 3000;
 
 const ChaserManager = new Manager();
 
-const showChaserWindowInProd = true;
+const showChaserWindowInProd = false;
 
 const ChaserStatCalculator = new StatCalculator({
   Manager: ChaserManager,

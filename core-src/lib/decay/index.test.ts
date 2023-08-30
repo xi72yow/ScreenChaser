@@ -1,17 +1,21 @@
 import { instantiate } from "../../dist/ledDecayDebug";
 
-import { fs} from "fs";
+import { fs } from "fs";
 
-const {
-  memory,
-  createLedDecay,
-  calculateFrame,
-} = await instantiate(
+const { memory, createLedDecay, calculateFrame } = await instantiate(
   await (async () => {
-    try { return await globalThis.WebAssembly.compileStreaming(globalThis.fetch(url)); }
-    catch { return globalThis.WebAssembly.compile(await (await import("node:fs/promises")).readFile(url)); }
-  })(), {}
-)
+    try {
+      return await globalThis.WebAssembly.compileStreaming(
+        globalThis.fetch(url)
+      );
+    } catch {
+      return globalThis.WebAssembly.compile(
+        await (await import("node:fs/promises")).readFile(url)
+      );
+    }
+  })(),
+  {}
+);
 
 const LEDS = 114;
 const TIMES = 50;

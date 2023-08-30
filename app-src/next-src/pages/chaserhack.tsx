@@ -13,35 +13,6 @@ import base64 from "screenchaser-core/dist/ledDecayRelease.wasm.js";
 
 const isDev = process.env.NODE_ENV === "development";
 
-let totalCalculatedFrames = 0;
-
-let calculationStartTime = 0;
-
-async function setVideoSrcFromMediaStream(sourceId, id, fps) {
-  try {
-    const mediaStream = await (navigator.mediaDevices as any).getUserMedia({
-      audio: false,
-      video: {
-        mandatory: {
-          chromeMediaSource: "desktop",
-          chromeMediaSourceId: sourceId,
-          /*minFrameRate: 80,*/
-          maxWidth: 1920,
-          maxHeight: 1080,
-        },
-      },
-    });
-    const video: HTMLVideoElement = document.querySelector(id);
-    video.srcObject = mediaStream;
-    video.onloadedmetadata = (e) => {
-      video.play();
-      calculationStartTime = Date.now();
-    };
-  } catch (e) {
-    throw e;
-  }
-}
-
 function base64ToArrayBuffer(base64) {
   const binaryString = globalThis.atob(base64);
   const len = binaryString.length;
@@ -75,29 +46,43 @@ async function initDecay() {
 
 const { memory, createLedDecay, calculateFrame } = await initDecay();
 
-function ChaserPair({ device, config }) {
+const streamMap = new Map();
+
+async function startChaser(config, device, streamMap) {
   const { name, id } = parseSourceString(config.config.sourceId);
-  const cleanedId = id.replaceAll(/[\W_]+/g, "");
-  const biasCore = useRef(null as BiasCore);
+  const ip = device.ip;
 
-  const videoRef = useRef(null as HTMLVideoElement);
-
-  function snapshot() {
-    biasCore.current?.renderSituationPreview(cleanedId);
-    const time = Date.now() - calculationStartTime;
-    console.log(
-      `fps-setup: ${
-        config.config.fps
-      } - calculated frames: ${totalCalculatedFrames} - time: ${time}ms - fps: ${(
-        totalCalculatedFrames /
-        (time / 1000)
-      ).toFixed(2)}
-          `
-    );
+  if (streamMap.has(device.id)) {
+    console.log("stop stream");
+    streamMap
+      .get(device.id)
+      .getTracks()
+      .forEach((track) => track.stop());
+    streamMap.delete(device.id);
   }
 
-  useEffect(() => {
-    const video = videoRef.current;
+  try {
+    const mediaStream = await (navigator.mediaDevices as any).getUserMedia({
+      audio: false,
+      video: {
+        mandatory: {
+          chromeMediaSource: "desktop",
+          chromeMediaSourceId: id,
+          maxFrameRate: config.config.fps,
+          maxWidth: 1920,
+          maxHeight: 1080,
+        },
+      },
+    });
+    const videoTrack = mediaStream.getVideoTracks()[0];
+    const { width, height } = videoTrack.getSettings();
+
+    const frameProcessor = new BiasCore(
+      device.id,
+      config.config.ledFields,
+      width,
+      height
+    );
 
     createLedDecay(
       config.config.ledFields.length,
@@ -105,97 +90,69 @@ function ChaserPair({ device, config }) {
       device.id
     );
 
-    if (biasCore.current) {
-      biasCore.current.destroy();
-    }
+    //@ts-expect-error
+    const trackProcessor = new MediaStreamTrackProcessor({
+      track: videoTrack,
+    });
 
-    setVideoSrcFromMediaStream(id, "#video" + cleanedId, config.config.fps);
-    biasCore.current = new BiasCore(
-      cleanedId,
-      config.config.ledFields,
-      (data) => {
-        totalCalculatedFrames++;
-        const arr = calculateFrame(device.id, data);
-        global.ipcRenderer.send("CHASER:SEND_STRIPE", arr, device.id);
-      }
+    const transformer = new TransformStream({
+      async transform(videoFrame, controller) {
+        const pixels = frameProcessor.processVideoFrame(videoFrame);
+        videoFrame.close();
+        controller.enqueue(pixels);
+      },
+    });
+
+    trackProcessor.readable.pipeThrough(transformer).pipeTo(
+      new WritableStream({
+        write(chunk) {
+          const arr = calculateFrame(device.id, chunk);
+          global.ipcRenderer.send("CHASER:SEND_STRIPE", arr, device.id);
+        },
+      })
     );
 
-    if (process.env.NODE_ENV === "development") {
-      video.addEventListener("click", snapshot);
-    }
-
-    return () => {
-      if (biasCore.current) {
-        biasCore.current.destroy();
-      }
-
-      if (process.env.NODE_ENV === "development") {
-        video.removeEventListener("click", snapshot);
-      }
-    };
-  }, [config]);
-
-  return (
-    <div style={{ border: "1px solid black" }}>
-      <video
-        style={{ width: "100%" }}
-        id={"video" + cleanedId}
-        ref={videoRef}
-      ></video>
-      <canvas
-        id={"canvas" + cleanedId}
-        style={{ imageRendering: "pixelated", width: "100%" }}
-        width={config.config.length}
-        height={1}
-      ></canvas>
-      <canvas
-        style={{ imageRendering: "pixelated", width: "100%" }}
-        id={"inspection-shaft-canvas" + cleanedId}
-      ></canvas>
-    </div>
-  );
+    streamMap.set(device.id, mediaStream);
+  } catch (e) {
+    throw e;
+  }
 }
 
-type Props = {};
+function handleError(e, sourceId, configs) {
+  console.error(e);
+  if (e.message === "Could not start video source" && sourceId)
+    global.ipcRenderer.invoke("GET_SOURCES").then(async (sources) => {
+      //if Could not start video source then try to find videosource by name
+      configs.forEach(({ config, device }) => {
+        const { name, id } = parseSourceString(config.config.sourceId);
+        if (id === sourceId) {
+          const source = sources.find((source) => source.name === name);
+          if (source) {
+            console.info(
+              `found source by name and set config (${config.id}) to new source: ${source}`
+            );
+            db.configs.update(config.id, {
+              config: {
+                ...config.config,
+                sourceId: createSourceString(source),
+              },
+            });
+          } else {
+            console.error(`could not find source by name: ${name}`);
+            new Notification("ScreenChaser Notification", {
+              body: `${
+                device.name || device.ip
+              }: Could not find source by name: ${name}`,
+            });
+          }
+        }
+      });
+    });
+  // could not handle error
+  else throw e;
+}
 
 function Next() {
-  const chaserIntervals = useRef([]);
-
-  function handleError(e, sourceId) {
-    console.error(e);
-    chaserIntervals.current.forEach((interval) => clearInterval(interval));
-    if (e.message === "Could not start video source" && sourceId)
-      global.ipcRenderer.invoke("GET_SOURCES").then(async (sources) => {
-        //if Could not start video source then try to find videosource by name
-        configs.forEach(({ config, device }) => {
-          const { name, id } = parseSourceString(config.config.sourceId);
-          if (id === sourceId) {
-            const source = sources.find((source) => source.name === name);
-            if (source) {
-              console.info(
-                `found source by name and set config (${config.id}) to new source: ${source}`
-              );
-              db.configs.update(config.id, {
-                config: {
-                  ...config.config,
-                  sourceId: createSourceString(source),
-                },
-              });
-            } else {
-              console.error(`could not find source by name: ${name}`);
-              new Notification("ScreenChaser Notification", {
-                body: `${
-                  device.name || device.ip
-                }: Could not find source by name: ${name}`,
-              });
-            }
-          }
-        });
-      });
-    // could not handle error
-    else throw e;
-  }
-
   const configs = useLiveQuery(
     async () => {
       const allDevices = await db.devices.toArray();
@@ -216,26 +173,17 @@ function Next() {
     []
   );
 
+  useEffect(() => {
+    if (configs) {
+      configs.forEach(({ config, device }) => {
+        startChaser(config, device, streamMap);
+      });
+    }
+  }, [configs]);
+
   return (
     <div>
-      {/* filter configs to create one video for each uniqe source */}
-      {configs
-        .filter(({ config }: any, index, configs) => {
-          return (
-            configs.findIndex(
-              (c: any) => c.config.config.sourceId === config.config.sourceId
-            ) === index
-          );
-        })
-        .map(({ device, config }) => {
-          return (
-            <ChaserPair
-              key={device.id + "div"}
-              config={config}
-              device={device}
-            ></ChaserPair>
-          );
-        })}
+      <h1>Chasing window for Debug</h1>
     </div>
   );
 }
