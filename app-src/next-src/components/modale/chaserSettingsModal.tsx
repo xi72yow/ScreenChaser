@@ -46,18 +46,28 @@ export default function ScanNetworkModal({}: scanNetworkModalProps) {
 
   function scanNetwork() {
     setScanning(true);
-    global.ipcRenderer.invoke("SCAN_NETWORK").then((detectedDevices) => {
-      if (typeof detectedDevices !== "object") {
+    global.ipcRenderer
+      .invoke("SCAN_NETWORK")
+      .then((detectedDevices) => {
+        if (typeof detectedDevices !== "object") {
+          showNotification({
+            title: "Chaser Notification",
+            message: `Error while scanning network: ${detectedDevices}`,
+          });
+          setScanning(false);
+          return;
+        }
+        checkForNewDevices(devices, detectedDevices);
+        setScanning(false);
+      })
+      .catch((err) => {
         showNotification({
+          color: "red",
           title: "Chaser Notification",
-          message: `Error while scanning network: ${detectedDevices}`,
+          message: `Error while scanning network: ${err}`,
         });
         setScanning(false);
-        return;
-      }
-      checkForNewDevices(devices, detectedDevices);
-      setScanning(false);
-    });
+      });
   }
 
   function checkForNewDevices(old, newDevices): void {

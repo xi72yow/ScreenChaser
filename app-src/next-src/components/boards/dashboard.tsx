@@ -131,7 +131,7 @@ function QuickConfigModal({ deviceId, opened, setOpened }) {
           onClick={() => {
             confirm
               .showConfirmation(
-                "Are you sure you want to delete the current Frame?",
+                "Are you sure you want to delete the current Device?",
                 true
               )
               .then((confirmed) => {

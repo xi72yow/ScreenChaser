@@ -114,7 +114,7 @@ async function startChaser(config, device, streamMap) {
 
     streamMap.set(device.id, mediaStream);
   } catch (e) {
-    throw e;
+    handleError(e, id, [{ config, device }]);
   }
 }
 

@@ -22,7 +22,7 @@ const port = 3000;
 
 const ChaserManager = new Manager();
 
-const showChaserWindowInProd = false;
+const showChaserWindowInProd = isDev;
 
 const ChaserStatCalculator = new StatCalculator({
   Manager: ChaserManager,
@@ -133,28 +133,6 @@ app.on("ready", async () => {
     });
 
     mainWindow.loadURL(url);
-  }
-
-  const subjectTestWin = new BrowserWindow({
-    webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: false,
-      preload: join(__dirname, "preload.js"),
-    },
-  });
-
-  subjectTestWin.setMenuBarVisibility(false);
-
-  if (isDev) {
-    subjectTestWin.loadURL(`http://${hostname}:${port}/subjectTest`);
-    subjectTestWin.webContents.openDevTools();
-  } else {
-    const url = format({
-      pathname: join(__dirname, "../next-src/out/subjectTest.html"),
-      protocol: "file:",
-      slashes: true,
-    });
-    subjectTestWin.loadURL(url);
   }
 
   //This is figuring out white screen issue.
