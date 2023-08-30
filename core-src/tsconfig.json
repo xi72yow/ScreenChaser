@@ -8,7 +8,7 @@
     "rootDir": "./lib",
     "strict": true,
     "esModuleInterop": true,
-    "allowJs": true
+    "allowJs": true,
   },
-  "exclude": ["lib/decay", "dist", "build-as.js"]
+  "exclude": ["lib/decay", "dist", "build-as.js", "playground"]
 }

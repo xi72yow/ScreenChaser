@@ -1,4 +1,7 @@
+import { type } from "os";
 import { LedField } from "./ledFields";
+
+type VideoFrame = HTMLVideoElement | HTMLImageElement | HTMLCanvasElement;
 
 function createShader(
   gl: WebGL2RenderingContext,
@@ -43,7 +46,12 @@ function createProgram(
 
 function createWebGLTextureFromImage(
   gl: WebGL2RenderingContext,
-  image: HTMLVideoElement | HTMLImageElement | HTMLCanvasElement | undefined,
+  image:
+    | HTMLVideoElement
+    | HTMLImageElement
+    | HTMLCanvasElement
+    | VideoFrame
+    | undefined,
   unit: number,
   srcFormat: number,
   srcType: number,
@@ -143,7 +151,7 @@ function setRectangle(
   );
 }
 
-function readPixels(gl: WebGL2RenderingContext | undefined) {
+function readPixels(gl: WebGL2RenderingContext | undefined): Uint8Array {
   if (!gl) throw new Error("WebGL not initialized.");
   // read pixels
   const pixels = new Uint8Array(gl.canvas.width * 4);
@@ -165,7 +173,7 @@ function logPixels(pixels: string[]) {
 function updateTexture(
   gl: WebGL2RenderingContext,
   texture: number,
-  video: HTMLVideoElement
+  videoFrame: VideoFrame
 ) {
   const level = 0;
   const internalFormat = gl.RGBA;
@@ -178,7 +186,7 @@ function updateTexture(
     internalFormat,
     srcFormat,
     srcType,
-    video
+    videoFrame
   );
   gl.drawArrays(gl.TRIANGLES, 0, 6);
   gl.flush();
@@ -348,41 +356,33 @@ export class BiasCore {
   ledFields: LedField[] = [];
   gl: WebGL2RenderingContext | undefined;
   program: WebGLProgram | undefined;
-  video: HTMLVideoElement | undefined;
-  canvas: HTMLCanvasElement | undefined;
+  canvas: OffscreenCanvas | undefined;
   videoFrameCallback: () => void = () => {};
-  frameCalculationCallback = (data: Uint8Array) => {};
   videoCallbackIndikator: number | undefined;
   constructor(
     id: string,
     ledFields: LedField[],
-    frameCalculationCallback: (data: Uint8Array) => void
+    width: number,
+    height: number
   ) {
-    this.video = document.getElementById("video" + id) as HTMLVideoElement;
     this.id = id;
 
-    if (frameCalculationCallback)
-      this.frameCalculationCallback = frameCalculationCallback;
-
     if (ledFields) this.ledFields = ledFields;
+    else throw new Error("No led fields provided.");
 
-    if (!this.video) {
-      throw new Error("Video element not found.");
-    }
-
-    this.video.addEventListener("playing", this.init);
+    this.init(width, height);
   }
 
-  init = () => {
-    this.canvas = document.getElementById(
-      "canvas" + this.id
-    ) as HTMLCanvasElement;
+  init(width: number, height: number) {
+    this.canvas = new OffscreenCanvas(this.ledFields.length, 1);
     this.canvas.width = this.ledFields.length;
-    this.canvas.height = 1;
-    this.canvas.classList.add("pixelated");
+
+    const firstRenderCanvas = document.createElement("canvas");
+    firstRenderCanvas.width = width;
+    firstRenderCanvas.height = height;
 
     if (!this.canvas) {
-      throw new Error("Canvas element not found.");
+      throw new Error("Canvas could not be created.");
     }
 
     this.gl = this.canvas.getContext("webgl2") as WebGL2RenderingContext;
@@ -462,7 +462,7 @@ export class BiasCore {
     // Create a texture.
     const frameTexture = createWebGLTextureFromImage(
       this.gl,
-      this.video,
+      firstRenderCanvas,
       0,
       this.gl.RGBA,
       this.gl.UNSIGNED_BYTE
@@ -520,61 +520,18 @@ export class BiasCore {
     var offset = 0;
     var count = 6;
     this.gl.drawArrays(primitiveType, offset, count);
+  }
 
-    const that = this;
-
-    if (this.video)
-      this.videoCallbackIndikator = this.video.requestVideoFrameCallback(
-        that.videoCallback
-      );
-  };
-
-  videoCallback = () => {
-    if (this.destroyed) return;
-    if (!this.gl || !this.program || !this.video)
+  processVideoFrame = (videoFrame: VideoFrame) => {
+    if (!this.gl || !this.program || !videoFrame)
       throw new Error("WebGL not initialized.");
 
-    updateTexture(this.gl, this.gl.TEXTURE0, this.video);
-    this.frameCalculationCallback(this.readPixels());
-    this.video.requestVideoFrameCallback(this.videoCallback);
-  };
-
-  renderSituationPreview = (id: string) => {
-    if (!this.video) throw new Error("Video not initialized.");
-    renderSituationPreview(this.video, this.ledFields, id);
-  };
-
-  readPixels = () => {
+    updateTexture(this.gl, this.gl.TEXTURE0, videoFrame);
     return readPixels(this.gl);
   };
 
-  destroy = () => {
-    this.destroyed = true;
-
-    if (this.videoCallbackIndikator) {
-      this.video?.cancelVideoFrameCallback(this.videoCallbackIndikator);
-      this.videoCallbackIndikator = undefined;
-      this.videoFrameCallback = () => {};
-    }
-
-    this.video?.removeEventListener("playing", this.init);
-
-    if (this.gl && this.program) {
-      this.gl.deleteProgram(this.program);
-
-      this.gl = undefined;
-
-      this.program = undefined;
-
-      this.video = undefined;
-
-      this.canvas = undefined;
-
-      this.frameCalculationCallback = () => {};
-
-      this.videoCallbackIndikator = 0;
-
-      this.ledFields = [];
-    }
-  };
+  /*  renderSituationPreview = (id: string) => {
+    if (!this.video) throw new Error("Video not initialized.");
+    renderSituationPreview(this.video, this.ledFields, id);
+  }; */
 }

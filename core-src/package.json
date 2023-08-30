@@ -11,7 +11,7 @@
     "asbuild:release": "asc lib/decay/index.ts --target release",
     "build:assembly": "pnpm run asbuild:debug && pnpm run asbuild:release",
     "build": "tsc && pnpm run build:assembly && node build-as.js",
-    "dev": "nodemon lib/manager/taskManager.test.ts",
+    "dev": "node ./playground/dev.js",
     "dev-effect": "nodemon lib/effectTest.ts",
     "clean": "rimraf dist"
   },

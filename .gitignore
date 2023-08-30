@@ -109,3 +109,6 @@ managed_components
 
 # pytest log
 pytest_embedded_log/
+
+core-src/playground/biasCore.js
+core-src/playground/ledFields.js
