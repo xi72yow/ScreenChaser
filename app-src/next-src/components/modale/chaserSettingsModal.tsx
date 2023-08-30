@@ -105,15 +105,15 @@ export default function ScanNetworkModal({}: scanNetworkModalProps) {
     }
   }
 
-  const firstUpdate = useRef(true);
+  /* const firstUpdate = useRef(true);
 
   useEffect(() => {
-    if (devices === undefined) return;
+    if (devices) return;
     if (firstUpdate.current) {
       scanNetwork();
       firstUpdate.current = false;
     }
-  }, [devices]);
+  }, [devices]); */
 
   return (
     <React.Fragment>
