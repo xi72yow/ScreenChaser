@@ -5,6 +5,12 @@ import styles from "../components/css/subjectTestCss.module.css";
 import { apiKey } from "../components/apiKey";
 import { db } from "../components/database/db";
 
+import PocketBase from "pocketbase";
+
+const pb = new PocketBase("");
+
+pb.collection("users").authWithPassword("", "");
+
 type Props = {};
 
 let currentVideo = 0;
@@ -16,9 +22,9 @@ const requestOrder = {
   method: "generateIntegers",
   params: {
     apiKey,
-    n: 9, // Number of integers to generate
+    n: 15, // Number of integers to generate
     min: 0, // Lower bound (inclusive)
-    max: 8, // Upper bound (inclusive)
+    max: 14, // Upper bound (inclusive)
     replacement: false, // Without replacement (no duplicates)
   },
   id: 1,
@@ -29,7 +35,7 @@ const requestStartWithReferenz = {
   method: "generateIntegers",
   params: {
     apiKey,
-    n: 9, // Number of integers to generate
+    n: 15, // Number of integers to generate
     min: 0, // Lower bound (inclusive)
     max: 1, // Upper bound (inclusive)
     replacement: true, // With replacement (duplicates possible)
@@ -38,15 +44,19 @@ const requestStartWithReferenz = {
 };
 
 const videoSourceList = [
-  { name: "Action Clip", src: "videos/1.mp4" },
-  { name: "Landscape Fly", src: "videos/2.mp4" },
-  { name: "Another Clip", src: "videos/3.mp4" },
+  { name: "Action Clip I", src: "videos/tokio_drift.mp4" },
+  { name: "Action Clip II", src: "videos/transporter_3.mp4" },
+  { name: "Middle Clip", src: "videos/super_natural_slow.mp4" },
+  { name: "Slow Clip I", src: "videos/night_shot.mp4" },
+  { name: "Slow Clip II", src: "videos/foggy_forest.mp4" },
 ];
 
 const breakVideoSourceList = [
-  { name: "Pause Habitutation", src: "videos/pause_habitutation.mp4" },
-  { name: "Pause Evaluation Short", src: "videos/pause_evaluation_short.mp4" },
-  { name: "Pause Evaluation Long", src: "videos/pause_evaluation_long.mp4" },
+  { name: "Pause Habitutation Video A", src: "videos/break_A_habituation.mp4" },
+  { name: "Pause Habitutation Video B", src: "videos/break_B_habituation.mp4" },
+  { name: "Pause Evaluation Video A", src: "videos/break_A_rating.mp4" },
+  { name: "Pause Evaluation Video B", src: "videos/break_B_rating.mp4" },
+  { name: "Pause Rating", src: "videos/break_rating_pause.mp4" },
 ];
 
 const configList = [
@@ -104,17 +114,36 @@ export default function SubjectTest({}: Props) {
       return;
     }
 
+    const setConfig = (idx) => {
+      const deviceId = 3;
+      db.devices.where("id").equals(deviceId).modify({ configId: idx });
+      if (idx === 4) {
+        setTimeout(() => {
+          global.ipcRenderer.send(
+            "CHASER:SEND_STRIPE",
+            new Array(204).fill("000000"),
+            deviceId
+          );
+        }, 100);
+      }
+      console.log(
+        "The Video",
+        playlist[currentVideo].name,
+        "is playing with",
+        configList[idx - 1].name
+      );
+    };
+
     const video = videoRef.current;
     video.src = encodeURI(playlist[0].src);
+
+    const configId = playlist[currentVideo].configId;
+    setConfig(configId);
 
     const vidPlay = (idx, nostart) => {
       currentVideo = idx;
       videoStart = nostart ? false : true;
       video.src = encodeURI(playlist[idx]["src"]);
-    };
-
-    const setConfig = (idx) => {
-      db.devices.where("id").equals(1).modify({ configId: idx });
     };
 
     video.addEventListener("canplay", () => {
@@ -137,7 +166,6 @@ export default function SubjectTest({}: Props) {
       setConfig(configId);
     });
 
-    setConfig(playlist[0].configId);
     vidPlay(0, true);
   }, [playlist]);
 
@@ -181,7 +209,7 @@ export default function SubjectTest({}: Props) {
               evaluation
             ) {
               const indikator = evaluation ? "(Evaluation)" : "(Habitutation)";
-              const pauseIndexes = evaluation ? [1, 2] : [0, 0];
+              const pauseIndexes = evaluation ? [2, 3, 4] : [0, 1, 4];
               if (startWithReferenz) {
                 pushToPlaylist(
                   `Referenz ${video.name} ${indikator}`,
@@ -225,6 +253,13 @@ export default function SubjectTest({}: Props) {
                   4
                 );
               }
+              if (evaluation) {
+                pushToPlaylist(
+                  "Pause (End)",
+                  breakVideoSourceList[pauseIndexes[2]]["src"],
+                  4
+                );
+              }
             }
 
             for (let i = 0; i < data.length; i++) {
@@ -239,6 +274,10 @@ export default function SubjectTest({}: Props) {
             console.log(playlist);
 
             setPlaylist(playlist);
+
+            pb.collection("subject_tests").create({
+              playlist,
+            });
           });
         }}
       >
@@ -256,6 +295,14 @@ export default function SubjectTest({}: Props) {
         }}
       >
         Play
+      </button>
+
+      <button
+        onClick={() => {
+          window.location.reload();
+        }}
+      >
+        reset
       </button>
 
       <button
