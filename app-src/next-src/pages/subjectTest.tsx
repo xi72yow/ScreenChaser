@@ -45,10 +45,19 @@ const requestStartWithReferenz = {
 
 const videoSourceList = [
   { name: "Action Clip I", src: "videos/tokio_drift.mp4" },
-  { name: "Action Clip II", src: "videos/transporter_3.mp4" },
+  { name: "Action Clip II", src: "videos/expendables_4.mp4" },
   { name: "Middle Clip", src: "videos/super_natural_slow.mp4" },
   { name: "Slow Clip I", src: "videos/night_shot.mp4" },
   { name: "Slow Clip II", src: "videos/foggy_forest.mp4" },
+];
+
+const demoVideoSourceList = [
+  { name: "Demo Video A", src: "videos/river_shot.mp4" },
+  {
+    name: "Demo Video B",
+    src: "videos/vikings_Battle_for_Kattegat_Ragnar_vs_Jarl_Borg.mp4",
+  },
+  { name: "Demo Video C", src: "videos/transporter_3.mp4" },
 ];
 
 const breakVideoSourceList = [
@@ -183,6 +192,80 @@ export default function SubjectTest({}: Props) {
     document.body.removeChild(anchorElem);
   }
 
+  const pushToPlaylist = (name, src, configId, playlist) => {
+    playlist.push({ name, src: encodeURI(src), configId });
+  };
+
+  function generateSplit(
+    video,
+    config,
+    startWithReferenz,
+    evaluation,
+    playlist
+  ) {
+    const indikator = evaluation ? "(Evaluation)" : "(Habitutation)";
+    const pauseIndexes = evaluation ? [2, 3, 4] : [0, 1, 4];
+    if (startWithReferenz) {
+      pushToPlaylist(
+        `Referenz ${video.name} ${indikator}`,
+        video.src,
+        4,
+        playlist
+      );
+      pushToPlaylist(
+        "Pause " + indikator,
+        breakVideoSourceList[pauseIndexes[0]]["src"],
+        4,
+        playlist
+      );
+      pushToPlaylist(
+        `Test ${video.name} ${indikator}`,
+        video.src,
+        config.id,
+        playlist
+      );
+      pushToPlaylist(
+        "Pause " + indikator,
+        breakVideoSourceList[pauseIndexes[1]]["src"],
+        4,
+        playlist
+      );
+    } else {
+      pushToPlaylist(
+        `Test ${video.name} ${indikator}`,
+        video.src,
+        config.id,
+        playlist
+      );
+      pushToPlaylist(
+        "Pause " + indikator,
+        breakVideoSourceList[pauseIndexes[0]]["src"],
+        4,
+        playlist
+      );
+      pushToPlaylist(
+        `Referenz ${video.name} ${indikator}`,
+        video.src,
+        4,
+        playlist
+      );
+      pushToPlaylist(
+        "Pause " + indikator,
+        breakVideoSourceList[pauseIndexes[1]]["src"],
+        4,
+        playlist
+      );
+    }
+    if (evaluation) {
+      pushToPlaylist(
+        "Pause (End)",
+        breakVideoSourceList[pauseIndexes[2]]["src"],
+        4,
+        playlist
+      );
+    }
+  }
+
   return (
     <div>
       <video
@@ -198,78 +281,14 @@ export default function SubjectTest({}: Props) {
 
             console.log(data);
 
-            const pushToPlaylist = (name, src, configId) => {
-              playlist.push({ name, src: encodeURI(src), configId });
-            };
-
-            function generateSplit(
-              video,
-              config,
-              startWithReferenz,
-              evaluation
-            ) {
-              const indikator = evaluation ? "(Evaluation)" : "(Habitutation)";
-              const pauseIndexes = evaluation ? [2, 3, 4] : [0, 1, 4];
-              if (startWithReferenz) {
-                pushToPlaylist(
-                  `Referenz ${video.name} ${indikator}`,
-                  video.src,
-                  4
-                );
-                pushToPlaylist(
-                  "Pause " + indikator,
-                  breakVideoSourceList[pauseIndexes[0]]["src"],
-                  4
-                );
-                pushToPlaylist(
-                  `Test ${video.name} ${indikator}`,
-                  video.src,
-                  config.id
-                );
-                pushToPlaylist(
-                  "Pause " + indikator,
-                  breakVideoSourceList[pauseIndexes[1]]["src"],
-                  4
-                );
-              } else {
-                pushToPlaylist(
-                  `Test ${video.name} ${indikator}`,
-                  video.src,
-                  config.id
-                );
-                pushToPlaylist(
-                  "Pause " + indikator,
-                  breakVideoSourceList[pauseIndexes[0]]["src"],
-                  4
-                );
-                pushToPlaylist(
-                  `Referenz ${video.name} ${indikator}`,
-                  video.src,
-                  4
-                );
-                pushToPlaylist(
-                  "Pause " + indikator,
-                  breakVideoSourceList[pauseIndexes[1]]["src"],
-                  4
-                );
-              }
-              if (evaluation) {
-                pushToPlaylist(
-                  "Pause (End)",
-                  breakVideoSourceList[pauseIndexes[2]]["src"],
-                  4
-                );
-              }
-            }
-
             for (let i = 0; i < data.length; i++) {
               const video = videoSourceList[data[i].videoIdx];
               const startWithReferenz = data[i].startWithReferenz;
               const config = configList[data[i].configIdx];
 
               // create Double Stimulus Continuous Quality Scale (DSCQS) playlist
-              generateSplit(video, config, startWithReferenz, false);
-              generateSplit(video, config, startWithReferenz, true);
+              generateSplit(video, config, startWithReferenz, false, playlist);
+              generateSplit(video, config, startWithReferenz, true, playlist);
             }
             console.log(playlist);
 
@@ -318,6 +337,30 @@ export default function SubjectTest({}: Props) {
         }}
       >
         Download Playlist
+      </button>
+
+      <button
+        onClick={() => {
+          const playlist = [];
+          for (let j = 0; j < configList.length; j++) {
+            for (let i = 0; i < demoVideoSourceList.length; i++) {
+              const video = demoVideoSourceList[i];
+              const startWithReferenz = Math.random() < 0.5;
+              const config = configList[j];
+
+              // create Double Stimulus Continuous Quality Scale (DSCQS) playlist
+              generateSplit(video, config, startWithReferenz, false, playlist);
+              generateSplit(video, config, startWithReferenz, true, playlist);
+            }
+          }
+          console.log(
+            "🚀 ~ file: subjectTest.tsx:314 ~ SubjectTest ~ playlist:",
+            playlist
+          );
+          setPlaylist(playlist);
+        }}
+      >
+        Generate Demo Playlist
       </button>
     </div>
   );
