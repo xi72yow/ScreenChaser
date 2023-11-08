@@ -55,7 +55,7 @@
     "react-error-boundary": "^3.1.4",
     "screenchaser-core": "^0.3.0",
     "three": "^0.146.0",
-    "pocketbase": "0.18.1"
+    "pocketbase": "0.19.0"
   },
   "devDependencies": {
     "@types/node": "^18.16.3",
