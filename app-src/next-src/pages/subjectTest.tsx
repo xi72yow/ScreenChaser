@@ -7,9 +7,6 @@ import { db } from "../components/database/db";
 
 import PocketBase from "pocketbase";
 
-const pb = new PocketBase("");
-
-pb.collection("users").authWithPassword("", "");
 
 type Props = {};
 
@@ -46,18 +43,20 @@ const requestStartWithReferenz = {
 const videoSourceList = [
   { name: "Action Clip I", src: "videos/tokio_drift.mp4" },
   { name: "Action Clip II", src: "videos/expendables_4.mp4" },
-  { name: "Middle Clip", src: "videos/super_natural_slow.mp4" },
+  {
+    name: "Middle Clip",
+    src: "videos/vikings_Battle_for_Kattegat_Ragnar_vs_Jarl_Borg.mp4",
+  },
   { name: "Slow Clip I", src: "videos/night_shot.mp4" },
   { name: "Slow Clip II", src: "videos/foggy_forest.mp4" },
 ];
 
 const demoVideoSourceList = [
-  { name: "Demo Video A", src: "videos/river_shot.mp4" },
+  { name: "Demo Video A", src: "videos/winterland.mp4" },
   {
     name: "Demo Video B",
-    src: "videos/vikings_Battle_for_Kattegat_Ragnar_vs_Jarl_Borg.mp4",
+    src: "videos/supernatural.mp4",
   },
-  { name: "Demo Video C", src: "videos/transporter_3.mp4" },
 ];
 
 const breakVideoSourceList = [
@@ -124,7 +123,7 @@ export default function SubjectTest({}: Props) {
     }
 
     const setConfig = (idx) => {
-      const deviceId = 3;
+      const deviceId = 6;
       db.devices.where("id").equals(deviceId).modify({ configId: idx });
       if (idx === 4) {
         setTimeout(() => {
@@ -275,6 +274,7 @@ export default function SubjectTest({}: Props) {
         className={styles.vVid}
       ></video>
       <button
+        disabled={playlist}
         onClick={() => {
           generateTestConfig().then((data) => {
             const playlist = [];
@@ -303,6 +303,7 @@ export default function SubjectTest({}: Props) {
         Generate Test Config
       </button>
       <button
+        disabled={!playlist}
         onClick={() => {
           const video = videoRef.current;
           if (video.paused) {
@@ -325,24 +326,10 @@ export default function SubjectTest({}: Props) {
       </button>
 
       <button
-        onClick={() => {
-          if (!playlist) {
-            return;
-          }
-          const playlistString = JSON.stringify(playlist);
-          const blob = new Blob([playlistString], {
-            type: "text/plain;charset=utf-8",
-          });
-          saveAs(blob, "playlist.json");
-        }}
-      >
-        Download Playlist
-      </button>
-
-      <button
+        disabled={playlist}
         onClick={() => {
           const playlist = [];
-          for (let j = 0; j < configList.length; j++) {
+          for (let j = 1; j < configList.length - 1; j++) {
             for (let i = 0; i < demoVideoSourceList.length; i++) {
               const video = demoVideoSourceList[i];
               const startWithReferenz = Math.random() < 0.5;
