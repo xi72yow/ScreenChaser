@@ -7,7 +7,6 @@ import { db } from "../components/database/db";
 
 import PocketBase from "pocketbase";
 
-
 type Props = {};
 
 let currentVideo = 0;
@@ -192,7 +191,12 @@ export default function SubjectTest({}: Props) {
   }
 
   const pushToPlaylist = (name, src, configId, playlist) => {
-    playlist.push({ name, src: encodeURI(src), configId });
+    playlist.push({
+      name,
+      src: encodeURI(src),
+      configId,
+      cofigName: configList[configId - 1].name,
+    });
   };
 
   function generateSplit(
