@@ -2,10 +2,14 @@ import React from "react";
 
 import styles from "../components/css/subjectTestCss.module.css";
 
-import { apiKey } from "../components/apiKey";
+import { apiKey, dbSecret, dbUrl, dbUsr } from "../components/apiKey";
 import { db } from "../components/database/db";
 
 import PocketBase from "pocketbase";
+
+const pb = new PocketBase(dbUrl);
+
+pb.collection("users").authWithPassword(dbUsr, dbSecret);
 
 type Props = {};
 
