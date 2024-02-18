@@ -16,6 +16,6 @@
     "nuke": "nx run-many -t clean && pnpm store prune"
   },
   "devDependencies": {
-    "nx": "16.6.0"
+    "nx": "18.0.4"
   }
 }

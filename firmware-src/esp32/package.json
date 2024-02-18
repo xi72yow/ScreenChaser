@@ -11,6 +11,6 @@
   },
   "author": "xi72yow",
   "devDependencies": {
-    "concurrently": "^8.0.1"
+    "concurrently": "^8.2.2"
   }
 }

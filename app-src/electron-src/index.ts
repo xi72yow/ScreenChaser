@@ -1,8 +1,6 @@
 // Native
 import { join } from "path";
 import { format } from "url";
-import isDev from "electron-is-dev";
-import prepareNext from "electron-next";
 
 // Packages
 import {
@@ -13,7 +11,7 @@ import {
   IpcMainEvent,
   shell,
 } from "electron";
-import { createWindow, StatCalculator } from "./helpers";
+import { createWindow, StatCalculator, isDev, prepareNext } from "./helpers";
 import { Manager, DataEmitter } from "screenchaser-core";
 import { ChaserTypes } from "screenchaser-core/dist/types";
 
