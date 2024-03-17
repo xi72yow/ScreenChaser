@@ -33,3 +33,22 @@ https://user-images.githubusercontent.com/65042627/210893593-29b303a0-6971-4d15-
 - [ ] basic color fade effects
 - [ ] create a place where animations can share
 - [ ] optional user database sync
+- [ ] support wled json api
+
+```js
+fetch("http://192.168.2.113/json/state", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    on: "t",
+    v: true,
+  }),
+})
+  .then((response) => response.json())
+  .then((data) => console.log(data))
+  .catch((error) => {
+    console.error("Error:", error);
+  });
+```
