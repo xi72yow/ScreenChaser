@@ -1,0 +1,35 @@
+.theme-toggle {
+  text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  margin: 0;
+  overflow: visible;
+  text-transform: none;
+  -webkit-box-flex: 0;
+  flex-grow: 0;
+  -webkit-tap-highlight-color: transparent;
+  appearance: none;
+  font-size: 16px;
+  text-align: left;
+  text-decoration: none;
+  box-sizing: border-box;
+  border: 1px solid transparent;
+  position: relative;
+  height: 38px;
+  min-height: 38px;
+  width: 38px;
+  min-width: 38px;
+  border-radius: 4px;
+  padding: 0px;
+  line-height: 1;
+  display: flex;
+  -webkit-box-align: center;
+  align-items: center;
+  -webkit-box-pack: center;
+  justify-content: center;
+  background-color: var(--BG);
+  cursor: pointer;
+}
+
+.theme-toggle:hover {
+  background-color: var(--BGLighter);
+}

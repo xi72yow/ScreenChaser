@@ -1,5 +1,4 @@
 packages:
   - "app-src/"
-  - "core-src/"
-  - "cli-src/"
+  - "app-src/bundler-src/"
   - "firmware-src/*"

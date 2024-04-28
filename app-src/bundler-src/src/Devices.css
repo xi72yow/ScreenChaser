@@ -1,0 +1,42 @@
+.devices {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  justify-items: center;
+  gap: 16px;
+}
+
+.device {
+  text-size-adjust: 100%;
+  font-family: "Greycliff CF", sans-serif;
+  line-height: 1.55;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  outline: 0px;
+  -webkit-tap-highlight-color: transparent;
+  display: block;
+  text-decoration: none;
+  color: var(--FG);
+  background-color: var(--BGDark);
+  box-sizing: border-box;
+  border-radius: 8px;
+  box-shadow: none;
+  border: 1px solid var(--BORDER);
+  padding: 16px;
+}
+
+.off {
+  opacity: .3;
+}
+
+.error {
+  box-shadow: 0 0 10px var(--RED);
+}
+
+.device video {
+  width: 250px;
+  aspect-ratio: 16/9;
+  flex-shrink: 0;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}

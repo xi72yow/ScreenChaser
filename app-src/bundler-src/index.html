@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/logo_icon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ScreenChaser</title>
+  </head>
+  <body>
+    <div id="app" class="app">
+      <div class="app-header">
+        <div class="logo-icon">
+          <img src="/logo_full.svg" alt="ScreenChaser" />
+        </div>
+
+        <div class="center"><code class="version">v0.0.1</code></div>
+      </div>
+      <div class="app-body">
+        <div class="devices">
+          <div class="device">
+            <video
+              class="card gray"
+              src="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+              autoplay
+              loop
+              muted
+            >
+              <div class="device-player-head">
+                <div class="led-count">111</div>
+              </div>
+            </video>
+            <div class="device-details">
+              <div class="head">
+                <div class="ip">192.178.168.114</div>
+                <sl-button size="small" variant="success" pill> ON </sl-button>
+              </div>
+              <div>
+                <!-- <sl-progress-bar value="50" style="--height: 6px;"></sl-progress-bar> -->
+                <sl-progress-bar value="50"> 33W </sl-progress-bar>
+                <sl-badge variant="danger" pill pulse>1</sl-badge>
+              </div>
+            </div>
+          </div>
+          <div class="device">
+            <video
+              class="card gray"
+              src="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+              autoplay
+              loop
+              muted
+            >
+              <div class="device-player-head">
+                <div class="led-count">111</div>
+              </div>
+            </video>
+            <div class="device-details">
+              <div class="head">
+                <div class="ip">192.178.168.114</div>
+                <sl-button size="small" variant="success" pill> ON </sl-button>
+              </div>
+              <div>
+                <!-- <sl-progress-bar value="50" style="--height: 6px;"></sl-progress-bar> -->
+                <sl-progress-bar value="50"> 33W </sl-progress-bar>
+                <sl-badge variant="danger" pill pulse>1</sl-badge>
+              </div>
+            </div>
+          </div>
+          <div class="device off">
+            <video
+              class="card gray"
+              src="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+              autoplay
+              loop
+              muted
+            >
+              <div class="device-player-head">
+                <div class="led-count">111</div>
+              </div>
+            </video>
+            <div class="device-details">
+              <div class="head">
+                <div class="ip">192.178.168.114</div>
+                <sl-button size="small" variant="success" pill> ON </sl-button>
+              </div>
+              <div>
+                <!-- <sl-progress-bar value="50" style="--height: 6px;"></sl-progress-bar> -->
+                <sl-progress-bar value="50"> 33W </sl-progress-bar>
+                <sl-badge variant="danger" pill pulse>1</sl-badge>
+              </div>
+            </div>
+          </div>
+          <div class="device error">
+            <video
+              class="card gray"
+              src="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+              autoplay
+              loop
+              muted
+            >
+              <div class="device-player-head">
+                <div class="led-count">111</div>
+              </div>
+            </video>
+            <div class="device-details">
+              <div class="head">
+                <div class="ip">192.178.168.114</div>
+                <sl-button size="small" variant="success" pill> ON </sl-button>
+              </div>
+              <div>
+                <!-- <sl-progress-bar value="50" style="--height: 6px;"></sl-progress-bar> -->
+                <sl-progress-bar value="50"> 33W </sl-progress-bar>
+                <sl-badge variant="danger" pill pulse>1</sl-badge>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="app-footer"></div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

@@ -4,18 +4,6 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev:app": "nx --project screenchaser-app run dev",
-    "dev:core": "nx run dev --project screenchaser-core",
-    "build:app": "nx run build --project screenchaser-app",
-    "dist:app": "nx run dist --project screenchaser-app",
-    "build:core": "nx run build --project screenchaser-core",
-    "build:core-as": "nx run asbuild:debug --project screenchaser-core",
-    "build:firmware": "nx run build --project screenchaser-firmware",
-    "guard:app": "nx run guard --project screenchaser-app",
-    "release": "nx version --conventional-commits",
-    "nuke": "nx run-many -t clean && pnpm store prune"
-  },
-  "devDependencies": {
-    "nx": "18.0.4"
+    "dev": "pnpm --filter screenchaser-app dev"
   }
 }
