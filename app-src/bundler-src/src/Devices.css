@@ -7,9 +7,9 @@
 
 .device {
   text-size-adjust: 100%;
-  font-family: "Greycliff CF", sans-serif;
   line-height: 1.55;
-  font-size: 16px;
+  font-size: 20px;
+  font-weight: 900;
   -webkit-font-smoothing: antialiased;
   outline: 0px;
   -webkit-tap-highlight-color: transparent;

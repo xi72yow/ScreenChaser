@@ -33,8 +33,6 @@
   box-sizing: border-box;
   -webkit-box-flex: 0;
   flex-grow: 0;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-    "Liberation Mono", "Courier New", monospace;
   padding: 2px calc(5px);
   border-radius: 4px;
   background-color: var(--SELECTION);
