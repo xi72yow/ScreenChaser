@@ -3,7 +3,9 @@ import "./style.css";
 import "./AppShell.css";
 import "./Devices.css";
 
-import "./themeToggle/Button.ts";
+import "./ThemeToggle/index.ts";
+
+import "./Logo/index.ts";
 
 import logoFull from "/logo_full.svg";
 import logoIcon from "/logo_icon.svg";

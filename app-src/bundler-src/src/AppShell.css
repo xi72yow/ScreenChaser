@@ -15,7 +15,7 @@
   padding-left: 12px;
 }
 
-.app-header img {
+.app-header .logo {
   height: var(--header-height);
 }
 

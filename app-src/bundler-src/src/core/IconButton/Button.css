@@ -1,4 +1,4 @@
-.theme-toggle {
+.base-icon-button {
   text-size-adjust: 100%;
   -webkit-font-smoothing: antialiased;
   margin: 0;
@@ -30,6 +30,6 @@
   cursor: pointer;
 }
 
-.theme-toggle:hover {
+.base-icon-button:hover {
   background-color: var(--BGLighter);
 }
