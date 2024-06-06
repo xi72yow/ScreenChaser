@@ -8,8 +8,10 @@ class Modal {
   modalWrapper: HTMLDivElement;
   modalHeader: HTMLDivElement;
   closeIconBtn: IconButton;
+  modal: HTMLDivElement;
 
   constructor(title: string = "Modal") {
+    this.modal = document.createElement("div");
     this.modalBackdrop = document.createElement("div");
     this.modalBackdrop.classList.add("modal-backdrop");
     this.modalWrapper = document.createElement("div");
@@ -20,12 +22,13 @@ class Modal {
     this.modalHeader.classList.add("modal-header");
     this.modalHeader.innerHTML = title;
 
-    this.modalBackdrop.appendChild(this.modalWrapper);
+    this.modal.appendChild(this.modalBackdrop);
+    this.modal.appendChild(this.modalWrapper);
     this.modalWrapper.appendChild(this.modalContent);
     this.modalContent.appendChild(this.modalHeader);
-    document.body.appendChild(this.modalBackdrop);
+    document.body.appendChild(this.modal);
 
-    this.modalBackdrop.addEventListener("click", (event) => {
+    this.modal.addEventListener("click", (event) => {
       if (event.target === this.modalWrapper) {
         this.close();
       }
@@ -44,15 +47,23 @@ class Modal {
   }
 
   public open(): void {
-    this.modalBackdrop.style.display = "block";
+    this.modal.style.display = "block";
   }
 
   public close(): void {
-    this.modalBackdrop.style.display = "none";
+    this.modal.style.display = "none";
+  }
+
+  public toggle(): void {
+    if (this.modal.style.display === "none") {
+      this.open();
+    } else {
+      this.close();
+    }
   }
 
   public setContent(content: string): void {
-    this.modalBackdrop.innerHTML = content;
+    this.modalContent.innerHTML = content;
   }
 }
 

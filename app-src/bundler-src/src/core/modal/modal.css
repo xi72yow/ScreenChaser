@@ -1,21 +1,18 @@
 .modal-backdrop {
   text-size-adjust: 100%;
-  color: rgb(193, 194, 197);
-  line-height: 1.55;
-  font-size: 16px;
   -webkit-font-smoothing: antialiased;
   box-sizing: border-box;
   inset: 0px;
   z-index: 101;
-  background-color: rgb(16, 17, 19);
+  background-color: var(--BGDarker);
   opacity: 0.85;
   border-radius: 0px;
   position: fixed;
 }
 
 .modal-wrapper {
+  z-index: 102;
   text-size-adjust: 100%;
-  color: rgb(193, 194, 197);
   line-height: 1.55;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
@@ -39,7 +36,7 @@
   -webkit-tap-highlight-color: transparent;
   display: block;
   text-decoration: none;
-  color: rgb(193, 194, 197);
+  color: var(--FG);
   box-sizing: border-box;
   border-radius: 4px;
   box-shadow: rgba(0, 0, 0, 0.05) 0px 1px 3px,
@@ -48,7 +45,7 @@
   position: relative;
   width: 780px;
   outline: 0px;
-  background-color: rgb(26, 27, 30);
+  background-color: var(--BGDark);
   margin-top: auto;
   margin-bottom: auto;
   z-index: 1;
@@ -58,7 +55,6 @@
   transition-duration: 250ms;
   transition-timing-function: ease;
   transform-origin: center center;
-  opacity: 1;
   transform: scale(1);
 }
 

@@ -5,11 +5,9 @@ import "./Devices.css";
 
 import "./ThemeToggle/index.ts";
 
+import "@/addDeviceBtn/index.ts";
+
 import "./Logo/index.ts";
-
-import Modal from "./core/modal/index.ts";
-
-const modal = new Modal();
 
 import logoFull from "/logo_full.svg";
 import logoIcon from "/logo_icon.svg";
