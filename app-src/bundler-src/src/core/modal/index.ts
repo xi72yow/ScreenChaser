@@ -34,6 +34,8 @@ class Modal {
       }
     });
 
+    this.modal.style.display = "none";
+
     this.closeIconBtn = new IconButton({
       selector: ".modal-header",
       stateOneIcon: closeIcon,
