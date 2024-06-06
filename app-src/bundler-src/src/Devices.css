@@ -1,6 +1,6 @@
 .devices {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   justify-items: center;
   gap: 16px;
 }
@@ -25,7 +25,7 @@
 }
 
 .off {
-  opacity: .3;
+  opacity: 0.3;
 }
 
 .error {
