@@ -1,5 +1,5 @@
 import plusIcon from "@core/icons/plus.svg";
-import IconButton from "@core/IconButton";
+import IconButton from "@/core/iconButton";
 
 import Modal from "@core/modal";
 

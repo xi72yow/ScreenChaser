@@ -1,6 +1,6 @@
 import moonIcon from "@core/icons/moon-stars.svg";
 import sunIcon from "@core/icons/sun.svg";
-import IconButton from "@core/IconButton";
+import IconButton from "@/core/iconButton";
 
 document.documentElement.setAttribute("data-theme", "dark");
 

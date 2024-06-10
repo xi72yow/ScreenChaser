@@ -1,5 +1,5 @@
-import "./modal.css";
-import IconButton from "@core/IconButton";
+import "./index.css";
+import IconButton from "@/core/iconButton";
 import closeIcon from "@core/icons/x.svg";
 
 class Modal {

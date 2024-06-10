@@ -1,0 +1,30 @@
+.number-input {
+  text-size-adjust: 100%;
+  --mantine-header-height: 80px;
+  --mantine-navbar-width: 0px;
+  --mantine-footer-height: 70px;
+  -webkit-font-smoothing: antialiased;
+  --removed-scroll-width: 0px;
+  word-break: break-word;
+  margin: 0;
+  overflow: visible;
+  font-family: "Greycliff CF", sans-serif;
+  height: 36px;
+  -webkit-tap-highlight-color: transparent;
+  line-height: 34px;
+  appearance: none;
+  resize: none;
+  box-sizing: border-box;
+  font-size: 14px;
+  width: 100%;
+  color: rgb(193, 194, 197);
+  display: block;
+  text-align: left;
+  min-height: 36px;
+  padding-left: 12px;
+  padding-right: 25px;
+  border-radius: 4px;
+  border: 1px solid rgb(55, 58, 64);
+  background-color: rgb(37, 38, 43);
+  transition: border-color 100ms ease 0s;
+}
