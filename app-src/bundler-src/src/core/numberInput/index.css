@@ -131,3 +131,31 @@
 .number-input-button:hover {
   background-color: var(--BGLighter);
 }
+
+.number-label {
+  text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  word-break: break-word;
+  font-size: 14px;
+  line-height: 1.55;
+  box-sizing: border-box;
+  color: var(--FG);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.number-helper-text {
+  text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  word-break: break-word;
+  font-size: 12px;
+  line-height: 1.55;
+  box-sizing: border-box;
+  color: var(--COMMENT);
+  display: block;
+  margin-top: 4px;
+}
+
+.invalid {
+  color: var(--RED);
+}

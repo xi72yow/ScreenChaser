@@ -13,4 +13,6 @@ const numberInput1 = new NumberInput({
   minValue: 0,
   maxValue: 100,
   defaultValue: 50,
+  helperText: "Set the temperature",
+  label: "Temperature",
 });

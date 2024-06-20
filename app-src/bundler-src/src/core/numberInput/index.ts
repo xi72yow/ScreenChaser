@@ -1,3 +1,4 @@
+import { setInputFilter } from "../inputFilter";
 import "./index.css";
 
 class NumberInput {
@@ -11,17 +12,23 @@ class NumberInput {
     minValue,
     defaultValue,
     float = false,
+    label,
+    helperText,
   }: {
     selector: string;
     maxValue?: number;
     minValue?: number;
     defaultValue?: number;
     float?: boolean;
+    label?: string;
+    helperText?: string;
   }) {
     this.container = document.querySelector(selector);
     if (!this.container) {
       throw new Error(`Element with selector ${selector} not found`);
     }
+
+    const inputWrapper = document.createElement("div");
 
     const numberWrapper = document.createElement("div");
     numberWrapper.classList.add("number-wrapper");
@@ -102,11 +109,53 @@ class NumberInput {
     button2.appendChild(svg2);
     buttonSection.appendChild(button2);
 
+    this.float = float;
+
+    // Add label
+    if (label) {
+      const labelElement = document.createElement("label");
+      labelElement.classList.add("number-label");
+      labelElement.textContent = label;
+      inputWrapper.appendChild(labelElement);
+    }
+
     buttonSectionWrapper.appendChild(buttonSection);
     numberWrapper.appendChild(buttonSectionWrapper);
+    inputWrapper.appendChild(numberWrapper);
 
-    this.float = float;
-    this.container.appendChild(numberWrapper);
+    const helperTextElement = document.createElement("div");
+    helperTextElement.classList.add("number-helper-text");
+    helperTextElement.textContent = helperText || "Set the value";
+    inputWrapper.appendChild(helperTextElement);
+
+    this.container.appendChild(inputWrapper);
+
+    this.inputElement = numberInput;
+
+    setInputFilter({
+      textInput: numberInput,
+      inputFilter: (value) => {
+        if (!value) return true;
+        if (this.float) {
+          return /^\d*\.?\d*$/.test(value);
+        } else {
+          return /^\d*$/.test(value);
+        }
+      },
+      validationCallback: (isValid) => {
+        if (!isValid) {
+          helperTextElement.classList.add("invalid");
+          if (this.float) {
+            helperTextElement.textContent = "Please enter a valid number";
+          } else {
+            helperTextElement.textContent = "Please enter a valid integer";
+          }
+        } else {
+          helperTextElement.classList.remove("invalid");
+          helperTextElement.textContent = helperText || "Set the value";
+        }
+      },
+    });
   }
 
   private onKeyPress(event: KeyboardEvent) {
