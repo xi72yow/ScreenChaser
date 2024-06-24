@@ -14,11 +14,13 @@ class NumberInput {
     float = false,
     label,
     helperText,
+    step = 1,
   }: {
     selector: string;
     maxValue?: number;
     minValue?: number;
     defaultValue?: number;
+    step?: number;
     float?: boolean;
     label?: string;
     helperText?: string;
@@ -39,7 +41,7 @@ class NumberInput {
     numberInput.type = "text";
     numberInput.max = maxValue ? maxValue.toString() : "100";
     numberInput.min = minValue ? minValue.toString() : "0";
-    numberInput.step = "1";
+    numberInput.step = step.toString();
     numberInput.inputMode = "numeric";
     numberInput.setAttribute("aria-invalid", "false");
     numberInput.value = defaultValue ? defaultValue.toString() : "0";
@@ -109,6 +111,20 @@ class NumberInput {
     button2.appendChild(svg2);
     buttonSection.appendChild(button2);
 
+    button2.addEventListener("click", () => {
+      if (parseInt(numberInput.value) > parseInt(numberInput.min)) {
+        numberInput.value = (parseFloat(numberInput.value) - step).toString();
+        this.handleInput();
+      }
+    });
+
+    button1.addEventListener("click", () => {
+      if (parseInt(numberInput.value) < parseInt(numberInput.max)) {
+        numberInput.value = (parseFloat(numberInput.value) + step).toString();
+        this.handleInput();
+      }
+    });
+
     this.float = float;
 
     // Add label
@@ -158,12 +174,6 @@ class NumberInput {
     });
   }
 
-  private onKeyPress(event: KeyboardEvent) {
-    if (event.key === "Enter") {
-      this.handleInput();
-    }
-  }
-
   private handleInput() {
     if (parseInt(this.inputElement.value) > parseInt(this.inputElement.max)) {
       this.inputElement.value = this.inputElement.max;
@@ -179,12 +189,6 @@ class NumberInput {
       if (isNaN(parseInt(this.inputElement.value))) return;
       this.inputElement.value = parseInt(this.inputElement.value).toString();
     }
-
-    console.log(
-      "🚀 ~ NumberInput ~ handleInput ~ value:",
-      this.inputElement.value,
-      parseInt(this.inputElement.value)
-    );
   }
 }
 
