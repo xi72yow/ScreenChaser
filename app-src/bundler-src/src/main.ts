@@ -22,6 +22,5 @@ setInterval(() => {
   Toaster({
     text: "This is a toast" + Math.random(),
     duration: 1000,
-    selector: ".app-footer",
   }).showToast();
-}, 800);
+}, 2000);
