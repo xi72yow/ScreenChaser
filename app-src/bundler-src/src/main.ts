@@ -21,6 +21,6 @@ const numberInput1 = new NumberInput({
 setInterval(() => {
   Toaster({
     text: "This is a toast" + Math.random(),
-    duration: 1000,
+    duration: 4000,
   }).showToast();
 }, 2000);

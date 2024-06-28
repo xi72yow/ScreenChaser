@@ -4,7 +4,7 @@
   position: fixed;
   z-index: 400;
   top: 1rem;
-  left: calc(50%);
+  left: calc(50% - (27.5rem / 2));
   /*  right: 1rem;
   bottom: 1rem; */
   max-width: 27.5rem;
@@ -16,7 +16,7 @@
 .toast {
   text-size-adjust: 100%;
   color: var(--FG);
-  line-height: 1.55;
+  line-height: 2;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   box-sizing: border-box;
@@ -26,43 +26,40 @@
   align-items: center;
   padding: 10px 5px 10px 10px;
   border-radius: 4px;
-  background-color: rgb(37, 38, 43);
-  box-shadow: rgba(0, 0, 0, 0.05) 0px 1px 3px,
-    rgba(0, 0, 0, 0.05) 0px 28px 23px -7px,
-    rgba(0, 0, 0, 0.04) 0px 12px 12px -7px;
-  border: 1px solid rgb(37, 38, 43);
+  background-color: var(--BG);
+  box-shadow: var(--BGDarker) 0px 1px 3px, var(--BGDarker) 0px 28px 23px -7px,
+    var(--BGDarker) 0px 12px 12px -7px;
+  border: 1px solid var(--BORDER);
   opacity: 1;
   max-height: 200px;
-  transform: translateY(0px);
-  transition-duration: 250ms, 250ms, 250ms;
-  transition-timing-function: cubic-bezier(0.51, 0.3, 0, 1.21),
-    cubic-bezier(0.51, 0.3, 0, 1.21), linear;
-  transition-property: opacity, transform, max-height;
   cursor: pointer;
   gap: 10px;
   animation: slide-in 0.6s ease;
 }
 
 .out {
-  animation: slide-out 0.5s ease;
-}
-
-@keyframes slide-out {
-  0% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-  }
+  animation: slide-out 0.6s ease;
 }
 
 @keyframes slide-in {
   0% {
+    position: absolute;
     opacity: 0;
     transform: translateY(-200px);
   }
   100% {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes slide-out {
+  0% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(calc(100% + 10px));
   }
 }

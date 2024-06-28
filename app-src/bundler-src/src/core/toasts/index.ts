@@ -1,13 +1,21 @@
 import "./index.css";
+import InfoIcon from "@core/icons/info-hexagon.svg";
+
+enum ToastTypes {
+  INFO = "info",
+  SUCCESS = "success",
+  ERROR = "error",
+  WARNING = "warning",
+}
 
 type ToasterConfigurationObject = {
   text?: string;
   node?: HTMLElement;
   duration?: number;
   selector?: string | HTMLElement | ShadowRoot;
-  close?: boolean;
   position?: string;
-  avatar?: string;
+  icon?: string;
+  type?: ToastTypes;
   callback?: () => void;
   onClick?: () => void;
   ariaLive?: string;
@@ -21,17 +29,18 @@ class Toaster {
   defaults: ToasterConfigurationObject = {
     text: "Toaster is awesome!",
     node: undefined,
-    duration: 3000,
+    duration: 4000,
     selector: undefined,
     callback: () => {},
-    close: false,
     position: "",
-    avatar: "",
+    icon: InfoIcon,
+    type: ToastTypes.INFO,
     onClick: () => {},
     ariaLive: "polite",
   };
 
   options: ToasterConfigurationObject = {};
+  toastTypes = ToastTypes;
   toastElement: HTMLElement | null = null;
   private _rootElement: HTMLElement | ShadowRoot = document.body;
 
@@ -86,30 +95,22 @@ class Toaster {
     if (this.options.node && this.options.node.nodeType === Node.ELEMENT_NODE) {
       divElement.appendChild(this.options.node);
     } else {
-      divElement.innerHTML = this.options.text!;
-
-      if (this.options.avatar !== "") {
-        let avatarElement = document.createElement("img");
-        avatarElement.src = this.options.avatar!;
-
-        avatarElement.className = "toaster-avatar";
-      }
-    }
-
-    if (this.options.close === true) {
-      let closeElement = document.createElement("button");
-      closeElement.type = "button";
-      closeElement.setAttribute("aria-label", "Close");
-      closeElement.className = "toast-close";
-      closeElement.innerHTML = "&#10006;";
-
-      closeElement.addEventListener("click", (event) => {
-        event.stopPropagation();
-        this._removeElement(this.toastElement!);
-        window.clearTimeout((this.toastElement as any).timeOutValue);
+      const svg = document.createElement("object");
+      svg.style.pointerEvents = "none";
+      svg.type = "image/svg+xml";
+      svg.classList.add("icon");
+      divElement.appendChild(svg);
+      svg.addEventListener("load", () => {
+        const svgDoc = svg.contentDocument!;
+        svgDoc
+          .querySelector("svg")!
+          .setAttribute("stroke", this.getTypeColor(this.options.type!));
       });
+      svg.data = this.options.icon!;
 
-      divElement.appendChild(closeElement);
+      let textElement = document.createElement("span");
+      textElement.innerHTML = this.options.text!;
+      divElement.appendChild(textElement);
     }
 
     if (this.options.duration! > 0) {
@@ -147,6 +148,21 @@ class Toaster {
 
       this.options.callback!.call(toastElement);
     }, 400);
+  }
+
+  private getTypeColor(type: ToastTypes): string {
+    switch (type) {
+      case ToastTypes.INFO:
+        return "#6272a4";
+      case ToastTypes.SUCCESS:
+        return "#50fa7b";
+      case ToastTypes.ERROR:
+        return "#ff5555";
+      case ToastTypes.WARNING:
+        return "#f1fa8c";
+      default:
+        return "#6272a4";
+    }
   }
 }
 
