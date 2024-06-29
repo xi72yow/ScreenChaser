@@ -17,14 +17,16 @@
     "build-steps": "pnpm run build-renderer && pnpm run build-electron",
     "pack-app": "pnpm run build-steps && electron-builder --dir",
     "build": "pnpm run build-steps && electron-builder",
-    "type-check": "tsc -p ./next-src/tsconfig.json && tsc -p ./electron-src/tsconfig.json"
+    "type-check": "tsc -p ./next-src/tsconfig.json && tsc -p ./electron-src/tsconfig.json",
+    "test:dns-sd": "ts-node ./electron-src/dns-service-discovery/dns-sd.test.ts"
   },
   "devDependencies": {
-    "@types/node": "^20.11.19",
-    "@types/w3c-image-capture": "^1.0.10",
+    "@types/node": "20.11.19",
+    "@types/w3c-image-capture": "1.0.10",
     "electron": "28.2.3",
     "electron-builder": "24.9.1",
-    "rimraf": "^3.0.2",
-    "typescript": "5.4.5"
+    "rimraf": "3.0.2",
+    "typescript": "5.4.5",
+    "ts-node": "10.9.2"
   }
 }

@@ -114,7 +114,7 @@ class Toaster {
     }
 
     if (this.options.duration! > 0) {
-      divElement.addEventListener("mouseover", (event) => {
+      divElement.addEventListener("mouseover", () => {
         window.clearTimeout((divElement as any).timeOutValue);
       });
       divElement.addEventListener("mouseleave", () => {
