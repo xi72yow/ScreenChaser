@@ -11,8 +11,9 @@
   "url": "https://xi72yow.de",
   "private": true,
   "scripts": {
-    "clean": "rimraf dist main next-src/out next-src/.next",
-    "dev": "pnpm run build-electron && electron ./electron-dist",
+    "clean": "rimraf electron-dist bundler-dist",
+    "dev": "tsc-watch -p electron-src --onSuccess \"electron electron-dist\"",
+    "dev-manuell": "pnpm run build-electron && electron ./electron-dist",
     "build-renderer": "vite build bundler-src",
     "build-electron": "tsc -p electron-src",
     "build-steps": "pnpm run build-renderer && pnpm run build-electron",
@@ -24,11 +25,12 @@
   "devDependencies": {
     "@types/node": "20.11.19",
     "@types/w3c-image-capture": "1.0.10",
-    "electron": "28.2.3",
-    "electron-builder": "24.9.1",
+    "electron": "31.1.0",
+    "electron-builder": "24.13.3",
     "rimraf": "3.0.2",
     "ts-node": "10.9.2",
     "typescript": "5.4.5",
-    "vite": "5.2.10"
+    "vite": "5.2.10",
+    "tsc-watch": "6.2.0"
   }
 }
