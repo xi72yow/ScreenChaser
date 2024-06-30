@@ -240,7 +240,9 @@ export default class WledConnector implements WledConnectorInterface {
     });
   }
 
-  async callApi(data: WLEDDeviceData | undefined): Promise<WLEDDeviceData> {
+  async callApi(
+    data: Partial<WLEDDeviceData> | undefined
+  ): Promise<WLEDDeviceData> {
     if (!this.ip) throw new Error("No IP set.");
 
     const url = `http://${this.ip}//json/state`;
