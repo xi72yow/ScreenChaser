@@ -1,12 +1,12 @@
 appId: com.electron.ScreenChaser
 productName: ScreenChaser
-copyright: Copyright © 2022 xi72yow
+copyright: Copyright © 2024 xi72yow
 directories:
   output: dist
   buildResources: resources
 files:
-  - main/**/*
-  - next-src/out/**/*
+  - electron-dist/**/*
+  - bundler-dist/**/*
 #Linux Configuration
 linux:
   target:

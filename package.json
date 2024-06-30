@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "pnpm --filter screenchaser-app dev"
+    "dev": "pnpm --filter screenchaser-app dev",
+    "build": "pnpm --filter screenchaser-app build"
   }
 }

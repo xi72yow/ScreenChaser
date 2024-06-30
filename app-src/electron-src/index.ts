@@ -11,20 +11,12 @@ import {
   IpcMainEvent,
   shell,
 } from "electron";
-import { createWindow, StatCalculator, isDev, prepareNext } from "./helpers";
-import { Manager, DataEmitter } from "screenchaser-core";
-import { ChaserTypes } from "screenchaser-core/dist/types";
+import { createWindow, isDev, prepareVite } from "./helpers";
 
-const hostname = "127.0.0.1";
+const hostname = "localhost";
 const port = 3000;
 
-const ChaserManager = new Manager();
-
 const showChaserWindowInProd = isDev;
-
-const ChaserStatCalculator = new StatCalculator({
-  Manager: ChaserManager,
-});
 
 // Prepare the renderer once the app is ready
 app.on("ready", async () => {
@@ -114,18 +106,12 @@ app.on("ready", async () => {
   });
 
   if (isDev) {
-    await prepareNext(
-      format({
-        pathname: join(__dirname, "../next-src"),
-        slashes: true,
-      }),
-      port
-    );
-    mainWindow.loadURL(`http://${hostname}:${port}/home`);
+    await prepareVite(port);
+    mainWindow.loadURL(`http://${hostname}:${port}/`);
     mainWindow.webContents.openDevTools();
   } else {
     const url = format({
-      pathname: join(__dirname, "../next-src/out/home.html"),
+      pathname: join(__dirname, "../bundler-dist/index.html"),
       protocol: "file:",
       slashes: true,
     });
@@ -152,30 +138,15 @@ ipcMain.handle("GET_SOURCES", async (event, ...args) => {
   return sources;
 });
 
-ipcMain.handle("SCAN_NETWORK", async (event, ...args) => {
-  const DataEmitterForIP = new DataEmitter({ type: ChaserTypes.Scanner });
-  return DataEmitterForIP.scanNetwork();
-});
+ipcMain.handle("SCAN_NETWORK", async (event, ...args) => {});
 
-ipcMain.handle("GET_STATS", () => {
-  return ChaserStatCalculator.calculateStats();
-});
-
-ipcMain.on("MANAGE_CHASER", (event, args: any) => {
-  const { device, config } = args;
-  if (device && config) ChaserManager.setChaser(args);
-});
+ipcMain.on("MANAGE_CHASER", (event, args: any) => {});
 
 let chaserWindow: BrowserWindow | null = null;
 
 async function manageChaserWindow() {
-  if (!ChaserManager.videoChaserExists() && chaserWindow) {
-    await chaserWindow.close();
-    chaserWindow = null;
-    return;
-  }
-
   if (chaserWindow) return;
+
   chaserWindow = new BrowserWindow({
     webPreferences: {
       nodeIntegration: false,
@@ -190,11 +161,11 @@ async function manageChaserWindow() {
   });
 
   if (isDev) {
-    chaserWindow.loadURL(`http://${hostname}:${port}/chaserhack`);
+    chaserWindow.loadURL(`http://${hostname}:${port}/chaser`);
     chaserWindow.webContents.openDevTools();
   } else {
     const url = format({
-      pathname: join(__dirname, "../next-src/out/chaserhack.html"),
+      pathname: join(__dirname, "../bundler-dist/chaser.html"),
       protocol: "file:",
       slashes: true,
     });
@@ -217,30 +188,17 @@ ipcMain.on("CHASER:OFF", async (event, args) => {
   }
 });
 
-ipcMain.on("LIGHTS:OFF", async (event, args) => {
-  ChaserManager.lightsOff();
-  if (chaserWindow) {
-    await chaserWindow.close();
-    chaserWindow = null;
-  }
-});
+ipcMain.on("LIGHTS:OFF", async (event, args) => {});
 
-ipcMain.on("LIGHTS:ON", async (event, args) => {
-  ChaserManager.continueLight();
-  manageChaserWindow();
-});
+ipcMain.on("LIGHTS:ON", async (event, args) => {});
 
 /* ipcMain.on("CHASER:DECAY_CHANGE", (event, ledCount, bufferSize, id) => {
   createLedDecay(ledCount, bufferSize, id);
 }); */
 
-ipcMain.on("CHASER:SEND_STRIPE", (event, stripe, id) => {
-  ChaserManager.sendChasingStripe(id, stripe);
-});
+ipcMain.on("CHASER:SEND_STRIPE", (event, stripe, id) => {});
 
-ipcMain.on("CHASER:SEND_STATIC_STRIPE", (event, stripe, id) => {
-  ChaserManager.sendStaticStripe(id, stripe);
-});
+ipcMain.on("CHASER:SEND_STATIC_STRIPE", (event, stripe, id) => {});
 
 ipcMain.on("SHELL:OPEN_LINK", (event, link) => {
   shell.openExternal(link);

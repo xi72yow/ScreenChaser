@@ -31,19 +31,9 @@ importers:
       typescript:
         specifier: 5.4.5
         version: 5.4.5
-
-  app-src/bundler-src:
-    dependencies:
-      dexie:
-        specifier: 4.0.4
-        version: 4.0.4
-    devDependencies:
-      typescript:
-        specifier: 5.2.2
-        version: 5.2.2
       vite:
         specifier: 5.2.10
-        version: 5.2.10
+        version: 5.2.10(@types/node@20.11.19)
 
   firmware-src/esp32:
     devDependencies:
@@ -1117,10 +1107,6 @@ packages:
     requiresBuild: true
     dev: true
     optional: true
-
-  /dexie@4.0.4:
-    resolution: {integrity: sha512-wFzwWSUdi+MC3jiFeQcCp9nInR7EaX8edzYY+4wmiITkQAiSnHpe4Wo2o5Ce5tJZe2nqt7mLW91MsW4GYx3ziQ==}
-    dev: false
 
   /diff@4.0.2:
     resolution: {integrity: sha512-58lmxKSA4BNyLz+HHMUzlOEpg09FV+ev6ZMe3vJihgdxzgcwZ8VoEEPmALCZG9LmqfVoNMMKpttIYTVG6uDY7A==}
@@ -2332,12 +2318,6 @@ packages:
     dev: true
     optional: true
 
-  /typescript@5.2.2:
-    resolution: {integrity: sha512-mI4WrpHsbCIcwT9cF4FZvr80QUeKvsUsUvKDoR+X/7XHQH98xYD8YHZg7ANtz2GtZt/CBq2QJ0thkGJMHfqc1w==}
-    engines: {node: '>=14.17'}
-    hasBin: true
-    dev: true
-
   /typescript@5.4.5:
     resolution: {integrity: sha512-vcI4UpRgg81oIRUFwR0WSIHKt11nJ7SAVlYNIu+QpqeyXP+gpQJy/Z4+F0aGxSE4MqwjyXvW/TzgkLAx2AGHwQ==}
     engines: {node: '>=14.17'}
@@ -2383,7 +2363,7 @@ packages:
     dev: true
     optional: true
 
-  /vite@5.2.10:
+  /vite@5.2.10(@types/node@20.11.19):
     resolution: {integrity: sha512-PAzgUZbP7msvQvqdSD+ErD5qGnSFiGOoWmV5yAKUEI0kdhjbH6nMWVyZQC/hSc4aXwc0oJ9aEdIiF9Oje0JFCw==}
     engines: {node: ^18.0.0 || >=20.0.0}
     hasBin: true
@@ -2411,6 +2391,7 @@ packages:
       terser:
         optional: true
     dependencies:
+      '@types/node': 20.11.19
       esbuild: 0.20.2
       postcss: 8.4.38
       rollup: 4.16.4
