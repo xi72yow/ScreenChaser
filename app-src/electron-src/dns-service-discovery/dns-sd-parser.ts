@@ -16,19 +16,22 @@
  *     https://tools.ietf.org/html/rfc2782
  * ---------------------------------------------------------------- */
 
+import Classes from "./dns-sd-classes.json";
+import Types from "./dns-sd-types.json";
+
 class DnsSdParser {
   /* ------------------------------------------------------------------
    * Constructor: DnsSdParser()
    * ---------------------------------------------------------------- */
   constructor() {
-    this._CLASSES = require("./dns-sd-classes.json");
+    this._CLASSES = Classes;
     this._CLASS_MAP = {};
 
     for (const [k, v] of Object.entries(this._CLASSES)) {
       this._CLASS_MAP[v] = k;
     }
 
-    this._TYPES = require("./dns-sd-types.json");
+    this._TYPES = Types;
     this._TYPE_MAP = {};
 
     for (const [k, v] of Object.entries(this._TYPES)) {

@@ -12,11 +12,14 @@ import {
   shell,
 } from "electron";
 import { createWindow, isDev, prepareVite } from "./helpers";
+import DeviceSwitch from "./device-switch";
 
 const hostname = "localhost";
 const port = 3000;
 
 const showChaserWindowInProd = isDev;
+
+const Switch = new DeviceSwitch();
 
 // Prepare the renderer once the app is ready
 app.on("ready", async () => {
