@@ -10,6 +10,51 @@ import mOs from "os";
 import mDnsSdParser from "./dns-sd-parser";
 import mDnsSdComposer from "./dns-sd-composer";
 
+interface PacketHeader {
+  id: number;
+  qr: number;
+  op: number;
+  aa: number;
+  tc: number;
+  rd: number;
+  ra: number;
+  z: number;
+  ad: number;
+  cd: number;
+  rc: number;
+  questions: number;
+  answers: number;
+  authorities: number;
+  additionals: number;
+}
+
+interface PacketRecord {
+  name: string;
+  type: string;
+  class: string;
+  flash: boolean;
+  ttl: number;
+  rdata: string;
+}
+
+interface Packet {
+  header: PacketHeader;
+  questions: any[];
+  answers: PacketRecord[];
+  authorities: any[];
+  additionals: any[];
+  address: string;
+}
+
+interface Device {
+  address: string;
+  fqdn: string;
+  modelName: string | null;
+  familyName: string | null;
+  service: string | null;
+  packet: Packet;
+}
+
 class DnsSd {
   /* ------------------------------------------------------------------
    * Constructor: DnsSd()
@@ -52,7 +97,7 @@ class DnsSd {
    *            |           |          | If specified as a function, this method discovers
    *            |           |          | only devices for which the function returns `true`.
    * ---------------------------------------------------------------- */
-  async discover(params) {
+  async discover(params): Promise<Device[]> {
     if (this._is_discovering === true) {
       throw new Error("The discovery process is running.");
     }

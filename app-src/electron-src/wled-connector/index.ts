@@ -1,11 +1,6 @@
 import dgram from "dgram";
-import os from "os";
 
-interface Chaser {
-  ip: string;
-}
-
-interface State {
+export interface State {
   on: boolean;
   bri: number;
   transition: number;
@@ -78,7 +73,7 @@ export interface WledConnectorInterface {
   server: dgram.Socket;
   emitUdp(data: any[]): void;
   getIp(): string | undefined;
-  callApi(data: WLEDDeviceData): Promise<WLEDDeviceData>;
+  callApi(data: Partial<State>): Promise<WLEDDeviceData>;
 }
 
 interface WledConnectorParams {
@@ -90,24 +85,21 @@ export default class WledConnector implements WledConnectorInterface {
   ip!: string;
   server!: dgram.Socket;
   device!: WLEDDeviceData;
-  optimisticStripeData!: any[];
   onEmit: ((ip: string, pixelArray: string | any[]) => void) | undefined;
 
   constructor(param: WledConnectorParams) {
-    this.init(param);
-  }
-
-  async init(param: WledConnectorParams): Promise<void> {
     const { ip, onEmit } = param;
     this.ip = ip;
+    this.onEmit = onEmit;
+  }
+
+  async init(): Promise<void> {
     try {
       this.device = await this.callApi(undefined);
     } catch (error) {
       throw new Error("Could not connect to WLED device.");
     }
     this.server = dgram.createSocket("udp4");
-    this.optimisticStripeData = [];
-    this.onEmit = onEmit;
   }
 
   getIp() {
@@ -118,7 +110,6 @@ export default class WledConnector implements WledConnectorInterface {
     if (!this.ip) throw new Error("No IP set.");
     if (this.onEmit) this.onEmit(this.ip, data);
 
-    this.optimisticStripeData = data;
     let hexString = data.join("");
 
     const message = Buffer.from(hexString, "hex");
@@ -127,20 +118,22 @@ export default class WledConnector implements WledConnectorInterface {
     });
   }
 
-  async callApi(
-    data: Partial<WLEDDeviceData> | undefined
-  ): Promise<WLEDDeviceData> {
-    const url = `http://${this.ip}//json/state`;
+  async callApi(data: Partial<State> | undefined): Promise<WLEDDeviceData> {
+    const url = `http://${this.ip}/json`;
 
     let response;
 
-    if (!data)
-      response = await fetch(url, {
+    if (data)
+      response = await fetch(url + "/state", {
         method: "POST",
         body: JSON.stringify(data),
       });
     else response = await fetch(url);
 
     return response.json();
+  }
+
+  get deviceData() {
+    return this.device;
   }
 }

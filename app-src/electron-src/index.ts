@@ -201,8 +201,6 @@ ipcMain.on("LIGHTS:ON", async (event, args) => {});
 
 ipcMain.on("CHASER:SEND_STRIPE", (event, stripe, id) => {});
 
-ipcMain.on("CHASER:SEND_STATIC_STRIPE", (event, stripe, id) => {});
-
 ipcMain.on("SHELL:OPEN_LINK", (event, link) => {
   shell.openExternal(link);
 });
