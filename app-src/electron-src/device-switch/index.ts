@@ -7,9 +7,8 @@ import WledConnector, {
 export default class DeviceSwitch {
   deviceMap!: Map<string, WledConnectorInterface>;
   mDnsSd!: typeof mDnsSd;
-  constructor() {
-    this.search();
-  }
+
+  constructor() {}
 
   async search(): Promise<void> {
     this.mDnsSd = mDnsSd;
