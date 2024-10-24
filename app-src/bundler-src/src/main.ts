@@ -18,6 +18,10 @@ const numberInput1 = new NumberInput({
   label: "Temperature",
 });
 
+window.ipcRenderer.invoke("SCAN_NETWORK").then((devices) => {
+  console.log(devices);
+});
+
 setInterval(() => {
   Toaster({
     text: "This is a toast" + Math.random(),

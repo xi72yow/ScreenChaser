@@ -16,25 +16,26 @@ export default class DeviceSwitch {
     const deviceList = await this.mDnsSd.discover({
       name: "_services._dns-sd._udp.local",
       type: "PTR",
-      key: "fqdn",
     });
 
     this.deviceMap = new Map();
 
-    deviceList.forEach(async (device) => {
-      const wledConnector = new WledConnector({
-        ip: device.address,
-      });
+    await Promise.all(
+      deviceList.map(async (device) => {
+        const wledConnector = new WledConnector({
+          ip: device.address,
+        });
 
-      try {
-        await wledConnector.init();
-        this.deviceMap.set(device.address, wledConnector);
-      } catch (error) {
-        console.error(
-          `Device on: ${device.address} is probably not a WLED device.`
-        );
-      }
-    });
+        try {
+          await wledConnector.init();
+          this.deviceMap.set(device.address, wledConnector);
+        } catch (error) {
+          console.error(
+            `Device on: ${device.address} is probably not a WLED device.`
+          );
+        }
+      })
+    );
   }
 
   getDevices(): Map<string, WledConnectorInterface> {

@@ -1,6 +1,6 @@
 import { BrowserWindow, app } from "electron";
 import { format } from "url";
-import { join } from "path";
+import path, { join } from "path";
 import isDev from "./is-dev";
 import { port, hostname, showChaserWindowInProd } from "./consts";
 
@@ -9,7 +9,7 @@ export default function prepareChaserWindow(): BrowserWindow {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: false,
-      preload: join(__dirname, "preload.js"),
+      preload: join(path.dirname(__dirname), "preload.js"),
       backgroundThrottling: false,
     },
     frame: showChaserWindowInProd,

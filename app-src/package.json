@@ -23,14 +23,15 @@
     "test:dns-sd": "ts-node ./electron-src/dns-service-discovery/dns-sd.test.ts"
   },
   "devDependencies": {
-    "@types/node": "20.11.19",
+    "@types/node": "22.7.9",
     "@types/w3c-image-capture": "1.0.10",
-    "electron": "31.1.0",
-    "electron-builder": "24.13.3",
-    "rimraf": "3.0.2",
+    "@webgpu/types": "0.1.49",
+    "electron": "33.0.2",
+    "electron-builder": "25.1.8",
+    "rimraf": "6.0.1",
     "ts-node": "10.9.2",
-    "typescript": "5.4.5",
-    "vite": "5.2.10",
-    "tsc-watch": "6.2.0"
+    "tsc-watch": "6.2.0",
+    "typescript": "5.6.3",
+    "vite": "5.4.10"
   }
 }

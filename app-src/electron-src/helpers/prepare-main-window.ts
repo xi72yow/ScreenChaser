@@ -1,6 +1,6 @@
 import { BrowserWindow, app } from "electron";
 import { format } from "url";
-import { join } from "path";
+import path, { join } from "path";
 import createWindow from "./create-window";
 import isDev from "./is-dev";
 import { port, hostname } from "./consts";
@@ -12,7 +12,7 @@ export default async function prepareMainWindow(): Promise<BrowserWindow> {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: false,
-      preload: join(__dirname, "preload.js"),
+      preload: join(path.dirname(__dirname), "preload.js"),
     },
   });
   mainWindow.setMenuBarVisibility(false);

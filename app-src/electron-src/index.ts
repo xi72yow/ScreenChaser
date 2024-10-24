@@ -12,24 +12,28 @@ import prepareMainWindow from "./helpers/prepare-main-window";
 import { port } from "./helpers/consts";
 import prepareChaserWindow from "./helpers/prepare-chaser-window";
 
+app.commandLine.appendSwitch("enable-unsafe-webgpu", "true");
+app.commandLine.appendSwitch("enable-features", "Vulkan");
+
 app.on("ready", async () => {
   if (isDev) {
     await prepareVite(port);
   }
-  const deviceSwitch = new DeviceSwitch();
 
-  const [mainWindow, chaserWindow, search] = await Promise.all([
+  const [mainWindow, chaserWindow] = await Promise.all([
     prepareMainWindow(),
     prepareChaserWindow(),
-    deviceSwitch.search(),
   ]);
-
-  ipcMain.handle("GET_DEVICES", async (event, ...args) => {
-    return deviceSwitch.getDevices();
-  });
 });
 
-ipcMain.handle("GET_SOURCES", async (event, ...args) => {
+const deviceSwitch = new DeviceSwitch();
+
+ipcMain.handle("SCAN_NETWORK", async (event, ...args) => {
+  await deviceSwitch.search();
+  return await deviceSwitch.getDevices();
+});
+
+ipcMain.handle("GET_VIDEO_SOURCES", async (event, ...args) => {
   const thumbnailSize = args[0];
   const sources = await desktopCapturer.getSources({
     types: ["window", "screen"],
@@ -37,8 +41,6 @@ ipcMain.handle("GET_SOURCES", async (event, ...args) => {
   });
   return sources;
 });
-
-ipcMain.handle("SCAN_NETWORK", async (event, ...args) => {});
 
 ipcMain.on("MANAGE_CHASER", (event, args: any) => {});
 
@@ -64,3 +66,11 @@ app.on("window-all-closed", () => {
     app.quit();
   }
 });
+
+/* // On OS X it's common to re-create a window in the app when the
+	// dock icon is clicked and there are no other windows open.
+	app.on("activate", () => {
+		if (BrowserWindow.getAllWindows().length === 0) {
+			createWindow();
+		}
+	}); */
