@@ -42,7 +42,6 @@
 
 .app-body {
   display: block;
-  flex: 1 1 0%;
   width: calc(100vw - var(--scrollbar-width));
   min-height: calc(100vh - var(--scrollbar-width));
   box-sizing: border-box;
@@ -52,6 +51,45 @@
   padding-left: calc(var(--navbar-width, 0px) + 16px);
   padding-right: calc(var(--aside-width, 0px) + 16px);
   background-color: var(--BG);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.center-loader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.loader {
+  width: fit-content;
+  font-weight: bold;
+  font-family: monospace;
+  font-size: 30px;
+  background: radial-gradient(circle closest-side, var(--BGDarker) 94%, #0000)
+    right/calc(200% - 1em) 100%;
+  animation: l24 3.5s infinite alternate linear;
+}
+.loader::before {
+  content: "Searching for Wled-Devices";
+  line-height: 1em;
+  color: #0000;
+  background: inherit;
+  background-image: radial-gradient(
+    circle closest-side,
+    var(--FG) 50%,
+    var(--BGDarker)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+@keyframes l24 {
+  100% {
+    background-position: left;
+  }
 }
 
 .app-footer {

@@ -21,7 +21,7 @@ const numberInput1 = new NumberInput({
   helperText: "Set the temperature",
   label: "Temperature",
 });
-
+const deviceLoader = document.querySelector("#device-loader");
 window.ipcRenderer.invoke("SCAN_NETWORK").then((devices) => {
   devices.forEach((device: { ip: string }) => {
     const devicesContainer = document.querySelector(".devices");
@@ -35,6 +35,9 @@ window.ipcRenderer.invoke("SCAN_NETWORK").then((devices) => {
     }
     state.set(device.ip, device);
   });
+  if (deviceLoader) {
+    (deviceLoader as HTMLElement).style.display = "none";
+  }
 });
 
 setInterval(() => {
