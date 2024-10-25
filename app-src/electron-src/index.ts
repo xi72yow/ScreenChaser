@@ -26,6 +26,47 @@ app.on("ready", async () => {
   ]);
 });
 
+app.on("browser-window-created", (e, win) => {
+  win.removeMenu();
+  win.webContents.on("did-finish-load", () => {
+    if (isDev) {
+      win.webContents.openDevTools();
+    }
+    win.webContents.insertCSS(`
+      :root {
+      --c-1: #282a36 !important;  /* Dracula Background */
+      --c-f: #f8f8f2 !important;  /* Dracula Foreground */
+      --c-2: #44475a !important;  /* Dracula Current Line */
+      --c-3: #6272a4 !important;  /* Dracula Comment */
+      --c-4: #44475a !important;  /* Dracula Current Line */
+      --c-5: #6272a4 !important;  /* Dracula Comment */
+      --c-6: #bd93f9 !important;  /* Dracula Purple */
+      --c-8: #8be9fd !important;  /* Dracula Cyan */
+      --c-b: #f1fa8c !important;  /* Dracula Yellow */
+      --c-c: #ff79c6 !important;  /* Dracula Pink */
+      --c-e: #50fa7b !important;  /* Dracula Green */
+      --c-d: #ffb86c !important;  /* Dracula Orange */
+      --c-r: #ff5555 !important;  /* Dracula Red */
+      --c-g: #50fa7b !important;  /* Dracula Green */
+      --c-l: #8be9fd !important;  /* Dracula Cyan */
+      --t-b: 0.5 !important;
+      --c-o: rgba(40, 42, 54, 0.9) !important;  /* Dracula Background with opacity */
+      --c-tb : rgba(40, 42, 54, var(--t-b)) !important;
+      --c-tba: rgba(189, 147, 249, var(--t-b)) !important;  /* Dracula Purple with opacity */
+      --c-tbh: rgba(98, 114, 164, var(--t-b)) !important;  /* Dracula Comment with opacity */
+      /*following are internal*/
+      --th: 70px !important;
+      --tp: 70px !important;
+      --bh: 63px !important;
+      --tbp: 14px 8px 10px !important;
+      --bbp: 9px 0 7px 0 !important;
+      --bhd: none !important;
+      --bmt: 0px !important;
+      }
+    `);
+  });
+});
+
 const deviceSwitch = new DeviceSwitch();
 
 ipcMain.handle("SCAN_NETWORK", async (event, ...args) => {

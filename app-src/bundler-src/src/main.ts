@@ -6,8 +6,12 @@ import "./devices.css";
 import "@/themeToggle";
 import "@/addDeviceBtn";
 import "@/logo";
+import "@/deviceCard";
 import NumberInput from "@core/numberInput";
 import Toaster from "@core/toasts";
+import { State } from "./core/db/state";
+
+const state = new State([]);
 
 const numberInput1 = new NumberInput({
   selector: ".app-footer",
@@ -19,7 +23,18 @@ const numberInput1 = new NumberInput({
 });
 
 window.ipcRenderer.invoke("SCAN_NETWORK").then((devices) => {
-  console.log(devices);
+  devices.forEach((device: { ip: string }) => {
+    const devicesContainer = document.querySelector(".devices");
+    if (
+      devicesContainer &&
+      !document.querySelector(`device-card[ip="${device.ip}"]`)
+    ) {
+      const deviceCard = document.createElement("device-card");
+      deviceCard.setAttribute("ip", device.ip);
+      devicesContainer.appendChild(deviceCard);
+    }
+    state.set(device.ip, device);
+  });
 });
 
 setInterval(() => {

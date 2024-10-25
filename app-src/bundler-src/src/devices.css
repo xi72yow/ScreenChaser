@@ -5,7 +5,9 @@
   gap: 16px;
 }
 
-.device {
+device-card {
+  z-index: 1;
+  width: 100%;
   text-size-adjust: 100%;
   line-height: 1.55;
   font-size: 20px;
@@ -21,22 +23,12 @@
   border-radius: 8px;
   box-shadow: none;
   border: 1px solid var(--BORDER);
-  padding: 16px;
+  transition: transform 0.3s;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
 }
 
-.off {
-  opacity: 0.3;
-}
-
-.error {
-  box-shadow: 0 0 10px var(--RED);
-}
-
-.device video {
-  width: 250px;
-  aspect-ratio: 16/9;
-  flex-shrink: 0;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  font-weight: 600;
+device-card:hover {
+  transform: scale(1.03);
 }
