@@ -1,4 +1,5 @@
 import { State } from "@/core/db/state";
+import Modal from "@core/modal";
 import "./index.css";
 
 class DeviceCard extends HTMLElement {
@@ -79,6 +80,17 @@ class DeviceCard extends HTMLElement {
     if (ipElement) {
       ipElement.addEventListener("click", this.openDeviceSettings.bind(this));
     }
+
+    const card = this.querySelector(".device");
+    if (card) {
+      card.addEventListener("click", this.openChaserSettings.bind(this));
+    }
+  }
+
+  openChaserSettings() {
+    console.log("Opening chaser settings: " + this.ip);
+    const modal = new Modal();
+    modal.toggle();
   }
 
   openDeviceSettings() {

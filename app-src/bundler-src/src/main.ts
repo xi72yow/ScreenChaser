@@ -8,10 +8,7 @@ import "@/addDeviceBtn";
 import "@/logo";
 import "@/deviceCard";
 import NumberInput from "@core/numberInput";
-import Toaster from "@core/toasts";
-import { State } from "./core/db/state";
-
-const state = new State([]);
+import "@/scanDeviceButton";
 
 const numberInput1 = new NumberInput({
   selector: ".app-footer",
@@ -21,28 +18,3 @@ const numberInput1 = new NumberInput({
   helperText: "Set the temperature",
   label: "Temperature",
 });
-const deviceLoader = document.querySelector("#device-loader");
-window.ipcRenderer.invoke("SCAN_NETWORK").then((devices) => {
-  devices.forEach((device: { ip: string }) => {
-    const devicesContainer = document.querySelector(".devices");
-    if (
-      devicesContainer &&
-      !document.querySelector(`device-card[ip="${device.ip}"]`)
-    ) {
-      const deviceCard = document.createElement("device-card");
-      deviceCard.setAttribute("ip", device.ip);
-      devicesContainer.appendChild(deviceCard);
-    }
-    state.set(device.ip, device);
-  });
-  if (deviceLoader) {
-    (deviceLoader as HTMLElement).style.display = "none";
-  }
-});
-
-setInterval(() => {
-  Toaster({
-    text: "This is a toast" + Math.random(),
-    duration: 4000,
-  }).showToast();
-}, 2000);
