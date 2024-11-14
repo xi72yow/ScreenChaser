@@ -3,7 +3,7 @@ import "./index.css";
 
 class NumberInput {
   private inputElement: HTMLInputElement;
-  private container: Element | null;
+  private container: HTMLElement | null;
   private float: boolean;
 
   constructor({
@@ -15,8 +15,9 @@ class NumberInput {
     label,
     helperText,
     step = 1,
+    container,
   }: {
-    selector: string;
+    selector?: string;
     maxValue?: number;
     minValue?: number;
     defaultValue?: number;
@@ -24,10 +25,14 @@ class NumberInput {
     float?: boolean;
     label?: string;
     helperText?: string;
+    container?: HTMLElement;
   }) {
-    this.container = document.querySelector(selector);
+    this.container =
+      (selector ? document.querySelector(selector) : null) || container || null;
     if (!this.container) {
-      throw new Error(`Element with selector ${selector} not found`);
+      throw new Error(
+        `Element with selector ${selector} not found or provided container is null`
+      );
     }
 
     const inputWrapper = document.createElement("div");

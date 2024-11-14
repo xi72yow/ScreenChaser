@@ -66,3 +66,16 @@
   text-align: center;
   align-items: center;
 }
+
+.modal-body {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.button-space {
+  display: flex;
+  justify-content: space-between;
+  gap: .5rem;
+}

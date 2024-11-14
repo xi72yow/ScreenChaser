@@ -1,5 +1,7 @@
 import { State } from "@/core/db/state";
 import Modal from "@core/modal";
+import NumberInput from "@core/numberInput";
+import BooleanInput from "@core/booleanInput";
 import "./index.css";
 
 class DeviceCard extends HTMLElement {
@@ -24,9 +26,92 @@ class DeviceCard extends HTMLElement {
   name: string | undefined;
   videoSrc: string | undefined;
   [key: string]: any;
+  modal: Modal;
 
   constructor() {
     super();
+    this.modal = new Modal();
+    const fieldWidth = new NumberInput({
+      container: this.modal.modalBody,
+      minValue: 0,
+      maxValue: 100,
+      defaultValue: 10,
+      helperText: "Set the width of the field of the video in percentage",
+      label: "Field Width",
+    });
+
+    const fieldHeight = new NumberInput({
+      container: this.modal.modalBody,
+      minValue: 0,
+      maxValue: 100,
+      defaultValue: 10,
+      helperText: "Set the height of the field of the video in percentage",
+      label: "Field Height",
+    });
+
+    const ledCountLeft = new NumberInput({
+      container: this.modal.modalBody,
+      minValue: 0,
+      maxValue: 999,
+      defaultValue: 0,
+      helperText: "Set the number of LEDs on the left side",
+      label: "LED Count Left",
+    });
+
+    const ledCountRight = new NumberInput({
+      container: this.modal.modalBody,
+      minValue: 0,
+      maxValue: 999,
+      defaultValue: 0,
+      helperText: "Set the number of LEDs on the right side",
+      label: "LED Count Right",
+    });
+
+    const ledCountTop = new NumberInput({
+      container: this.modal.modalBody,
+      minValue: 0,
+      maxValue: 999,
+      defaultValue: 0,
+      helperText: "Set the number of LEDs on the top side",
+      label: "LED Count Top",
+    });
+
+    const ledCountBottom = new NumberInput({
+      container: this.modal.modalBody,
+      minValue: 0,
+      maxValue: 999,
+      defaultValue: 114,
+      helperText: "Set the number of LEDs on the bottom side",
+      label: "LED Count Bottom",
+    });
+
+    const bufferedFrames = new NumberInput({
+      container: this.modal.modalBody,
+      minValue: 0,
+      maxValue: 999,
+      defaultValue: 0,
+      helperText: "Set the number of frames to buffer",
+      label: "Buffered Frames",
+    });
+
+    const startLed = new NumberInput({
+      container: this.modal.modalBody,
+      minValue: 0,
+      maxValue: 999,
+      defaultValue: 0,
+      helperText: "Set the starting LED, if you not start in an corner",
+      label: "Start LED",
+    });
+
+    const clockWise = new NumberInput({
+      container: this.modal.modalBody,
+      minValue: 0,
+      maxValue: 1,
+      defaultValue: 1,
+      helperText:
+        "Set the direction of the LEDs, 1 for clockwise and 0 for counter clockwise",
+      label: "Clockwise",
+    });
   }
 
   static get observedAttributes() {
@@ -65,6 +150,7 @@ class DeviceCard extends HTMLElement {
   render(name: string, value: any) {
     this.deviceDetails = value;
     const { ip = "0.0.0.0", device } = this.deviceDetails;
+    this.modal.setModalTitle(`ChaserSettings ${device.info.name || ip}`);
     this.innerHTML =
       DeviceCard.style +
       DeviceCard.template
@@ -78,19 +164,23 @@ class DeviceCard extends HTMLElement {
 
     const ipElement = this.querySelector(".ip");
     if (ipElement) {
-      ipElement.addEventListener("click", this.openDeviceSettings.bind(this));
+      ipElement.addEventListener("click", (event) => {
+        event.stopPropagation();
+        this.openDeviceSettings();
+      });
     }
 
     const card = this.querySelector(".device");
     if (card) {
-      card.addEventListener("click", this.openChaserSettings.bind(this));
+      card.addEventListener("click", (event) => {
+        this.openChaserSettings();
+      });
     }
   }
 
   openChaserSettings() {
     console.log("Opening chaser settings: " + this.ip);
-    const modal = new Modal();
-    modal.toggle();
+    this.modal.toggle();
   }
 
   openDeviceSettings() {

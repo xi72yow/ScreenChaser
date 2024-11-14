@@ -1,7 +1,8 @@
 import "./index.css";
 
 interface IconButtonProps {
-  selector: string;
+  container?: null | Element;
+  selector?: null | string;
   stateOneIcon: string;
   stateTwoIcon?: string;
   stateOneStrokeColor: string;
@@ -18,7 +19,8 @@ class IconButton {
   private stateTwoStrokeColor: string;
   private iconButton: HTMLButtonElement;
   private svg: HTMLObjectElement;
-  private selector: string;
+  private selector: string | null;
+  private container: Element | null;
   private state: "stateOne" | "stateTwo" = "stateOne";
 
   constructor(props: IconButtonProps) {
@@ -27,7 +29,8 @@ class IconButton {
     this.stateOneStrokeColor = props.stateOneStrokeColor || "#eeeeee";
     this.stateTwoStrokeColor =
       props.stateTwoStrokeColor || props.stateOneStrokeColor;
-    this.selector = props.selector;
+    this.selector = props.selector || null;
+    this.container = props.container || null;
 
     this.iconButton = document.createElement("button");
     this.iconButton.classList.add(buttonClassName);
@@ -62,7 +65,16 @@ class IconButton {
       }
     });
 
-    document.body.querySelector(this.selector)!.appendChild(this.iconButton);
+    this.container =
+      (this.selector ? document.querySelector(this.selector) : null) ||
+      this.container ||
+      null;
+    if (!this.container) {
+      throw new Error(
+        `Element with selector ${this.selector} not found or provided container is null`
+      );
+    }
+    this.container.appendChild(this.iconButton);
   }
 }
 
