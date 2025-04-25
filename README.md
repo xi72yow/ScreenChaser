@@ -52,3 +52,5 @@ fetch("http://192.168.2.113/json/state", {
     console.error("Error:", error);
   });
 ```
+
+on debian use sudo setfacl -m u:xi72yow:rw /dev/ttyUSB0 to allow acces to serial port to install wled

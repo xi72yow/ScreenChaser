@@ -3,12 +3,22 @@ import IconButton from "@/core/iconButton";
 import Toaster from "@core/toasts";
 import { State } from "@/core/db/state";
 
+// Create the icon button reference
+let scanButton: IconButton;
+
+// Track scanning state
+let isScanning = false;
+
 function scanNetwork() {
+  // Prevent multiple simultaneous scans
+  if (isScanning) return;
+  isScanning = true;
+  
   const state = new State([]);
-  const deviceLoader = document.querySelector("#device-loader");
-  if (deviceLoader) {
-    (deviceLoader as HTMLElement).style.display = "block";
-  }
+  
+  // Start the button spinning animation
+  scanButton.startSpin();
+  
   window.ipcRenderer.invoke("SCAN_NETWORK").then((devices) => {
     devices.forEach((device: { ip: string }) => {
       const devicesContainer = document.querySelector(".devices");
@@ -26,13 +36,19 @@ function scanNetwork() {
         duration: 5000,
       }).showToast();
     });
-    if (deviceLoader) {
-      (deviceLoader as HTMLElement).style.display = "none";
-    }
+    
+    // Stop the button spinning animation
+    scanButton.stopSpin();
+    isScanning = false;
+  }).catch((error) => {
+    console.error("Error scanning network:", error);
+    scanButton.stopSpin();
+    isScanning = false;
   });
 }
 
-new IconButton({
+// Create the button
+scanButton = new IconButton({
   selector: ".app-footer",
   stateOneIcon: refreshIcon,
   stateTwoIcon: refreshIcon,
@@ -41,4 +57,7 @@ new IconButton({
   onClick: scanNetwork,
 });
 
-scanNetwork();
+// Wait for everything to be loaded before initial scan
+setTimeout(() => {
+  scanNetwork();
+}, 800);

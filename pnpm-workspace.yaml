@@ -1,4 +1,7 @@
 packages:
-  - "app-src/"
-  - "app-src/bundler-src/"
-  - "firmware-src/*"
+  - app-src/
+  - app-src/bundler-src/
+  - firmware-src/*
+onlyBuiltDependencies:
+  - electron
+  - esbuild
