@@ -83,6 +83,14 @@ ipcMain.handle("GET_VIDEO_SOURCES", async (event, ...args) => {
   return sources;
 });
 
+ipcMain.handle("GET_SOURCES", async (event) => {
+  const sources = await desktopCapturer.getSources({
+    types: ["screen", "window"], // Screen first priority
+    thumbnailSize: { width: 150, height: 150 },
+  });
+  return sources;
+});
+
 ipcMain.on("MANAGE_CHASER", (event, args: any) => {});
 
 ipcMain.on("LIGHTS:OFF", async (event, args) => {});
