@@ -10,6 +10,8 @@ export class State {
   static storeName: string = "state";
   static DB: IndexedDB | null = null;
   static target: EventTarget = new EventTarget();
+  static channel: BroadcastChannel = new BroadcastChannel("state-sync");
+  private static channelInitialized = false;
 
   private observed: Set<string>;
   private updateCallback?: UpdateCallback;
@@ -19,12 +21,24 @@ export class State {
 
     this.observed = new Set(observed);
 
+    // Listen for same-window events
     State.target.addEventListener("set", (e: Event) => {
       const customEvent = e as CustomEvent<{ name: string; value: any }>;
       if (this.updateCallback && this.observed.has(customEvent.detail.name)) {
         this.updateCallback(customEvent.detail.name, customEvent.detail.value);
       }
     });
+
+    // Listen for cross-window events (BroadcastChannel)
+    if (!State.channelInitialized) {
+      State.channelInitialized = true;
+      State.channel.onmessage = (e: MessageEvent) => {
+        const { name, value } = e.data;
+        // Re-dispatch locally so all State instances in this window get notified
+        const event = new CustomEvent("set", { detail: { name, value } });
+        State.target.dispatchEvent(event);
+      };
+    }
   }
 
   async dbConnect(): Promise<IndexedDB> {
@@ -51,8 +65,12 @@ export class State {
     const db = await this.dbConnect();
     await db.set(State.storeName, name, value);
 
+    // Notify same window
     const event = new CustomEvent("set", { detail: { name, value } });
     State.target.dispatchEvent(event);
+
+    // Notify other windows
+    State.channel.postMessage({ name, value });
   }
 
   async get(name: string): Promise<any> {
@@ -60,5 +78,10 @@ export class State {
 
     const db = await this.dbConnect();
     return await db.get(State.storeName, name);
+  }
+
+  async getAllKeys(): Promise<IDBValidKey[]> {
+    const db = await this.dbConnect();
+    return await db.getAllKeys(State.storeName);
   }
 }

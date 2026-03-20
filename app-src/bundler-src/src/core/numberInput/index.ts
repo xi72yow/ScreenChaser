@@ -5,6 +5,7 @@ class NumberInput {
   private inputElement: HTMLInputElement;
   private container: HTMLElement | null;
   private float: boolean;
+  private changeCallbacks: Array<(value: number) => void> = [];
 
   constructor({
     selector,
@@ -31,7 +32,7 @@ class NumberInput {
       (selector ? document.querySelector(selector) : null) || container || null;
     if (!this.container) {
       throw new Error(
-        `Element with selector ${selector} not found or provided container is null`
+        `Element with selector ${selector} not found or provided container is null`,
       );
     }
 
@@ -62,8 +63,8 @@ class NumberInput {
     const button1 = document.createElement("button");
     button1.type = "button";
     button1.tabIndex = -1;
-    button1.setAttribute("aria-hidden", "true");
     button1.classList.add("number-input-button");
+    button1.setAttribute("aria-label", "Increase value");
 
     const svg1 = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg1.setAttribute("width", "14");
@@ -74,11 +75,11 @@ class NumberInput {
 
     const path1 = document.createElementNS(
       "http://www.w3.org/2000/svg",
-      "path"
+      "path",
     );
     path1.setAttribute(
       "d",
-      "M3.13523 6.15803C3.3241 5.95657 3.64052 5.94637 3.84197 6.13523L7.5 9.56464L11.158 6.13523C11.3595 5.94637 11.6759 5.95657 11.8648 6.15803C12.0536 6.35949 12.0434 6.67591 11.842 6.86477L7.84197 10.6148C7.64964 10.7951 7.35036 10.7951 7.15803 10.6148L3.15803 6.86477C2.95657 6.67591 2.94637 6.35949 3.13523 6.15803Z"
+      "M3.13523 6.15803C3.3241 5.95657 3.64052 5.94637 3.84197 6.13523L7.5 9.56464L11.158 6.13523C11.3595 5.94637 11.6759 5.95657 11.8648 6.15803C12.0536 6.35949 12.0434 6.67591 11.842 6.86477L7.84197 10.6148C7.64964 10.7951 7.35036 10.7951 7.15803 10.6148L3.15803 6.86477C2.95657 6.67591 2.94637 6.35949 3.13523 6.15803Z",
     );
     path1.setAttribute("fill", "currentColor");
     path1.setAttribute("fill-rule", "evenodd");
@@ -91,8 +92,8 @@ class NumberInput {
     const button2 = document.createElement("button");
     button2.type = "button";
     button2.tabIndex = -1;
-    button2.setAttribute("aria-hidden", "true");
     button2.classList.add("number-input-button");
+    button2.setAttribute("aria-label", "Decrease value");
 
     const svg2 = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg2.setAttribute("width", "14");
@@ -102,11 +103,11 @@ class NumberInput {
 
     const path2 = document.createElementNS(
       "http://www.w3.org/2000/svg",
-      "path"
+      "path",
     );
     path2.setAttribute(
       "d",
-      "M3.13523 6.15803C3.3241 5.95657 3.64052 5.94637 3.84197 6.13523L7.5 9.56464L11.158 6.13523C11.3595 5.94637 11.6759 5.95657 11.8648 6.15803C12.0536 6.35949 12.0434 6.67591 11.842 6.86477L7.84197 10.6148C7.64964 10.7951 7.35036 10.7951 7.15803 10.6148L3.15803 6.86477C2.95657 6.67591 2.94637 6.35949 3.13523 6.15803Z"
+      "M3.13523 6.15803C3.3241 5.95657 3.64052 5.94637 3.84197 6.13523L7.5 9.56464L11.158 6.13523C11.3595 5.94637 11.6759 5.95657 11.8648 6.15803C12.0536 6.35949 12.0434 6.67591 11.842 6.86477L7.84197 10.6148C7.64964 10.7951 7.35036 10.7951 7.15803 10.6148L3.15803 6.86477C2.95657 6.67591 2.94637 6.35949 3.13523 6.15803Z",
     );
     path2.setAttribute("fill", "currentColor");
     path2.setAttribute("fill-rule", "evenodd");
@@ -194,6 +195,34 @@ class NumberInput {
       if (isNaN(parseInt(this.inputElement.value))) return;
       this.inputElement.value = parseInt(this.inputElement.value).toString();
     }
+
+    const val = this.getValue();
+    this.changeCallbacks.forEach((cb) => cb(val));
+  }
+
+  getValue(): number {
+    return this.float
+      ? parseFloat(this.inputElement.value)
+      : parseInt(this.inputElement.value);
+  }
+
+  setValue(value: number, silent = false): void {
+    this.inputElement.value = value.toString();
+    if (silent) {
+      // Clamp without firing callbacks
+      if (parseInt(this.inputElement.value) > parseInt(this.inputElement.max)) {
+        this.inputElement.value = this.inputElement.max;
+      }
+      if (parseInt(this.inputElement.value) < parseInt(this.inputElement.min)) {
+        this.inputElement.value = this.inputElement.min;
+      }
+    } else {
+      this.handleInput();
+    }
+  }
+
+  onChange(callback: (value: number) => void): void {
+    this.changeCallbacks.push(callback);
   }
 }
 

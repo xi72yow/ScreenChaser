@@ -1,17 +1,23 @@
 class RectangleEditor {
-  constructor(containerId, options = {}) {
-    this.container = document.getElementById(containerId);
+  constructor(containerOrId, options = {}) {
+    if (typeof containerOrId === "string") {
+      this.container = document.getElementById(containerOrId);
+    } else {
+      this.container = containerOrId;
+    }
     if (!this.container) {
-      throw new Error(`Container with id "${containerId}" not found`);
+      throw new Error("Container element not found");
     }
 
     // Create canvas element
     this.canvas = document.createElement("canvas");
-    this.canvas.style.border = "1px solid #555";
+    this.canvas.style.border = "1px solid var(--BORDER, #44475a)";
+    this.canvas.style.borderRadius = "4px";
     this.canvas.style.cursor = "crosshair";
     this.canvas.style.display = "block";
     this.canvas.style.maxWidth = "100%";
     this.canvas.style.height = "auto";
+    this.canvas.style.imageRendering = "pixelated";
     this.container.appendChild(this.canvas);
 
     this.ctx = this.canvas.getContext("2d");
@@ -27,6 +33,7 @@ class RectangleEditor {
       showNumbers:
         options.showNumbers !== undefined ? options.showNumbers : true,
       onStateChange: options.onStateChange || null,
+      onRectanglesChanged: options.onRectanglesChanged || null,
     };
 
     // State
@@ -44,6 +51,7 @@ class RectangleEditor {
     this.dragOffset = { x: 0, y: 0 };
     this.dragStartPositions = new Map();
 
+    this._destroyed = false;
     this.handleSize = 8;
     this.edgeHandleWidth = 6;
     this.snapDistance = 15;
@@ -757,6 +765,8 @@ class RectangleEditor {
       this.selectEnd = null;
     }
 
+    const wasDragging = this.isDragging;
+
     if (this.isDragging && this.selectedRects.size > 1 && this.nearestEdge) {
       const rects = Array.from(this.selectedRects);
       this.distributeOnSingleEdge(rects, this.nearestEdge, 10);
@@ -778,6 +788,10 @@ class RectangleEditor {
     this.nearestEdge = null;
     this.edgeHighlight = 0;
     this.draw();
+
+    if (wasDragging && this.options.onRectanglesChanged) {
+      this.options.onRectanglesChanged(this.exportData());
+    }
   }
 
   handleMouseLeave() {
@@ -1206,6 +1220,7 @@ class RectangleEditor {
   }
 
   animate() {
+    if (this._destroyed) return;
     this.draw();
     requestAnimationFrame(() => this.animate());
   }
@@ -1269,7 +1284,7 @@ class RectangleEditor {
         this.ctx.save();
 
         // Draw notification background
-        this.ctx.fillStyle = `rgba(74, 158, 255, ${notification.opacity * 0.9})`;
+        this.ctx.fillStyle = `rgba(189, 147, 249, ${notification.opacity * 0.9})`;
         this.ctx.beginPath();
         this.ctx.roundRect(this.canvas.width - 220, y, 200, 35, 5);
         this.ctx.fill();
@@ -1277,7 +1292,7 @@ class RectangleEditor {
         // Draw notification text
         this.ctx.fillStyle = `rgba(255, 255, 255, ${notification.opacity})`;
         this.ctx.font =
-          "14px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+          "14px 'CascadiaCode', monospace";
         this.ctx.textAlign = "center";
         this.ctx.textBaseline = "middle";
         this.ctx.fillText(
@@ -1295,8 +1310,8 @@ class RectangleEditor {
   }
 
   drawSelectionBox() {
-    this.ctx.strokeStyle = "rgba(74, 158, 255, 0.8)";
-    this.ctx.fillStyle = "rgba(74, 158, 255, 0.1)";
+    this.ctx.strokeStyle = "rgba(189, 147, 249, 0.8)";
+    this.ctx.fillStyle = "rgba(189, 147, 249, 0.1)";
     this.ctx.lineWidth = 1;
     this.ctx.setLineDash([5, 5]);
 
@@ -1314,12 +1329,12 @@ class RectangleEditor {
     this.ctx.fillStyle = rect.color;
     this.ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
 
-    this.ctx.strokeStyle = isSelected ? "#4a9eff" : rect.strokeColor;
+    this.ctx.strokeStyle = isSelected ? "#bd93f9" : rect.strokeColor;
     this.ctx.lineWidth = isSelected ? 2 : 1;
     this.ctx.strokeRect(rect.x, rect.y, rect.width, rect.height);
 
     if (this.showNumbers) {
-      this.ctx.fillStyle = isSelected ? "#4a9eff" : "#ffffff";
+      this.ctx.fillStyle = isSelected ? "#bd93f9" : "#ffffff";
       this.ctx.font = "bold 14px Arial";
       this.ctx.textAlign = "center";
       this.ctx.textBaseline = "middle";
@@ -1349,14 +1364,14 @@ class RectangleEditor {
   drawHandles(rect) {
     const handles = this.getHandles(rect);
 
-    this.ctx.fillStyle = "#4a9eff";
+    this.ctx.fillStyle = "#bd93f9";
 
     for (let key in handles.corners) {
       const handle = handles.corners[key];
       this.ctx.fillRect(handle.x, handle.y, this.handleSize, this.handleSize);
     }
 
-    this.ctx.fillStyle = "rgba(74, 158, 255, 0.3)";
+    this.ctx.fillStyle = "rgba(189, 147, 249, 0.3)";
     for (let key in handles.edges) {
       const edge = handles.edges[key];
       this.ctx.fillRect(edge.x, edge.y, edge.width, edge.height);
@@ -1366,14 +1381,14 @@ class RectangleEditor {
   drawGroupResizeHandle(rect) {
     const handles = this.getHandles(rect);
 
-    this.ctx.fillStyle = "#4a9eff";
-    this.ctx.strokeStyle = "#4a9eff";
+    this.ctx.fillStyle = "#bd93f9";
+    this.ctx.strokeStyle = "#bd93f9";
     this.ctx.lineWidth = 2;
 
     switch (this.snappedEdge) {
       case "left":
         const rightEdge = handles.edges.right;
-        this.ctx.fillStyle = "rgba(74, 158, 255, 0.5)";
+        this.ctx.fillStyle = "rgba(189, 147, 249, 0.5)";
         this.ctx.fillRect(
           rightEdge.x,
           rightEdge.y,
@@ -1389,7 +1404,7 @@ class RectangleEditor {
         break;
       case "right":
         const leftEdge = handles.edges.left;
-        this.ctx.fillStyle = "rgba(74, 158, 255, 0.5)";
+        this.ctx.fillStyle = "rgba(189, 147, 249, 0.5)";
         this.ctx.fillRect(
           leftEdge.x,
           leftEdge.y,
@@ -1405,7 +1420,7 @@ class RectangleEditor {
         break;
       case "top":
         const bottomEdge = handles.edges.bottom;
-        this.ctx.fillStyle = "rgba(74, 158, 255, 0.5)";
+        this.ctx.fillStyle = "rgba(189, 147, 249, 0.5)";
         this.ctx.fillRect(
           bottomEdge.x,
           bottomEdge.y,
@@ -1421,7 +1436,7 @@ class RectangleEditor {
         break;
       case "bottom":
         const topEdge = handles.edges.top;
-        this.ctx.fillStyle = "rgba(74, 158, 255, 0.5)";
+        this.ctx.fillStyle = "rgba(189, 147, 249, 0.5)";
         this.ctx.fillRect(topEdge.x, topEdge.y, topEdge.width, topEdge.height);
         this.ctx.strokeRect(
           topEdge.x,
@@ -1436,7 +1451,7 @@ class RectangleEditor {
   drawSnapLines() {
     if (!this.selectedRects.size) return;
 
-    this.ctx.strokeStyle = "rgba(255, 100, 100, 0.5)";
+    this.ctx.strokeStyle = "rgba(255, 85, 85, 0.5)";
     this.ctx.lineWidth = 1;
     this.ctx.setLineDash([5, 5]);
 
@@ -1481,22 +1496,22 @@ class RectangleEditor {
     switch (edge) {
       case "top":
         gradient = this.ctx.createLinearGradient(0, 0, 0, glowSize);
-        gradient.addColorStop(0, `rgba(50, 255, 50, ${opacity * 0.6})`);
-        gradient.addColorStop(0.5, `rgba(100, 255, 100, ${opacity * 0.3})`);
-        gradient.addColorStop(1, `rgba(100, 255, 100, 0)`);
+        gradient.addColorStop(0, `rgba(80, 250, 123, ${opacity * 0.6})`);
+        gradient.addColorStop(0.5, `rgba(105, 255, 148, ${opacity * 0.3})`);
+        gradient.addColorStop(1, `rgba(105, 255, 148, 0)`);
         this.ctx.fillStyle = gradient;
         this.ctx.fillRect(0, 0, this.canvas.width, glowSize);
 
-        this.ctx.strokeStyle = `rgba(50, 255, 50, ${opacity})`;
+        this.ctx.strokeStyle = `rgba(80, 250, 123, ${opacity})`;
         this.ctx.lineWidth = 4 + pulseOffset * 0.3;
         this.ctx.shadowBlur = 20;
-        this.ctx.shadowColor = `rgba(50, 255, 50, ${opacity})`;
+        this.ctx.shadowColor = `rgba(80, 250, 123, ${opacity})`;
         this.ctx.beginPath();
         this.ctx.moveTo(0, margin);
         this.ctx.lineTo(this.canvas.width, margin);
         this.ctx.stroke();
 
-        this.ctx.strokeStyle = `rgba(150, 255, 150, ${opacity * 0.5})`;
+        this.ctx.strokeStyle = `rgba(105, 255, 148, ${opacity * 0.5})`;
         this.ctx.lineWidth = 2;
         this.ctx.beginPath();
         this.ctx.moveTo(0, margin + pulseOffset);
@@ -1511,9 +1526,9 @@ class RectangleEditor {
           0,
           this.canvas.height - glowSize,
         );
-        gradient.addColorStop(0, `rgba(50, 255, 50, ${opacity * 0.6})`);
-        gradient.addColorStop(0.5, `rgba(100, 255, 100, ${opacity * 0.3})`);
-        gradient.addColorStop(1, `rgba(100, 255, 100, 0)`);
+        gradient.addColorStop(0, `rgba(80, 250, 123, ${opacity * 0.6})`);
+        gradient.addColorStop(0.5, `rgba(105, 255, 148, ${opacity * 0.3})`);
+        gradient.addColorStop(1, `rgba(105, 255, 148, 0)`);
         this.ctx.fillStyle = gradient;
         this.ctx.fillRect(
           0,
@@ -1522,16 +1537,16 @@ class RectangleEditor {
           glowSize,
         );
 
-        this.ctx.strokeStyle = `rgba(50, 255, 50, ${opacity})`;
+        this.ctx.strokeStyle = `rgba(80, 250, 123, ${opacity})`;
         this.ctx.lineWidth = 4 + pulseOffset * 0.3;
         this.ctx.shadowBlur = 20;
-        this.ctx.shadowColor = `rgba(50, 255, 50, ${opacity})`;
+        this.ctx.shadowColor = `rgba(80, 250, 123, ${opacity})`;
         this.ctx.beginPath();
         this.ctx.moveTo(0, this.canvas.height - margin);
         this.ctx.lineTo(this.canvas.width, this.canvas.height - margin);
         this.ctx.stroke();
 
-        this.ctx.strokeStyle = `rgba(150, 255, 150, ${opacity * 0.5})`;
+        this.ctx.strokeStyle = `rgba(105, 255, 148, ${opacity * 0.5})`;
         this.ctx.lineWidth = 2;
         this.ctx.beginPath();
         this.ctx.moveTo(0, this.canvas.height - margin - pulseOffset);
@@ -1544,22 +1559,22 @@ class RectangleEditor {
 
       case "left":
         gradient = this.ctx.createLinearGradient(0, 0, glowSize, 0);
-        gradient.addColorStop(0, `rgba(50, 255, 50, ${opacity * 0.6})`);
-        gradient.addColorStop(0.5, `rgba(100, 255, 100, ${opacity * 0.3})`);
-        gradient.addColorStop(1, `rgba(100, 255, 100, 0)`);
+        gradient.addColorStop(0, `rgba(80, 250, 123, ${opacity * 0.6})`);
+        gradient.addColorStop(0.5, `rgba(105, 255, 148, ${opacity * 0.3})`);
+        gradient.addColorStop(1, `rgba(105, 255, 148, 0)`);
         this.ctx.fillStyle = gradient;
         this.ctx.fillRect(0, 0, glowSize, this.canvas.height);
 
-        this.ctx.strokeStyle = `rgba(50, 255, 50, ${opacity})`;
+        this.ctx.strokeStyle = `rgba(80, 250, 123, ${opacity})`;
         this.ctx.lineWidth = 4 + pulseOffset * 0.3;
         this.ctx.shadowBlur = 20;
-        this.ctx.shadowColor = `rgba(50, 255, 50, ${opacity})`;
+        this.ctx.shadowColor = `rgba(80, 250, 123, ${opacity})`;
         this.ctx.beginPath();
         this.ctx.moveTo(margin, 0);
         this.ctx.lineTo(margin, this.canvas.height);
         this.ctx.stroke();
 
-        this.ctx.strokeStyle = `rgba(150, 255, 150, ${opacity * 0.5})`;
+        this.ctx.strokeStyle = `rgba(105, 255, 148, ${opacity * 0.5})`;
         this.ctx.lineWidth = 2;
         this.ctx.beginPath();
         this.ctx.moveTo(margin + pulseOffset, 0);
@@ -1574,9 +1589,9 @@ class RectangleEditor {
           this.canvas.width - glowSize,
           0,
         );
-        gradient.addColorStop(0, `rgba(50, 255, 50, ${opacity * 0.6})`);
-        gradient.addColorStop(0.5, `rgba(100, 255, 100, ${opacity * 0.3})`);
-        gradient.addColorStop(1, `rgba(100, 255, 100, 0)`);
+        gradient.addColorStop(0, `rgba(80, 250, 123, ${opacity * 0.6})`);
+        gradient.addColorStop(0.5, `rgba(105, 255, 148, ${opacity * 0.3})`);
+        gradient.addColorStop(1, `rgba(105, 255, 148, 0)`);
         this.ctx.fillStyle = gradient;
         this.ctx.fillRect(
           this.canvas.width - glowSize,
@@ -1585,16 +1600,16 @@ class RectangleEditor {
           this.canvas.height,
         );
 
-        this.ctx.strokeStyle = `rgba(50, 255, 50, ${opacity})`;
+        this.ctx.strokeStyle = `rgba(80, 250, 123, ${opacity})`;
         this.ctx.lineWidth = 4 + pulseOffset * 0.3;
         this.ctx.shadowBlur = 20;
-        this.ctx.shadowColor = `rgba(50, 255, 50, ${opacity})`;
+        this.ctx.shadowColor = `rgba(80, 250, 123, ${opacity})`;
         this.ctx.beginPath();
         this.ctx.moveTo(this.canvas.width - margin, 0);
         this.ctx.lineTo(this.canvas.width - margin, this.canvas.height);
         this.ctx.stroke();
 
-        this.ctx.strokeStyle = `rgba(150, 255, 150, ${opacity * 0.5})`;
+        this.ctx.strokeStyle = `rgba(105, 255, 148, ${opacity * 0.5})`;
         this.ctx.lineWidth = 2;
         this.ctx.beginPath();
         this.ctx.moveTo(this.canvas.width - margin - pulseOffset, 0);
@@ -1609,11 +1624,39 @@ class RectangleEditor {
     this.ctx.shadowBlur = 0;
   }
 
+  importData(data) {
+    if (!data || !data.rectangles) return;
+    this.rectangles = data.rectangles.map((r, i) => ({
+      x: r.x,
+      y: r.y,
+      width: r.width,
+      height: r.height,
+      color: `hsla(${((i * 360) / data.rectangles.length) % 360}, 70%, 60%, 0.3)`,
+      strokeColor: `hsl(${((i * 360) / data.rectangles.length) % 360}, 70%, 60%)`,
+      id: i,
+      number: r.number !== undefined ? r.number : i + 1,
+    }));
+    this.nextNumber = this.rectangles.length + 1;
+    this.selectedRects.clear();
+    if (data.canvasWidth) this.canvas.width = data.canvasWidth;
+    if (data.canvasHeight) this.canvas.height = data.canvasHeight;
+    this.draw();
+  }
+
   destroy() {
-    // Clean up event listeners
-    document.removeEventListener("keydown", this.handleKeyDown);
-    // Clear canvas
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this._destroyed = true;
+    document.removeEventListener("keydown", this.handleKeyDown.bind(this));
+    if (this.canvas && this.canvas.parentNode) {
+      this.canvas.parentNode.removeChild(this.canvas);
+    }
+    if (this.videoElement) {
+      this.videoElement.pause();
+      this.videoElement.src = "";
+      if (this.videoElement.parentNode) {
+        this.videoElement.parentNode.removeChild(this.videoElement);
+      }
+      this.videoElement = null;
+    }
   }
 }
 
@@ -1644,3 +1687,5 @@ if (!CanvasRenderingContext2D.prototype.roundRect) {
     this.closePath();
   };
 }
+
+export default RectangleEditor;

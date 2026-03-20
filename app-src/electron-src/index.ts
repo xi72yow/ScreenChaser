@@ -24,6 +24,7 @@ app.on("ready", async () => {
     prepareMainWindow(),
     prepareChaserWindow(),
   ]);
+
 });
 
 app.on("browser-window-created", (e, win) => {
@@ -71,24 +72,39 @@ const deviceSwitch = new DeviceSwitch();
 
 ipcMain.handle("SCAN_NETWORK", async (event, ...args) => {
   await deviceSwitch.search();
-  return await deviceSwitch.getDevices();
+  const devices = deviceSwitch.getDevices();
+
+  // Convert Map to array format for frontend
+  const deviceArray = [];
+  for (const [ip, wledConnector] of devices.entries()) {
+    deviceArray.push({
+      ip: ip,
+      device: wledConnector.device, // Use 'device' property from interface
+    });
+  }
+
+  return deviceArray;
 });
 
-ipcMain.handle("GET_VIDEO_SOURCES", async (event, ...args) => {
-  const thumbnailSize = args[0];
-  const sources = await desktopCapturer.getSources({
-    types: ["window", "screen"],
-    thumbnailSize: thumbnailSize || { width: 400, height: 400 },
-  });
-  return sources;
+// Cache screen sources so Wayland only asks once
+let cachedSources: Awaited<ReturnType<typeof desktopCapturer.getSources>> | null = null;
+
+async function getScreenSources() {
+  if (!cachedSources) {
+    cachedSources = await desktopCapturer.getSources({
+      types: ["screen", "window"],
+      thumbnailSize: { width: 720, height: 405 },
+    });
+  }
+  return cachedSources;
+}
+
+ipcMain.handle("GET_VIDEO_SOURCES", async () => {
+  return getScreenSources();
 });
 
-ipcMain.handle("GET_SOURCES", async (event) => {
-  const sources = await desktopCapturer.getSources({
-    types: ["screen", "window"], // Screen first priority
-    thumbnailSize: { width: 150, height: 150 },
-  });
-  return sources;
+ipcMain.handle("GET_SOURCES", async () => {
+  return getScreenSources();
 });
 
 ipcMain.on("MANAGE_CHASER", (event, args: any) => {});
@@ -98,6 +114,55 @@ ipcMain.on("LIGHTS:OFF", async (event, args) => {});
 ipcMain.on("LIGHTS:ON", async (event, args) => {});
 
 ipcMain.on("CHASER:SEND_STRIPE", (event, stripe, id) => {});
+
+const warnedDevices = new Set<string>();
+
+ipcMain.handle(
+  "SEND_LED_DATA",
+  async (event, args: { ip: string; data: number[]; ledCount: number }) => {
+    const { ip, data, ledCount } = args;
+
+    try {
+      // Check if device exists in deviceSwitch
+      const device = deviceSwitch.getDevice(ip);
+
+      if (!device) {
+        if (!warnedDevices.has(ip)) {
+          warnedDevices.add(ip);
+          console.warn(
+            `Device ${ip} not found. Please scan network first.`,
+          );
+        }
+        return { success: false, ip };
+      }
+
+      // Format data for WLED DRGB protocol
+      // Protocol: 0x02 (DRGB mode), 0xFF (timeout), then RGB data
+      const wledData = [];
+
+      // WLED UDP protocol header
+      wledData.push("02"); // DRGB protocol mode
+      wledData.push("FF"); // Timeout (255 = no timeout)
+
+      // Convert RGBA to RGB hex format for WLED
+      for (let i = 0; i < data.length; i += 4) {
+        // Convert each RGB value to 2-digit hex string
+        const r = data[i].toString(16).padStart(2, "0");
+        const g = data[i + 1].toString(16).padStart(2, "0");
+        const b = data[i + 2].toString(16).padStart(2, "0");
+        wledData.push(r, g, b);
+      }
+
+      // Send via WLED connector
+      deviceSwitch.emitUdp(ip, wledData);
+
+      return { success: true, ip, ledCount };
+    } catch (error) {
+      console.error(`Error sending LED data to ${ip}:`, error);
+      throw error;
+    }
+  },
+);
 
 ipcMain.on("SHELL:OPEN_LINK", (event, link) => {
   shell.openExternal(link);

@@ -1,4 +1,5 @@
 import { generateLedFields, type LedField } from "./biasCalculation/ledFields";
+import { State } from "./core/db/state";
 
 class BiasWebGPU {
   device: GPUDevice;
@@ -22,6 +23,7 @@ class BiasWebGPU {
   useFrameBuffer = false;
   currentFPS = 60; // Track current FPS for buffer sizing
   bufferSeconds = 5; // Configurable buffer duration in seconds
+  allocatedFrames = 0; // How many frames the current GPU buffer can hold
 
   constructor(
     device: GPUDevice,
@@ -61,10 +63,10 @@ class BiasWebGPU {
     });
 
     // Create frame buffer for storing fps*bufferSeconds frames
-    // Max 10 seconds at 120fps = 1200 frames as upper bound
-    const maxFrames = 1200;
+    const initialFrames = Math.round(this.currentFPS * this.bufferSeconds);
+    this.allocatedFrames = initialFrames;
     this.frameBuffer = this.device.createBuffer({
-      size: this.ledCount * 4 * 4 * maxFrames, // RGBA * float32 * max frames
+      size: this.ledCount * 4 * 4 * initialFrames, // RGBA * float32 * frames
       usage:
         GPUBufferUsage.STORAGE |
         GPUBufferUsage.COPY_DST |
@@ -522,30 +524,131 @@ class BiasWebGPU {
   setFrameBufferEnabled(enabled: boolean) {
     this.useFrameBuffer = enabled;
     if (!enabled) {
-      // Clear frame buffer when disabled
       this.currentFrameIndex = 0;
       this.actualFrameCount = 0;
-      // Clear the buffer with zeros - clear max possible frames
-      const clearData = new Float32Array(
-        this.ledCount * 4 * 1200, // Max 1200 frames
-      );
-      this.device.queue.writeBuffer(this.frameBuffer, 0, clearData);
     }
   }
 
   updateFPS(fps: number) {
     this.currentFPS = fps;
+    this.reallocateFrameBufferIfNeeded();
   }
 
   setBufferSeconds(seconds: number) {
-    // Clamp between 0.01 and 10 seconds
-    this.bufferSeconds = Math.max(0.01, Math.min(10, seconds));
+    this.bufferSeconds = Math.max(0.01, seconds);
+    this.reallocateFrameBufferIfNeeded();
+  }
 
-    // Clear buffer when changing duration
-    if (this.useFrameBuffer) {
-      this.currentFrameIndex = 0;
-      this.actualFrameCount = 0;
+  private reallocateFrameBufferIfNeeded() {
+    const requiredFrames = Math.round(this.currentFPS * this.bufferSeconds);
+    if (requiredFrames === this.allocatedFrames) return;
+
+    this.allocatedFrames = requiredFrames;
+    this.currentFrameIndex = 0;
+    this.actualFrameCount = 0;
+
+    // Destroy old buffer and create new one
+    this.frameBuffer.destroy();
+    this.frameBuffer = this.device.createBuffer({
+      size: this.ledCount * 4 * 4 * requiredFrames,
+      usage:
+        GPUBufferUsage.STORAGE |
+        GPUBufferUsage.COPY_DST |
+        GPUBufferUsage.COPY_SRC,
+    });
+
+    // Recreate bind group with new buffer
+    this.frameBufferBindGroup = this.device.createBindGroup({
+      layout: this.frameBufferPipeline.getBindGroupLayout(0),
+      entries: [
+        { binding: 0, resource: { buffer: this.frameBuffer } },
+        { binding: 1, resource: { buffer: this.averageBuffer } },
+        { binding: 2, resource: { buffer: this.paramsBuffer } },
+      ],
+    });
+  }
+}
+
+interface DeviceProcessor {
+  ip: string;
+  processor: BiasWebGPU;
+  config: any;
+  ledFields: LedField[];
+}
+
+const deviceProcessors: Map<string, DeviceProcessor> = new Map();
+let globalDevice: GPUDevice | null = null;
+let globalVideo: HTMLVideoElement | null = null;
+let globalContext: GPUCanvasContext | null = null;
+
+async function handleDeviceUpdate(
+  ip: string,
+  deviceData: any,
+  gpuDevice: GPUDevice,
+  context: GPUCanvasContext,
+  video: HTMLVideoElement | null,
+) {
+  const config = deviceData?.chaserConfig;
+  if (!config || !video) {
+    console.log(`No chaser config for device ${ip}, skipping...`);
+    return;
+  }
+
+  // Generate LED fields based on config
+  const ledFields = generateLedFields({
+    ledsX: config.ledCountBottom + config.ledCountTop,
+    ledsY: config.ledCountLeft + config.ledCountRight,
+    bottom: config.ledCountBottom > 0,
+    left: config.ledCountLeft > 0,
+    right: config.ledCountRight > 0,
+    top: config.ledCountTop > 0,
+    clockwise: config.clockWise === 1,
+    fieldHeight: config.fieldHeight,
+    fieldWidth: config.fieldWidth,
+    startLed: config.startLed,
+  });
+
+  // Check if processor exists and needs update
+  if (deviceProcessors.has(ip)) {
+    const existing = deviceProcessors.get(ip)!;
+
+    // Check if configuration actually changed
+    const configChanged =
+      JSON.stringify(existing.config) !== JSON.stringify(config);
+
+    if (configChanged) {
+      console.log(`Updating configuration for device ${ip}`);
+
+      // For significant changes, recreate the processor
+      const processor = new BiasWebGPU(gpuDevice, context, ledFields);
+      await processor.init(video.videoWidth, video.videoHeight);
+      processor.setBufferSeconds(config.bufferSeconds);
+      processor.setFrameBufferEnabled(existing.processor.useFrameBuffer);
+
+      // Replace the processor
+      deviceProcessors.set(ip, {
+        ip,
+        processor,
+        config,
+        ledFields,
+      });
+
+      console.log(`Device ${ip} reconfigured with ${ledFields.length} LEDs`);
     }
+  } else {
+    // Create new processor
+    const processor = new BiasWebGPU(gpuDevice, context, ledFields);
+    await processor.init(video.videoWidth, video.videoHeight);
+    processor.setBufferSeconds(config.bufferSeconds);
+
+    deviceProcessors.set(ip, {
+      ip,
+      processor,
+      config,
+      ledFields,
+    });
+
+    console.log(`Device ${ip} initialized with ${ledFields.length} LEDs`);
   }
 }
 
@@ -612,22 +715,12 @@ async function startScreenCapture() {
     return;
   }
 
-  // Generate 10 LED fields at the bottom
-  const ledFields = generateLedFields({
-    ledsX: 10,
-    ledsY: 0,
-    bottom: true,
-    left: false,
-    right: false,
-    top: false,
-    clockwise: false,
-    fieldHeight: 10,
-    fieldWidth: 10,
-    startLed: 0,
-  });
+  // Store global references
+  globalDevice = device;
+  globalContext = context;
 
-  // Set canvas size to match LED count
-  canvas.width = ledFields.length;
+  // Set canvas size for visualization
+  canvas.width = 114; // Default LED count for visualization
   canvas.height = 1;
 
   // Get screen capture - Electron specific
@@ -662,7 +755,7 @@ async function startScreenCapture() {
       screenSource = sources.find(
         (source: any) =>
           source.name === "Entire screen" ||
-          source.name === "Gesamter Bildschirm" || // German
+          source.name === "Gesamter Bildschirm" ||
           source.name.includes("Screen") ||
           source.name.includes("Bildschirm"),
       );
@@ -711,153 +804,72 @@ async function startScreenCapture() {
       };
     });
 
-    // Initialize WebGPU processor
-    const processor = new BiasWebGPU(device, context, ledFields);
-    await processor.init(video.videoWidth, video.videoHeight);
+    // Store global video reference
+    globalVideo = video;
 
-    // Create controls container
-    const controlsDiv = document.createElement("div");
-    controlsDiv.style.cssText = `
+    // Get all existing device keys first
+    const tempState = new State([]);
+    const db = await tempState.dbConnect();
+    const allKeys = await db.getAllKeys("state");
+    const deviceKeys = allKeys.map((key) => key as string);
+
+    // Initialize state to listen for ALL device changes
+    const state = new State(deviceKeys, async (name, value) => {
+      console.log(`Database change detected for device: ${name}`);
+      if (globalDevice && globalVideo && globalContext) {
+        await handleDeviceUpdate(
+          name,
+          value,
+          globalDevice,
+          globalContext,
+          globalVideo,
+        );
+      }
+    });
+
+    // Load all existing devices
+    for (const key of deviceKeys) {
+      const deviceData = await state.get(key);
+      if (deviceData && deviceData.chaserConfig) {
+        console.log(
+          `Loading device ${key} with config:`,
+          deviceData.chaserConfig,
+        );
+        await handleDeviceUpdate(key, deviceData, device, context, video);
+      }
+    }
+
+    // Create a default processor for visualization if no devices are configured
+    let defaultProcessor: BiasWebGPU | null = null;
+    if (deviceProcessors.size === 0) {
+      const defaultFields = generateLedFields({
+        ledsX: 10,
+        ledsY: 0,
+        bottom: true,
+        left: false,
+        right: false,
+        top: false,
+        clockwise: false,
+        fieldHeight: 10,
+        fieldWidth: 10,
+        startLed: 0,
+      });
+      defaultProcessor = new BiasWebGPU(device, context, defaultFields);
+      await defaultProcessor.init(video.videoWidth, video.videoHeight);
+    }
+
+    // Create status display
+    const statusDiv = document.createElement("div");
+    statusDiv.style.cssText = `
       display: flex;
       gap: 20px;
       align-items: center;
       margin: 20px 0;
-    `;
-    document.body.insertBefore(controlsDiv, video);
-
-    // Create button to process frame
-    const button = document.createElement("button");
-    button.textContent = "Process Frame";
-    button.style.cssText = `
-      background: #4CAF50;
-      color: white;
-      padding: 10px 20px;
-      font-size: 16px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-family: monospace;
-    `;
-    button.onmouseover = () => (button.style.background = "#45a049");
-    button.onmouseout = () => (button.style.background = "#4CAF50");
-    controlsDiv.appendChild(button);
-
-    // Create frame buffer checkbox
-    const frameBufferLabel = document.createElement("label");
-    frameBufferLabel.style.cssText = `
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: white;
-      font-family: monospace;
-      cursor: pointer;
-      user-select: none;
-    `;
-
-    const frameBufferCheckbox = document.createElement("input");
-    frameBufferCheckbox.type = "checkbox";
-    frameBufferCheckbox.style.cssText = `
-      width: 20px;
-      height: 20px;
-      cursor: pointer;
-    `;
-
-    const frameBufferText = document.createElement("span");
-    const initialSecondsDisplay =
-      processor.bufferSeconds < 1
-        ? processor.bufferSeconds.toFixed(2)
-        : processor.bufferSeconds.toFixed(1);
-    frameBufferText.textContent = `Use FPS×${initialSecondsDisplay} Buffer (Average)`;
-
-    frameBufferLabel.appendChild(frameBufferCheckbox);
-    frameBufferLabel.appendChild(frameBufferText);
-    controlsDiv.appendChild(frameBufferLabel);
-
-    // Create buffer seconds input
-    const bufferSecondsContainer = document.createElement("div");
-    bufferSecondsContainer.style.cssText = `
-      display: flex;
-      align-items: center;
-      gap: 8px;
       color: white;
       font-family: monospace;
     `;
-
-    const bufferSecondsLabel = document.createElement("span");
-    bufferSecondsLabel.textContent = "Buffer:";
-    bufferSecondsLabel.style.fontSize = "14px";
-
-    const bufferSecondsInput = document.createElement("input");
-    bufferSecondsInput.type = "number";
-    bufferSecondsInput.min = "0.01";
-    bufferSecondsInput.max = "10";
-    bufferSecondsInput.value = "5";
-    bufferSecondsInput.step = "0.01";
-    bufferSecondsInput.style.cssText = `
-      width: 60px;
-      padding: 4px;
-      background: #44475a;
-      color: white;
-      border: 1px solid #6272a4;
-      border-radius: 4px;
-      font-family: monospace;
-    `;
-    bufferSecondsInput.disabled = true;
-    bufferSecondsInput.style.opacity = "0.5";
-
-    const bufferSecondsUnit = document.createElement("span");
-    bufferSecondsUnit.textContent = "seconds";
-    bufferSecondsUnit.style.fontSize = "14px";
-
-    bufferSecondsContainer.appendChild(bufferSecondsLabel);
-    bufferSecondsContainer.appendChild(bufferSecondsInput);
-    bufferSecondsContainer.appendChild(bufferSecondsUnit);
-    controlsDiv.appendChild(bufferSecondsContainer);
-
-    // Connect buffer seconds input
-    bufferSecondsInput.addEventListener("change", (e) => {
-      const seconds = parseFloat((e.target as HTMLInputElement).value);
-      processor.setBufferSeconds(seconds);
-      bufferSecondsInput.value = processor.bufferSeconds.toString();
-
-      // Update display if buffer is enabled
-      if (frameBufferCheckbox.checked) {
-        const estimatedBufferSize = Math.max(
-          1,
-          Math.round(processor.currentFPS * processor.bufferSeconds),
-        );
-        const secondsDisplay =
-          processor.bufferSeconds < 1
-            ? processor.bufferSeconds.toFixed(2)
-            : processor.bufferSeconds.toFixed(1);
-        frameBufferText.textContent = `Using ~${estimatedBufferSize} Frames (FPS×${secondsDisplay}) ✓`;
-      }
-
-      console.log(`Buffer duration set to ${processor.bufferSeconds} seconds`);
-    });
-
-    // Connect checkbox to frame buffer
-    frameBufferCheckbox.addEventListener("change", (e) => {
-      const enabled = (e.target as HTMLInputElement).checked;
-      processor.setFrameBufferEnabled(enabled);
-      const estimatedBufferSize = Math.max(
-        1,
-        Math.round(processor.currentFPS * processor.bufferSeconds),
-      );
-      const secondsDisplay =
-        processor.bufferSeconds < 1
-          ? processor.bufferSeconds.toFixed(2)
-          : processor.bufferSeconds.toFixed(1);
-      frameBufferText.textContent = enabled
-        ? `Using ~${estimatedBufferSize} Frames (FPS×${secondsDisplay}) ✓`
-        : `Use FPS×${secondsDisplay} Buffer (Average)`;
-      frameBufferText.style.color = enabled ? "#50fa7b" : "white";
-      bufferSecondsInput.disabled = !enabled;
-      bufferSecondsInput.style.opacity = enabled ? "1" : "0.5";
-      console.log(
-        `Frame buffer ${enabled ? "enabled" : "disabled"} - Target: ${estimatedBufferSize} frames`,
-      );
-    });
+    statusDiv.textContent = `Processing ${deviceProcessors.size} device(s)`;
+    document.body.insertBefore(statusDiv, video);
 
     // Create result display area
     const resultDiv = document.createElement("div");
@@ -887,21 +899,29 @@ async function startScreenCapture() {
     `;
     document.body.appendChild(fpsDiv);
 
-    // LED display row
+    // Device status display
+    const deviceStatusDiv = document.createElement("div");
+    deviceStatusDiv.style.cssText = "margin-bottom: 10px; color: #50fa7b;";
+    deviceStatusDiv.textContent = "Active devices will appear here...";
+    resultDiv.appendChild(deviceStatusDiv);
+
+    // LED display row for active devices
     const ledRow = document.createElement("div");
-    ledRow.style.cssText = "display: flex; gap: 5px; margin-bottom: 10px;";
+    ledRow.style.cssText =
+      "display: flex; gap: 5px; margin-bottom: 10px; flex-wrap: wrap;";
     resultDiv.appendChild(ledRow);
 
-    // Create LED elements once
+    // Create LED elements placeholder
     const ledElements: HTMLDivElement[] = [];
-    for (let i = 0; i < ledFields.length; i++) {
+    const maxLeds = 114; // Maximum LEDs to display
+    for (let i = 0; i < maxLeds; i++) {
       const ledDiv = document.createElement("div");
       ledDiv.style.cssText = `
         background: #000;
-        width: 40px;
-        height: 40px;
-        border-radius: 4px;
-        display: flex;
+        width: 10px;
+        height: 10px;
+        border-radius: 2px;
+        display: none;
         align-items: center;
         justify-content: center;
         color: white;
@@ -918,53 +938,96 @@ async function startScreenCapture() {
     let isLiveProcessing = true;
     let frameCount = 0;
     let lastTime = performance.now();
-    let lastPixels: Uint8Array | null = null;
+    const devicePixelData: Map<string, Uint8Array> = new Map();
 
-    // Live processing function
+    // Live processing function for all devices
     const processLiveFrame = async () => {
       if (!isLiveProcessing) return;
 
       if (video.readyState === video.HAVE_ENOUGH_DATA) {
-        // Update texture with current frame
-        processor.updateVideoTexture(video);
+        // Process each device
+        for (const [ip, deviceProc] of deviceProcessors) {
+          // Update texture with current frame
+          deviceProc.processor.updateVideoTexture(video);
 
-        // Render
-        processor.render();
+          // Render
+          deviceProc.processor.render();
 
-        // Read pixels
-        const pixels = await processor.readPixels();
-        lastPixels = pixels;
+          // Read pixels
+          const pixels = await deviceProc.processor.readPixels();
+          devicePixelData.set(ip, pixels);
 
-        // Update LED display
-        for (let i = 0; i < ledFields.length; i++) {
-          const offset = i * 4;
-          const r = pixels[offset];
-          const g = pixels[offset + 1];
-          const b = pixels[offset + 2];
-          const hex = `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+          // Send LED data to device via IPC
+          if (ipcRenderer) {
+            ipcRenderer
+              .invoke("SEND_LED_DATA", {
+                ip: ip,
+                data: Array.from(pixels),
+                ledCount: deviceProc.ledFields.length,
+              })
+              .catch((err: any) => {
+                console.error(`Failed to send data to ${ip}:`, err);
+              });
+          }
 
-          ledElements[i].style.background = hex;
-          ledElements[i].style.color = r + g + b > 384 ? "black" : "white";
+          // Update visual display for first device only
+          if (
+            deviceProcessors.size > 0 &&
+            ip === Array.from(deviceProcessors.keys())[0]
+          ) {
+            const visibleLeds = Math.min(deviceProc.ledFields.length, maxLeds);
+            for (let i = 0; i < visibleLeds; i++) {
+              const offset = i * 4;
+              const r = pixels[offset];
+              const g = pixels[offset + 1];
+              const b = pixels[offset + 2];
+              const hex = `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+
+              ledElements[i].style.display = "flex";
+              ledElements[i].style.background = hex;
+              ledElements[i].style.color = r + g + b > 384 ? "black" : "white";
+            }
+          }
         }
 
-        // Update FPS with more detailed metrics
+        // Process default processor if exists
+        if (defaultProcessor) {
+          defaultProcessor.updateVideoTexture(video);
+          defaultProcessor.render();
+          const pixels = await defaultProcessor.readPixels();
+
+          // Show default visualization if no devices
+          if (deviceProcessors.size === 0) {
+            for (let i = 0; i < 10; i++) {
+              const offset = i * 4;
+              const r = pixels[offset];
+              const g = pixels[offset + 1];
+              const b = pixels[offset + 2];
+              const hex = `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+
+              ledElements[i].style.display = "flex";
+              ledElements[i].style.background = hex;
+              ledElements[i].style.color = r + g + b > 384 ? "black" : "white";
+            }
+          }
+        }
+
+        // Update status display
+        deviceStatusDiv.textContent =
+          deviceProcessors.size > 0
+            ? `Processing ${deviceProcessors.size} device(s): ${Array.from(deviceProcessors.keys()).join(", ")}`
+            : "No devices configured - waiting for device configuration...";
+
+        // Update FPS
         frameCount++;
         const currentTime = performance.now();
         if (currentTime - lastTime >= 1000) {
           const avgFrameTime = 1000 / frameCount;
-          processor.updateFPS(frameCount); // Update processor with current FPS
-          const actualBufferSize = Math.min(
-            Math.round(processor.currentFPS * processor.bufferSeconds),
-            processor.frameBufferSize,
-          );
-          const bufferStatus = processor.useFrameBuffer
-            ? ` [~${actualBufferSize}-Frame Avg]`
-            : "";
 
           fpsDiv.innerHTML = `
-            <div>FPS: <span style="color: ${frameCount >= 30 ? "#50fa7b" : "#ffb86c"}">${frameCount}</span>${bufferStatus}</div>
+            <div>FPS: <span style="color: ${frameCount >= 30 ? "#50fa7b" : "#ffb86c"}">${frameCount}</span></div>
             <div style="font-size: 10px; color: #8be9fd;">Frame time: ${avgFrameTime.toFixed(1)}ms</div>
-            ${processor.useFrameBuffer ? `<div style="font-size: 10px; color: #6272a4;">Buffer: ${processor.actualFrameCount}/${actualBufferSize} (${processor.bufferSeconds}s)</div>` : ""}
+            <div style="font-size: 10px; color: #6272a4;">Devices: ${deviceProcessors.size}</div>
           `;
 
           frameCount = 0;
@@ -977,68 +1040,6 @@ async function startScreenCapture() {
 
     // Start live processing
     processLiveFrame();
-
-    // Process frame on button click - output to console
-    button.addEventListener("click", async () => {
-      if (lastPixels) {
-        console.clear();
-        console.log("🎨 LED Values at", new Date().toLocaleTimeString());
-        console.log("━".repeat(50));
-
-        // Create data array for output
-        const ledData = [];
-
-        for (let i = 0; i < ledFields.length; i++) {
-          const offset = i * 4;
-          const r = lastPixels[offset];
-          const g = lastPixels[offset + 1];
-          const b = lastPixels[offset + 2];
-          const a = lastPixels[offset + 3];
-          const hex = `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
-
-          // Console log with styling
-          console.log(
-            `%cLED ${i.toString().padStart(2, "0")}: rgb(${r}, ${g}, ${b}) ${hex}`,
-            `background: ${hex}; color: ${r + g + b > 384 ? "black" : "white"}; padding: 2px 5px; border-radius: 3px; font-weight: bold;`,
-          );
-
-          // Store for array output
-          ledData.push({
-            index: i,
-            r,
-            g,
-            b,
-            a,
-            hex,
-            field: ledFields[i],
-          });
-        }
-
-        console.log("━".repeat(50));
-        console.log("📊 Raw Data Array:", ledData);
-        console.log("📦 Uint8Array:", lastPixels);
-        console.log("━".repeat(50));
-
-        // Visual feedback on button
-        button.textContent = "✓ Data Output to Console";
-        button.style.background = "#50fa7b";
-        setTimeout(() => {
-          button.textContent = "Output Current Frame Data";
-          button.style.background = "#4CAF50";
-        }, 1000);
-      } else {
-        console.warn("No frame data available yet");
-        button.textContent = "No data - wait a moment";
-        button.style.background = "#ff5555";
-        setTimeout(() => {
-          button.textContent = "Output Current Frame Data";
-          button.style.background = "#4CAF50";
-        }, 1000);
-      }
-    });
-
-    // Update button text
-    button.textContent = "Output Current Frame Data";
 
     // Show initial message with timestamp
     const timestamp = document.createElement("div");

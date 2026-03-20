@@ -7,35 +7,54 @@ import WledConnector, {
 export default class DeviceSwitch {
   deviceMap!: Map<string, WledConnectorInterface>;
   mDnsSd!: typeof mDnsSd;
+  private isSearching: boolean = false;
 
-  constructor() {}
+  constructor() {
+    this.deviceMap = new Map();
+  }
 
   async search(): Promise<void> {
-    this.mDnsSd = mDnsSd;
+    // Check if already searching
+    if (this.isSearching) {
+      console.log("Device search already in progress, skipping...");
+      return;
+    }
 
-    const deviceList = await this.mDnsSd.discover({
-      name: "_services._dns-sd._udp.local",
-      type: "PTR",
-    });
+    this.isSearching = true;
 
-    this.deviceMap = new Map();
+    try {
+      this.mDnsSd = mDnsSd;
 
-    await Promise.all(
-      deviceList.map(async (device) => {
-        const wledConnector = new WledConnector({
-          ip: device.address,
-        });
+      const deviceList = await this.mDnsSd.discover({
+        name: "_services._dns-sd._udp.local",
+        type: "PTR",
+      });
 
-        try {
-          await wledConnector.init();
-          this.deviceMap.set(device.address, wledConnector);
-        } catch (error) {
-          console.error(
-            `Device on: ${device.address} is probably not a WLED device.`
-          );
-        }
-      })
-    );
+      // Don't clear the map, just add/update devices
+      await Promise.all(
+        deviceList.map(async (device) => {
+          // Skip if already connected
+          if (this.deviceMap.has(device.address)) {
+            return;
+          }
+
+          const wledConnector = new WledConnector({
+            ip: device.address,
+          });
+
+          try {
+            await wledConnector.init();
+            this.deviceMap.set(device.address, wledConnector);
+          } catch (error) {
+            console.error(
+              `Device on: ${device.address} is probably not a WLED device.`,
+            );
+          }
+        }),
+      );
+    } finally {
+      this.isSearching = false;
+    }
   }
 
   getDevices(): Map<string, WledConnectorInterface> {

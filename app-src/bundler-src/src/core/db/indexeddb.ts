@@ -9,8 +9,8 @@ export class IndexedDB {
     dbUpgrade?: (
       db: IDBDatabase,
       oldVersion: number,
-      newVersion: number | null
-    ) => void
+      newVersion: number | null,
+    ) => void,
   ): Promise<IndexedDB> {
     return new Promise<IndexedDB>((resolve, reject) => {
       // connection object
@@ -47,8 +47,8 @@ export class IndexedDB {
     dbUpgrade?: (
       db: IDBDatabase,
       oldVersion: number,
-      newVersion: number | null
-    ) => void
+      newVersion: number | null,
+    ) => void,
   ): Promise<IndexedDB> {
     return new Promise<IndexedDB>((resolve, reject) => {
       if (!("indexedDB" in window)) reject("not supported");
@@ -68,7 +68,7 @@ export class IndexedDB {
 
       dbOpen.onerror = (e) => {
         reject(
-          `IndexedDB error: ${(e.target as IDBOpenDBRequest).error?.message}`
+          `IndexedDB error: ${(e.target as IDBOpenDBRequest).error?.message}`,
         );
       };
     });
@@ -110,6 +110,27 @@ export class IndexedDB {
       const transaction = this.db.transaction(storeName, "readonly"),
         store = transaction.objectStore(storeName),
         request = store.get(name);
+
+      request.onsuccess = () => {
+        resolve(request.result);
+      };
+
+      request.onerror = () => {
+        reject(request.error);
+      };
+    });
+  }
+
+  getAllKeys(storeName: string): Promise<IDBValidKey[]> {
+    return new Promise((resolve, reject) => {
+      if (!this.db) {
+        reject("Database not initialized");
+        return;
+      }
+
+      const transaction = this.db.transaction(storeName, "readonly"),
+        store = transaction.objectStore(storeName),
+        request = store.getAllKeys();
 
       request.onsuccess = () => {
         resolve(request.result);
