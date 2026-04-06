@@ -1,7 +1,7 @@
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://xi72yow.de/data/pictures/screenchaser_logo_white.png">
-  <source media="(prefers-color-scheme: light)" srcset="https://xi72yow.de/data/pictures/screenchaser_logo.png">
-  <img alt="ScreenChaser Banner" src="https://xi72yow.de/data/pictures/screenchaser_logo.png">
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/user-attachments/assets/fd82d66e-7b48-482d-8d54-0afc678fbeda">
+  <source media="(prefers-color-scheme: light)" srcset="https://github.com/user-attachments/assets/68ee7efc-abe7-4434-9705-45d8488a7ab1">
+  <img alt="ScreenChaser Banner" src="https://github.com/user-attachments/assets/68ee7efc-abe7-4434-9705-45d8488a7ab1">
 </picture>
 
 <h1 align="left">ScreenChaser</h1>
