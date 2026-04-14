@@ -1,104 +1,66 @@
 import refreshIcon from "@core/icons/refresh.svg";
 import IconButton from "@/core/iconButton";
-import Toaster from "@core/toasts";
-import { State } from "@/core/db/state";
+import { daemon } from "@/ws";
 
-// Create the icon button reference
 let scanButton: IconButton;
-
-// Track scanning state
 let isScanning = false;
 
-function createDeviceCard(ip: string) {
+function createDeviceCard(id: string, ip: string, name: string) {
   const devicesContainer = document.querySelector(".devices");
-  if (
-    devicesContainer &&
-    !document.querySelector(`device-card[ip="${ip}"]`)
-  ) {
-    const deviceCard = document.createElement("device-card");
-    deviceCard.setAttribute("ip", ip);
-    devicesContainer.appendChild(deviceCard);
+  if (!devicesContainer) return;
+
+  let card = document.querySelector(
+    `device-card[device-id="${id}"]`
+  ) as HTMLElement;
+  if (!card) {
+    card = document.createElement("device-card");
+    card.setAttribute("device-id", id);
+    devicesContainer.appendChild(card);
   }
+  card.setAttribute("ip", ip);
+  card.setAttribute("name", name);
 }
 
-function removeDeviceCard(ip: string) {
-  const card = document.querySelector(`device-card[ip="${ip}"]`);
-  if (card) card.remove();
-}
-
-async function loadCachedDevices() {
-  const state = new State([]);
+async function loadDevicesFromConfig() {
   try {
-    const keys = await state.getAllKeys();
-    for (const key of keys) {
-      createDeviceCard(String(key));
+    const response = await daemon.getConfig();
+    const devices = response.config?.devices || {};
+    for (const [id, device] of Object.entries(devices) as [string, any][]) {
+      createDeviceCard(id, device.ip, device.name || id);
     }
   } catch (err) {
-    console.error("Failed to load cached devices:", err);
+    console.error("failed to load devices from config:", err);
   }
 }
 
-function scanNetwork() {
-  // Prevent multiple simultaneous scans
+async function scanNetwork() {
   if (isScanning) return;
   isScanning = true;
-
-  const state = new State([]);
-
-  // Start the button spinning animation
   scanButton.startSpin();
 
-  window.ipcRenderer
-    .invoke("SCAN_NETWORK")
-    .then(async (devices) => {
-      const foundIps = new Set<string>();
+  try {
+    const response = await daemon.scanNetwork();
+    const found = response.devices || [];
 
-      devices.forEach((device: { ip: string }) => {
-        foundIps.add(device.ip);
-        createDeviceCard(device.ip);
-
-        // Add default chaser configuration if not exists
-        if (!device.chaserConfig) {
-          device.chaserConfig = {
-            fieldWidth: 10,
-            fieldHeight: 10,
-            ledCountLeft: 0,
-            ledCountRight: 0,
-            ledCountTop: 0,
-            ledCountBottom: 114,
-            bufferSeconds: 5,
-            startLed: 0,
-            clockWise: 1,
-          };
-        }
-        state.set(device.ip, device);
-      });
-
-      // Remove cards for devices no longer on the network
-      try {
-        const cachedKeys = await state.getAllKeys();
-        for (const key of cachedKeys) {
-          const ip = String(key);
-          if (!foundIps.has(ip)) {
-            removeDeviceCard(ip);
-          }
-        }
-      } catch (err) {
-        console.error("Failed to clean stale devices:", err);
-      }
-
-      // Stop the button spinning animation
-      scanButton.stopSpin();
-      isScanning = false;
-    })
-    .catch((error) => {
-      console.error("Error scanning network:", error);
-      scanButton.stopSpin();
-      isScanning = false;
+    const existingIps = new Set<string>();
+    document.querySelectorAll("device-card[ip]").forEach((card) => {
+      const ip = card.getAttribute("ip");
+      if (ip) existingIps.add(ip);
     });
+
+    for (const device of found) {
+      if (existingIps.has(device.ip)) continue;
+      const id = device.ip.replace(/\./g, "-");
+      createDeviceCard(id, device.ip, device.name);
+    }
+  } catch (error) {
+    console.error("scan failed:", error);
+  }
+
+  scanButton.stopSpin();
+  isScanning = false;
 }
 
-// Create the button
 scanButton = new IconButton({
   selector: ".app-footer",
   stateOneIcon: refreshIcon,
@@ -108,9 +70,8 @@ scanButton = new IconButton({
   onClick: scanNetwork,
 });
 
-// Load cached devices immediately, then scan in background
-loadCachedDevices().then(() => {
-  setTimeout(() => {
-    scanNetwork();
-  }, 800);
+daemon.connect().then(() => {
+  loadDevicesFromConfig().then(() => {
+    setTimeout(scanNetwork, 800);
+  });
 });

@@ -39,6 +39,14 @@ enum ClientMsg {
     RemoveDevice {
         id: String,
     },
+    ScanNetwork,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct DiscoveredDeviceInfo {
+    pub ip: String,
+    pub name: String,
+    pub led_count: u32,
 }
 
 #[derive(Serialize)]
@@ -53,6 +61,9 @@ enum ServerMsg {
     },
     LedColors {
         colors: std::collections::HashMap<String, Vec<screenchaser_config::RgbColor>>,
+    },
+    ScanResult {
+        devices: Vec<DiscoveredDeviceInfo>,
     },
     ConfigUpdated,
     Error {
@@ -142,6 +153,26 @@ async fn handle_client_msg(
             app_config.devices.remove(&id);
             state.cmd_tx.send(Command::UpdateConfig(app_config)).await?;
             send_json(socket, &ServerMsg::ConfigUpdated).await?;
+        }
+        ClientMsg::ScanNetwork => {
+            debug!("starting network scan");
+            let discovered = screenchaser_wled::discover_wled_devices(
+                std::time::Duration::from_secs(5),
+            )
+            .await
+            .unwrap_or_default();
+
+            let devices: Vec<DiscoveredDeviceInfo> = discovered
+                .into_iter()
+                .map(|d| DiscoveredDeviceInfo {
+                    ip: d.ip.to_string(),
+                    name: d.name,
+                    led_count: d.led_count,
+                })
+                .collect();
+
+            debug!(count = devices.len(), "scan complete");
+            send_json(socket, &ServerMsg::ScanResult { devices }).await?;
         }
     }
 

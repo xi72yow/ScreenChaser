@@ -52,15 +52,13 @@ class IconButton {
     this.iconButton.appendChild(this.svg);
 
     this.svg.addEventListener("load", () => {
-      const svgDoc = this.svg.contentDocument!;
+      const svgDoc = this.svg.contentDocument;
+      const svgEl = svgDoc?.querySelector("svg");
+      if (!svgEl) return;
       if (this.state === "stateOne") {
-        svgDoc
-          .querySelector("svg")!
-          .setAttribute("stroke", this.stateTwoStrokeColor);
+        svgEl.setAttribute("stroke", this.stateTwoStrokeColor);
       } else {
-        svgDoc
-          .querySelector("svg")!
-          .setAttribute("stroke", this.stateOneStrokeColor);
+        svgEl.setAttribute("stroke", this.stateOneStrokeColor);
       }
     });
 

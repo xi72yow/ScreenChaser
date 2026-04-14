@@ -21,30 +21,8 @@ export default defineConfig({
       },
     },
   },
-  plugins: [
-    {
-      name: "middleware",
-      apply: "serve",
-      configureServer(viteDevServer) {
-        return () => {
-          viteDevServer.middlewares.use(async (req, res, next) => {
-            if (req.originalUrl?.startsWith("/chaser")) {
-              req.url = "/chaser.html";
-            }
-            next();
-          });
-        };
-      },
-    },
-  ],
   build: {
     outDir: "dist",
     emptyOutDir: true,
-    rollupOptions: {
-      input: {
-        main: resolve(__dirname, "index.html"),
-        chaser: resolve(__dirname, "chaser.html"),
-      },
-    },
   },
 });
