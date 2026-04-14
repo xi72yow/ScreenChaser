@@ -1,0 +1,33 @@
+[workspace]
+members = [
+    "crates/screenchaser-config",
+    "crates/screenchaser-capture",
+    "crates/screenchaser-gpu",
+    "crates/screenchaser-wled",
+    "crates/screenchaser-webview",
+    "crates/screenchaser-daemon",
+]
+default-members = ["crates/screenchaser-daemon"]
+resolver = "3"
+
+[workspace.package]
+version = "0.5.0"
+edition = "2024"
+license = "MIT"
+authors = ["xi72yow <x@xi72yow.de>"]
+
+[workspace.dependencies]
+screenchaser-config = { path = "crates/screenchaser-config" }
+screenchaser-capture = { path = "crates/screenchaser-capture" }
+screenchaser-gpu = { path = "crates/screenchaser-gpu" }
+screenchaser-wled = { path = "crates/screenchaser-wled" }
+screenchaser-webview = { path = "crates/screenchaser-webview" }
+
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.8"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
+anyhow = "1"
+thiserror = "2"

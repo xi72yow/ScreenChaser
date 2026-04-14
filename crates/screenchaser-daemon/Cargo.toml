@@ -1,0 +1,22 @@
+[package]
+name = "screenchaser-daemon"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[dependencies]
+screenchaser-config = { workspace = true }
+screenchaser-capture = { workspace = true }
+screenchaser-gpu = { workspace = true }
+screenchaser-wled = { workspace = true }
+screenchaser-webview = { workspace = true }
+
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+anyhow = { workspace = true }
+axum = { version = "0.8", features = ["ws"] }
+clap = { version = "4", features = ["derive"] }

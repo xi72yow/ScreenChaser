@@ -1,0 +1,19 @@
+[package]
+name = "screenchaser-wled"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[dependencies]
+screenchaser-config = { workspace = true }
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+thiserror = { workspace = true }
+reqwest = { version = "0.12", features = ["json"] }
+mdns-sd = "0.12"
+
+[dev-dependencies]
+tracing-subscriber = { workspace = true }

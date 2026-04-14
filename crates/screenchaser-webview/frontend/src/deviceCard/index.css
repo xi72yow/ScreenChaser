@@ -1,0 +1,26 @@
+.device {
+  z-index: 1;
+}
+
+.ip:hover {
+  color: var(--PURPLE);
+}
+
+.off {
+  opacity: 0.3;
+}
+
+.error {
+  box-shadow: 0 0 10px var(--RED);
+}
+
+.device video {
+  position: absolute;
+  width: 50%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+  right: 0;
+  top: 0;
+  mask: linear-gradient(to right, transparent 20%, #ffffff 90%);
+}
