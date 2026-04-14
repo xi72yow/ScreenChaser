@@ -62,7 +62,7 @@ async function scanNetwork() {
 }
 
 scanButton = new IconButton({
-  selector: ".app-footer",
+  selector: ".footer-right",
   stateOneIcon: refreshIcon,
   stateTwoIcon: refreshIcon,
   stateOneStrokeColor: "#888",

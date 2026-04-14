@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 
 use screenchaser_config::{AppConfig, RgbColor};
@@ -25,31 +26,41 @@ pub struct DeviceStatus {
     pub sending: bool,
 }
 
-#[derive(Debug, Clone, Serialize)]
-pub struct LedColorUpdate {
-    pub device_id: String,
-    pub colors: Vec<RgbColor>,
-}
-
 pub struct SharedState {
     pub config: RwLock<AppConfig>,
     pub cmd_tx: mpsc::Sender<Command>,
     pub status_rx: watch::Receiver<DaemonStatus>,
     pub colors_rx: watch::Receiver<HashMap<String, Vec<RgbColor>>>,
+    pub preview_rx: watch::Receiver<Option<Vec<u8>>>,
+    pub preview_clients: AtomicBool,
 }
 
-pub fn create_channels() -> (
-    mpsc::Sender<Command>,
-    mpsc::Receiver<Command>,
-    watch::Sender<DaemonStatus>,
-    watch::Receiver<DaemonStatus>,
-    watch::Sender<HashMap<String, Vec<RgbColor>>>,
-    watch::Receiver<HashMap<String, Vec<RgbColor>>>,
-) {
+pub struct ChannelSet {
+    pub cmd_tx: mpsc::Sender<Command>,
+    pub cmd_rx: mpsc::Receiver<Command>,
+    pub status_tx: watch::Sender<DaemonStatus>,
+    pub status_rx: watch::Receiver<DaemonStatus>,
+    pub colors_tx: watch::Sender<HashMap<String, Vec<RgbColor>>>,
+    pub colors_rx: watch::Receiver<HashMap<String, Vec<RgbColor>>>,
+    pub preview_tx: watch::Sender<Option<Vec<u8>>>,
+    pub preview_rx: watch::Receiver<Option<Vec<u8>>>,
+}
+
+pub fn create_channels() -> ChannelSet {
     let (cmd_tx, cmd_rx) = mpsc::channel(16);
     let (status_tx, status_rx) = watch::channel(DaemonStatus::default());
     let (colors_tx, colors_rx) = watch::channel(HashMap::new());
-    (cmd_tx, cmd_rx, status_tx, status_rx, colors_tx, colors_rx)
+    let (preview_tx, preview_rx) = watch::channel(None);
+    ChannelSet {
+        cmd_tx,
+        cmd_rx,
+        status_tx,
+        status_rx,
+        colors_tx,
+        colors_rx,
+        preview_tx,
+        preview_rx,
+    }
 }
 
 pub fn build_shared_state(
@@ -57,11 +68,14 @@ pub fn build_shared_state(
     cmd_tx: mpsc::Sender<Command>,
     status_rx: watch::Receiver<DaemonStatus>,
     colors_rx: watch::Receiver<HashMap<String, Vec<RgbColor>>>,
+    preview_rx: watch::Receiver<Option<Vec<u8>>>,
 ) -> Arc<SharedState> {
     Arc::new(SharedState {
         config: RwLock::new(config),
         cmd_tx,
         status_rx,
         colors_rx,
+        preview_rx,
+        preview_clients: AtomicBool::new(false),
     })
 }

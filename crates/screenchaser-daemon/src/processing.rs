@@ -1,15 +1,25 @@
 use std::collections::HashMap;
+use std::io::Cursor;
+use std::sync::atomic::Ordering;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
+use image::codecs::jpeg::JpegEncoder;
+use image::ExtendedColorType;
 use screenchaser_capture::WaylandCapture;
-use screenchaser_config::{generate_led_fields, AppConfig, RgbColor};
+use screenchaser_config::{generate_led_fields, AppConfig, CapturedFrame, PixelFormat, RgbColor};
 use screenchaser_gpu::GpuPipeline;
 use screenchaser_wled::WledUdpSender;
 use tokio::sync::{mpsc, watch};
 use tracing::{debug, error, info, warn};
 
 use crate::state::{Command, DaemonStatus, DeviceStatus, SharedState};
+
+struct PreviewSettings {
+    width: u32,
+    quality: u8,
+    fps_divider: u64,
+}
 
 struct DeviceRuntime {
     udp: WledUdpSender,
@@ -25,10 +35,13 @@ pub async fn run(
     mut cmd_rx: mpsc::Receiver<Command>,
     status_tx: watch::Sender<DaemonStatus>,
     colors_tx: watch::Sender<HashMap<String, Vec<RgbColor>>>,
+    preview_tx: watch::Sender<Option<Vec<u8>>>,
 ) {
     let mut devices = register_devices(&mut gpu, &config).await;
     let mut target_fps = config.capture.target_fps.max(1);
-    let mut interval = tokio::time::interval(Duration::from_micros(1_000_000 / target_fps as u64));
+    let mut preview_settings = preview_settings_from_config(&config);
+    let mut interval =
+        tokio::time::interval(Duration::from_micros(1_000_000 / target_fps as u64));
     interval.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
 
     let mut frame_count = 0u64;
@@ -37,18 +50,26 @@ pub async fn run(
     let mut current_fps = 0.0f32;
     let mut status_interval = tokio::time::interval(Duration::from_secs(1));
 
-    info!(fps = target_fps, devices = devices.len(), "processing loop started");
+    info!(
+        fps = target_fps,
+        devices = devices.len(),
+        "processing loop started"
+    );
 
     loop {
         tokio::select! {
             _ = interval.tick() => {
-                process_tick(&capture, &mut gpu, &mut devices, &colors_tx, &mut tick_count).await;
+                process_tick(
+                    &capture, &mut gpu, &mut devices, &colors_tx,
+                    &preview_tx, &shared, &preview_settings, &mut tick_count,
+                ).await;
                 tick_count += 1;
                 frame_count += 1;
 
                 let elapsed = fps_timer.elapsed().as_secs_f32();
                 if elapsed >= 1.0 {
                     current_fps = frame_count as f32 / elapsed;
+                    info!(fps = format!("{:.1}", current_fps), "processing");
                     frame_count = 0;
                     fps_timer = Instant::now();
                 }
@@ -73,6 +94,7 @@ pub async fn run(
                         info!("applying config update");
                         devices = register_devices(&mut gpu, &new_config).await;
                         target_fps = new_config.capture.target_fps.max(1);
+                        preview_settings = preview_settings_from_config(&new_config);
                         interval = tokio::time::interval(Duration::from_micros(
                             1_000_000 / target_fps as u64,
                         ));
@@ -98,26 +120,14 @@ async fn process_tick(
     gpu: &mut GpuPipeline,
     devices: &mut HashMap<String, DeviceRuntime>,
     colors_tx: &watch::Sender<HashMap<String, Vec<RgbColor>>>,
+    preview_tx: &watch::Sender<Option<Vec<u8>>>,
+    shared: &SharedState,
+    pv: &PreviewSettings,
     tick_count: &mut u64,
 ) {
-    let frame = capture.current_frame();
-    if frame.is_none() {
-        if *tick_count % 30 == 0 {
-            debug!("no frame available (tick {})", tick_count);
-        }
+    let Some(frame) = capture.current_frame() else {
         return;
-    }
-    let frame = frame.unwrap();
-
-    if *tick_count % 60 == 0 {
-        debug!(
-            width = frame.width,
-            height = frame.height,
-            format = ?frame.format,
-            data_len = frame.data.len(),
-            "processing frame (tick {})", tick_count,
-        );
-    }
+    };
 
     gpu.upload_frame(&frame);
 
@@ -129,30 +139,70 @@ async fn process_tick(
         }
         match gpu.process_device(id) {
             Ok(colors) => {
-                if *tick_count % 60 == 0 {
-                    debug!(
-                        device = %id,
-                        color = ?colors.first(),
-                        "extracted color",
-                    );
-                }
-                match dev.udp.send_colors(&colors).await {
-                    Ok(bytes) => {
-                        if *tick_count % 60 == 0 {
-                            debug!(device = %id, bytes, target = %dev.udp.target(), "udp sent");
-                        }
-                    }
-                    Err(e) => warn!(device = %id, "udp send failed: {e}"),
+                if let Err(e) = dev.udp.send_colors(&colors).await {
+                    debug!(device = %id, "udp send failed: {e}");
                 }
                 all_colors.insert(id.clone(), colors);
             }
             Err(e) => {
-                warn!(device = %id, "gpu process failed: {e}");
+                debug!(device = %id, "gpu process failed: {e}");
             }
         }
     }
 
     let _ = colors_tx.send(all_colors);
+
+    if shared.preview_clients.load(Ordering::Relaxed) && *tick_count % pv.fps_divider.max(1) == 0 {
+        if let Some(jpeg) = encode_preview(&frame, pv) {
+            let _ = preview_tx.send(Some(jpeg));
+        }
+    }
+}
+
+fn encode_preview(frame: &CapturedFrame, pv: &PreviewSettings) -> Option<Vec<u8>> {
+    let scale = (frame.width / pv.width.max(1)).max(1);
+    let tw = frame.width / scale;
+    let th = frame.height / scale;
+    let src_stride = (frame.width * 4) as usize;
+
+    let mut rgb = Vec::with_capacity((tw * th * 3) as usize);
+    let is_bgra = matches!(frame.format, PixelFormat::Bgra8);
+
+    for y in 0..th {
+        let src_y = (y * scale) as usize;
+        let row_start = src_y * src_stride;
+        for x in 0..tw {
+            let src_x = (x * scale) as usize;
+            let px = row_start + src_x * 4;
+            if px + 2 >= frame.data.len() {
+                break;
+            }
+            if is_bgra {
+                rgb.push(frame.data[px + 2]);
+                rgb.push(frame.data[px + 1]);
+                rgb.push(frame.data[px]);
+            } else {
+                rgb.push(frame.data[px]);
+                rgb.push(frame.data[px + 1]);
+                rgb.push(frame.data[px + 2]);
+            }
+        }
+    }
+
+    let mut buf = Vec::with_capacity(64_000);
+    let mut encoder = JpegEncoder::new_with_quality(&mut buf, pv.quality);
+    encoder.encode(&rgb, tw, th, ExtendedColorType::Rgb8).ok()?;
+    Some(buf)
+}
+
+fn preview_settings_from_config(config: &AppConfig) -> PreviewSettings {
+    let target_fps = config.capture.target_fps.max(1);
+    let preview_fps = config.capture.preview_fps.max(1);
+    PreviewSettings {
+        width: config.capture.preview_width.max(100),
+        quality: config.capture.preview_quality.clamp(10, 100),
+        fps_divider: (target_fps / preview_fps).max(1) as u64,
+    }
 }
 
 async fn register_devices(

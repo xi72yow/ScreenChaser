@@ -21,6 +21,12 @@ pub struct CaptureConfig {
     pub target_fps: u32,
     #[serde(default)]
     pub monitor_index: u32,
+    #[serde(default = "default_preview_width")]
+    pub preview_width: u32,
+    #[serde(default = "default_preview_quality")]
+    pub preview_quality: u8,
+    #[serde(default = "default_preview_fps")]
+    pub preview_fps: u32,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -53,6 +59,8 @@ pub struct ChaserConfig {
     pub clockwise: bool,
     #[serde(default = "default_buffer_seconds")]
     pub buffer_seconds: f32,
+    #[serde(default)]
+    pub fields: Option<Vec<crate::LedField>>,
 }
 
 impl Default for AppConfig {
@@ -71,6 +79,9 @@ impl Default for CaptureConfig {
         Self {
             target_fps: default_target_fps(),
             monitor_index: 0,
+            preview_width: default_preview_width(),
+            preview_quality: default_preview_quality(),
+            preview_fps: default_preview_fps(),
         }
     }
 }
@@ -87,6 +98,7 @@ impl Default for ChaserConfig {
             start_led: 0,
             clockwise: true,
             buffer_seconds: default_buffer_seconds(),
+            fields: None,
         }
     }
 }
@@ -97,6 +109,18 @@ fn default_bind_address() -> String {
 
 fn default_target_fps() -> u32 {
     60
+}
+
+fn default_preview_width() -> u32 {
+    960
+}
+
+fn default_preview_quality() -> u8 {
+    70
+}
+
+fn default_preview_fps() -> u32 {
+    15
 }
 
 fn default_field_size() -> f32 {

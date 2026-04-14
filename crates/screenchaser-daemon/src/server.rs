@@ -40,6 +40,12 @@ enum ClientMsg {
         id: String,
     },
     ScanNetwork,
+    SetPreview {
+        enabled: bool,
+    },
+    UpdateCapture {
+        config: screenchaser_config::CaptureConfig,
+    },
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -76,21 +82,29 @@ async fn handle_ws(mut socket: WebSocket, state: Arc<SharedState>) {
 
     let mut status_rx = state.status_rx.clone();
     let mut colors_rx = state.colors_rx.clone();
+    let mut preview_rx = state.preview_rx.clone();
+    let mut wants_preview = false;
 
     loop {
         tokio::select! {
             msg = socket.recv() => {
                 match msg {
                     Some(Ok(Message::Text(text))) => {
-                        if let Err(e) = handle_client_msg(&text, &state, &mut socket).await {
-                            warn!("ws message handling failed: {e}");
-                            let _ = send_json(&mut socket, &ServerMsg::Error {
-                                message: e.to_string(),
-                            }).await;
+                        match handle_client_msg(&text, &state, &mut socket, &mut wants_preview).await {
+                            Ok(()) => {}
+                            Err(e) => {
+                                warn!("ws message handling failed: {e}");
+                                let _ = send_json(&mut socket, &ServerMsg::Error {
+                                    message: e.to_string(),
+                                }).await;
+                            }
                         }
                     }
                     Some(Ok(Message::Close(_))) | None => {
                         debug!("websocket client disconnected");
+                        if wants_preview {
+                            state.preview_clients.store(false, std::sync::atomic::Ordering::Relaxed);
+                        }
                         break;
                     }
                     Some(Err(e)) => {
@@ -110,6 +124,12 @@ async fn handle_ws(mut socket: WebSocket, state: Arc<SharedState>) {
                     let _ = send_json(&mut socket, &ServerMsg::LedColors { colors }).await;
                 }
             }
+            Ok(()) = preview_rx.changed(), if wants_preview => {
+                let data = preview_rx.borrow_and_update().clone();
+                if let Some(jpeg) = data {
+                    let _ = socket.send(Message::Binary(jpeg.into())).await;
+                }
+            }
         }
     }
 }
@@ -118,6 +138,7 @@ async fn handle_client_msg(
     text: &str,
     state: &SharedState,
     socket: &mut WebSocket,
+    wants_preview: &mut bool,
 ) -> anyhow::Result<()> {
     let msg: ClientMsg = serde_json::from_str(text)?;
 
@@ -173,6 +194,19 @@ async fn handle_client_msg(
 
             debug!(count = devices.len(), "scan complete");
             send_json(socket, &ServerMsg::ScanResult { devices }).await?;
+        }
+        ClientMsg::SetPreview { enabled } => {
+            *wants_preview = enabled;
+            state
+                .preview_clients
+                .store(enabled, std::sync::atomic::Ordering::Relaxed);
+            debug!(enabled, "preview stream toggled");
+        }
+        ClientMsg::UpdateCapture { config } => {
+            let mut app_config = state.config.read().await.clone();
+            app_config.capture = config;
+            state.cmd_tx.send(Command::UpdateConfig(app_config)).await?;
+            send_json(socket, &ServerMsg::ConfigUpdated).await?;
         }
     }
 

@@ -35,7 +35,7 @@ function toggleTheme() {
 }
 
 new IconButton({
-  selector: ".app-footer",
+  selector: ".footer-left",
   stateOneIcon: sunIcon,
   stateTwoIcon: moonIcon,
   stateOneStrokeColor: darkIconColor,

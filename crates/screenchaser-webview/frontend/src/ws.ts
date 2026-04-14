@@ -1,8 +1,10 @@
 type MessageHandler = (msg: any) => void;
+type BinaryHandler = (blob: Blob) => void;
 
 class DaemonClient {
   private socket: WebSocket | null = null;
   private handlers: Map<string, MessageHandler[]> = new Map();
+  private binaryHandlers: BinaryHandler[] = [];
   private pendingRequests: Map<string, Array<(msg: any) => void>> = new Map();
   private reconnectTimer: number | null = null;
   private connectPromise: Promise<void> | null = null;
@@ -34,6 +36,10 @@ class DaemonClient {
       };
 
       this.socket.onmessage = (event) => {
+        if (event.data instanceof Blob) {
+          this.dispatchBinary(event.data);
+          return;
+        }
         try {
           const msg = JSON.parse(event.data);
           this.dispatch(msg);
@@ -120,6 +126,22 @@ class DaemonClient {
     this.handlers.set(type, existing);
   }
 
+  private dispatchBinary(blob: Blob) {
+    this.binaryHandlers.forEach((h) => h(blob));
+  }
+
+  onBinary(handler: BinaryHandler) {
+    this.binaryHandlers.push(handler);
+  }
+
+  offBinary(handler: BinaryHandler) {
+    this.binaryHandlers = this.binaryHandlers.filter((h) => h !== handler);
+  }
+
+  setPreview(enabled: boolean) {
+    this.send({ type: "set_preview", enabled });
+  }
+
   off(type: string, handler: MessageHandler) {
     const existing = this.handlers.get(type) || [];
     this.handlers.set(
@@ -152,6 +174,13 @@ class DaemonClient {
 
   async removeDevice(id: string) {
     return this.request({ type: "remove_device", id }, "config_updated");
+  }
+
+  async updateCapture(config: any) {
+    return this.request(
+      { type: "update_capture", config },
+      "config_updated"
+    );
   }
 }
 

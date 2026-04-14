@@ -4,11 +4,13 @@ import Toaster from "@core/toasts";
 import RectangleEditor from "@/ledFieldEditor/rectangle-editor";
 import { generateLedFields } from "@/biasCalculation/ledFields";
 import { daemon } from "@/ws";
+import { preview } from "@/preview";
 import "./index.css";
 
 class DeviceCard extends HTMLElement {
   static template = `
     <div class="device">
+        <canvas class="device-canvas"></canvas>
         <div class="device-details">
             <div class="head" style="margin: 10px;">
                 <div class="name">$1</div>
@@ -34,6 +36,14 @@ class DeviceCard extends HTMLElement {
   clockWise: NumberInput;
   editorContainer: HTMLDivElement;
   editor: any;
+
+  private canvas: HTMLCanvasElement | null = null;
+  private ledFields: any[] = [];
+  private ledColors: { r: number; g: number; b: number }[] = [];
+  private frameListener: ((img: HTMLImageElement) => void) | null = null;
+  private colorsHandler: ((msg: any) => void) | null = null;
+  private editorFrameListener: ((img: HTMLImageElement) => void) | null = null;
+  private editorSized = false;
 
   constructor() {
     super();
@@ -131,14 +141,6 @@ class DeviceCard extends HTMLElement {
       border: 1px solid var(--BORDER, #44475a);
     `;
 
-    const editorLabel = document.createElement("div");
-    editorLabel.textContent = "LED Field Preview";
-    editorLabel.style.cssText = `
-      font-size: 12px;
-      color: var(--COMMENT, #6272a4);
-      margin-bottom: 8px;
-    `;
-    this.editorContainer.appendChild(editorLabel);
     this.modal.modalBody.appendChild(this.editorContainer);
 
     this.editor = new RectangleEditor(this.editorContainer, {
@@ -151,20 +153,25 @@ class DeviceCard extends HTMLElement {
     });
 
     const onInputChange = () => {
+      this.updateLedFields();
       this.updateEditorPreview();
       this.saveConfig();
     };
-    this.fieldWidth.onChange(onInputChange);
-    this.fieldHeight.onChange(onInputChange);
-    this.ledCountLeft.onChange(onInputChange);
-    this.ledCountRight.onChange(onInputChange);
-    this.ledCountTop.onChange(onInputChange);
-    this.ledCountBottom.onChange(onInputChange);
-    this.startLed.onChange(onInputChange);
-    this.clockWise.onChange(onInputChange);
+    const onGeneratorChange = () => {
+      this.ledFields = [];
+      onInputChange();
+    };
+    this.fieldWidth.onChange(onGeneratorChange);
+    this.fieldHeight.onChange(onGeneratorChange);
+    this.ledCountLeft.onChange(onGeneratorChange);
+    this.ledCountRight.onChange(onGeneratorChange);
+    this.ledCountTop.onChange(onGeneratorChange);
+    this.ledCountBottom.onChange(onGeneratorChange);
+    this.startLed.onChange(onGeneratorChange);
+    this.clockWise.onChange(onGeneratorChange);
     this.bufferSeconds.onChange(() => this.saveConfig());
 
-    this.modal.onSave(() => this.saveConfig());
+    this.modal.saveIconBtn?.iconButton?.remove();
   }
 
   private connected = false;
@@ -183,6 +190,11 @@ class DeviceCard extends HTMLElement {
   async connectedCallback() {
     this.connected = true;
     await this.loadFromDaemon();
+    this.startLivePreview();
+  }
+
+  disconnectedCallback() {
+    this.stopLivePreview();
   }
 
   async loadFromDaemon() {
@@ -201,9 +213,15 @@ class DeviceCard extends HTMLElement {
         this.startLed.setValue(device.chaser.start_led || 0, true);
         this.clockWise.setValue(device.chaser.clockwise ? 1 : 0, true);
         if (device.name) this.deviceName = device.name;
+        if (device.chaser.fields?.length) {
+          this.ledFields = device.chaser.fields;
+        }
       }
     } catch (err) {
       console.error("failed to load device config:", err);
+    }
+    if (this.ledFields.length === 0) {
+      this.updateLedFields();
     }
     this.render();
   }
@@ -213,6 +231,8 @@ class DeviceCard extends HTMLElement {
     this.innerHTML = DeviceCard.template
       .replace("$1", this.deviceName || "Unknown Device")
       .replace("$2", this.ip);
+
+    this.canvas = this.querySelector(".device-canvas") as HTMLCanvasElement;
 
     const ipElement = this.querySelector(".ip");
     if (ipElement) {
@@ -225,48 +245,124 @@ class DeviceCard extends HTMLElement {
     const card = this.querySelector(".device");
     if (card) {
       card.addEventListener("click", () => {
-        this.modal.toggle();
-        this.updateEditorPreview();
+        this.openChaserSettings();
       });
     }
   }
 
-  handleEditorChange(data: any) {
-    if (!data?.rectangles?.length) return;
+  private async openChaserSettings() {
+    this.modal.toggle();
+    this.editorSized = false;
 
-    const cw = data.canvasWidth;
-    const ch = data.canvasHeight;
-    const avgWidth =
-      data.rectangles.reduce((sum: number, r: any) => sum + r.width, 0) /
-      data.rectangles.length;
-    const avgHeight =
-      data.rectangles.reduce((sum: number, r: any) => sum + r.height, 0) /
-      data.rectangles.length;
+    if (this.modal.modal.style.display !== "none") {
+      this.editorFrameListener = (img: HTMLImageElement) => {
+        if (!this.editorSized && img.naturalWidth > 0 && img.naturalHeight > 0) {
+          const aspect = img.naturalWidth / img.naturalHeight;
+          const maxWidth = this.editorContainer.clientWidth - 18;
+          this.editor.canvas.width = Math.round(maxWidth);
+          this.editor.canvas.height = Math.round(maxWidth / aspect);
+          this.editorSized = true;
+          this.updateEditorPreview();
+        }
+        this.editor.image = img;
+        this.editor.draw();
+      };
+      preview.subscribe(this.editorFrameListener);
 
-    this.fieldWidth.setValue(
-      Math.max(1, Math.min(100, Math.round((avgWidth / cw) * 100))),
-      true
-    );
-    this.fieldHeight.setValue(
-      Math.max(1, Math.min(100, Math.round((avgHeight / ch) * 100))),
-      true
-    );
-    this.saveConfig();
+      // sofort das letzte Frame anzeigen falls vorhanden
+      const last = preview.lastImage;
+      if (last) {
+        this.editorFrameListener(last);
+      } else {
+        this.updateEditorPreview();
+      }
+
+      this.loadFromDaemon();
+
+      const observer = new MutationObserver(() => {
+        if (this.modal.modal.style.display === "none") {
+          if (this.editorFrameListener) {
+            preview.unsubscribe(this.editorFrameListener);
+            this.editorFrameListener = null;
+          }
+          this.loadFromDaemon();
+          observer.disconnect();
+        }
+      });
+      observer.observe(this.modal.modal, {
+        attributes: true,
+        attributeFilter: ["style"],
+      });
+    }
   }
 
-  updateEditorPreview() {
+  private startLivePreview() {
+    this.frameListener = (img: HTMLImageElement) => {
+      this.drawCardPreview(img);
+    };
+    preview.subscribe(this.frameListener);
+
+    this.colorsHandler = (msg: any) => {
+      if (msg.colors?.[this.deviceId]) {
+        this.ledColors = msg.colors[this.deviceId];
+      }
+    };
+    daemon.on("led_colors", this.colorsHandler);
+  }
+
+  private stopLivePreview() {
+    if (this.frameListener) {
+      preview.unsubscribe(this.frameListener);
+      this.frameListener = null;
+    }
+    if (this.colorsHandler) {
+      daemon.off("led_colors", this.colorsHandler);
+      this.colorsHandler = null;
+    }
+  }
+
+  private drawCardPreview(img: HTMLImageElement) {
+    if (!this.canvas) return;
+    const cw = this.canvas.clientWidth || 200;
+    const ch = this.canvas.clientHeight || 120;
+    this.canvas.width = cw;
+    this.canvas.height = ch;
+    const ctx = this.canvas.getContext("2d");
+    if (!ctx) return;
+
+    ctx.drawImage(img, 0, 0, cw, ch);
+
+    for (let i = 0; i < this.ledFields.length; i++) {
+      const f = this.ledFields[i];
+      const color = this.ledColors[i];
+      const x = f.x * cw;
+      const y = f.y * ch;
+      const w = f.width * cw;
+      const h = f.height * ch;
+
+      if (color) {
+        ctx.fillStyle = `rgba(${color.r},${color.g},${color.b},0.6)`;
+        ctx.fillRect(x, y, w, h);
+      }
+      ctx.strokeStyle = "rgba(255,255,255,0.4)";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(x, y, w, h);
+    }
+  }
+
+  private updateLedFields() {
     const countLeft = this.ledCountLeft.getValue();
     const countRight = this.ledCountRight.getValue();
     const countTop = this.ledCountTop.getValue();
     const countBottom = this.ledCountBottom.getValue();
 
     if (countLeft + countRight + countTop + countBottom === 0) {
-      this.editor.clearAll();
+      this.ledFields = [];
       return;
     }
 
     try {
-      const ledFields = generateLedFields({
+      this.ledFields = generateLedFields({
         ledsX: countBottom + countTop,
         ledsY: countLeft + countRight,
         bottom: countBottom > 0,
@@ -278,12 +374,39 @@ class DeviceCard extends HTMLElement {
         fieldWidth: this.fieldWidth.getValue(),
         startLed: this.startLed.getValue(),
       });
+    } catch {
+      this.ledFields = [];
+    }
+  }
 
+  handleEditorChange(data: any) {
+    if (!data?.rectangles?.length) return;
+
+    const cw = data.canvasWidth;
+    const ch = data.canvasHeight;
+
+    this.ledFields = data.rectangles.map((r: any) => ({
+      x: r.x / cw,
+      y: r.y / ch,
+      width: r.width / cw,
+      height: r.height / ch,
+    }));
+
+    this.saveConfig();
+  }
+
+  updateEditorPreview() {
+    if (this.ledFields.length === 0) {
+      this.editor.clearAll();
+      return;
+    }
+
+    try {
       const cw = this.editor.canvas.width;
       const ch = this.editor.canvas.height;
 
       this.editor.importData({
-        rectangles: ledFields.map((field: any, i: number) => ({
+        rectangles: this.ledFields.map((field: any, i: number) => ({
           number: i + 1,
           x: field.x * cw,
           y: field.y * ch,
@@ -324,6 +447,7 @@ class DeviceCard extends HTMLElement {
           buffer_seconds: this.bufferSeconds.getValue(),
           start_led: this.startLed.getValue(),
           clockwise: this.clockWise.getValue() === 1,
+          fields: this.ledFields.length > 0 ? this.ledFields : null,
         },
       });
     } catch (err) {

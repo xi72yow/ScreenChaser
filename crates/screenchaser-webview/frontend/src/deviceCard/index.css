@@ -1,5 +1,6 @@
 .device {
   z-index: 1;
+  position: relative;
 }
 
 .ip:hover {
@@ -14,13 +15,18 @@
   box-shadow: 0 0 10px var(--RED);
 }
 
-.device video {
+.device-canvas {
   position: absolute;
   width: 50%;
   height: 100%;
-  object-fit: cover;
-  z-index: 0;
-  right: 0;
   top: 0;
+  right: 0;
+  z-index: 0;
+  border-radius: inherit;
   mask: linear-gradient(to right, transparent 20%, #ffffff 90%);
+}
+
+.device-details {
+  position: relative;
+  z-index: 1;
 }

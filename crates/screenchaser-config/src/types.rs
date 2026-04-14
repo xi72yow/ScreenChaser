@@ -7,7 +7,7 @@ pub struct RgbColor {
     pub b: u8,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub struct LedField {
     pub x: f32,
     pub y: f32,

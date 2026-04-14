@@ -86,14 +86,28 @@ async fn run_daemon(bind: String) -> Result<()> {
     let gpu = screenchaser_gpu::GpuPipeline::new().await?;
     info!("gpu pipeline initialized");
 
-    let (cmd_tx, cmd_rx, status_tx, status_rx, colors_tx, colors_rx) =
-        state::create_channels();
-    let shared = state::build_shared_state(config.clone(), cmd_tx, status_rx, colors_rx);
+    let ch = state::create_channels();
+    let shared = state::build_shared_state(
+        config.clone(),
+        ch.cmd_tx,
+        ch.status_rx,
+        ch.colors_rx,
+        ch.preview_rx,
+    );
 
     let shared_clone = shared.clone();
     tokio::spawn(async move {
-        processing::run(capture, gpu, config, shared_clone, cmd_rx, status_tx, colors_tx)
-            .await;
+        processing::run(
+            capture,
+            gpu,
+            config,
+            shared_clone,
+            ch.cmd_rx,
+            ch.status_tx,
+            ch.colors_tx,
+            ch.preview_tx,
+        )
+        .await;
     });
 
     let app = server::router(shared.clone());

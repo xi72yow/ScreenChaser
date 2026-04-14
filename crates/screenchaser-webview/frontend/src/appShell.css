@@ -109,3 +109,10 @@
   padding-left: 22px;
   align-items: center;
 }
+
+.footer-left,
+.footer-right {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}

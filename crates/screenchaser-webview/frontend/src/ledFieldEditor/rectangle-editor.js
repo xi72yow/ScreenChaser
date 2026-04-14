@@ -90,6 +90,7 @@ class RectangleEditor {
     this.canvas.height = this.options.height;
   }
 
+
   setupEventListeners() {
     this.canvas.addEventListener("mousedown", this.handleMouseDown.bind(this));
     this.canvas.addEventListener("mousemove", this.handleMouseMove.bind(this));
@@ -1230,7 +1231,7 @@ class RectangleEditor {
 
     // Draw background (image or video)
     if (this.image) {
-      this.ctx.drawImage(this.image, 0, 0);
+      this.ctx.drawImage(this.image, 0, 0, this.canvas.width, this.canvas.height);
     } else if (this.video && this.videoElement && !this.videoElement.paused) {
       this.ctx.drawImage(this.videoElement, 0, 0);
     }

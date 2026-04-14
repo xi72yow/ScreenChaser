@@ -55,6 +55,12 @@ fn place_rectangles_along_edge(
 }
 
 pub fn generate_led_fields(config: &ChaserConfig) -> Vec<LedField> {
+    if let Some(fields) = &config.fields {
+        if !fields.is_empty() {
+            return fields.clone();
+        }
+    }
+
     let top = place_rectangles_along_edge(
         config.led_count_top,
         config.field_width,
