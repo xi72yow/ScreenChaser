@@ -27,7 +27,7 @@ impl WebviewHandle {
     }
 }
 
-pub fn run(on_ready: impl FnOnce(WebviewHandle) + Send + 'static) -> ! {
+pub fn run(on_ready: impl FnOnce(WebviewHandle) + Send + 'static) {
     let event_loop = EventLoopBuilder::<UserEvent>::with_user_event().build();
 
     {
@@ -76,6 +76,14 @@ pub fn run(on_ready: impl FnOnce(WebviewHandle) + Send + 'static) -> ! {
         })
         .with_url("sc://localhost/index.html")
         .with_devtools(cfg!(debug_assertions))
+        .with_navigation_handler(|url| {
+            if url.starts_with("sc://") {
+                true
+            } else {
+                let _ = std::process::Command::new("xdg-open").arg(&url).spawn();
+                false
+            }
+        })
         .build_gtk(window.default_vbox().expect("tao default vbox"))
         .expect("webview creation");
 
@@ -93,7 +101,7 @@ pub fn run(on_ready: impl FnOnce(WebviewHandle) + Send + 'static) -> ! {
                 event: WindowEvent::CloseRequested,
                 ..
             } => {
-                *control_flow = ControlFlow::Exit;
+                window.set_visible(false);
             }
             Event::UserEvent(UserEvent::Shutdown) => {
                 *control_flow = ControlFlow::Exit;

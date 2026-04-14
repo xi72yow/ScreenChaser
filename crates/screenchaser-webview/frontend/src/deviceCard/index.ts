@@ -14,7 +14,7 @@ class DeviceCard extends HTMLElement {
         <div class="device-details">
             <div class="head" style="margin: 10px;">
                 <div class="name">$1</div>
-                <div class="ip" style="font-size: 0.8em;">$2</div>
+                <span class="ip" style="font-size: 0.8em; cursor: pointer;">$2</span>
             </div>
         </div>
     </div>

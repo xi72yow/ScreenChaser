@@ -30,18 +30,20 @@ fn main() -> Result<()> {
         )
         .init();
 
+    let daemon_thread = std::thread::spawn(move || {
+        let rt = tokio::runtime::Runtime::new().expect("tokio runtime");
+        if let Err(e) = rt.block_on(run_daemon(cli.bind)) {
+            error!("daemon error: {e}");
+        }
+    });
+
     if cli.no_gui {
         info!("running headless");
-        let rt = tokio::runtime::Runtime::new()?;
-        rt.block_on(run_daemon(cli.bind))?;
+        daemon_thread.join().ok();
     } else {
-        screenchaser_webview::run(move |handle| {
-            let rt = tokio::runtime::Runtime::new().expect("tokio runtime");
-            if let Err(e) = rt.block_on(run_daemon(cli.bind)) {
-                error!("daemon error: {e}");
-            }
-            handle.close();
-        });
+        screenchaser_webview::run(move |_handle| {});
+        info!("webview closed, daemon continues in background");
+        daemon_thread.join().ok();
     }
 
     Ok(())
