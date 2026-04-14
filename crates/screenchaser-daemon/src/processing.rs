@@ -66,7 +66,7 @@ pub async fn run(
                 let elapsed = fps_timer.elapsed().as_secs_f32();
                 if elapsed >= 1.0 {
                     current_fps = frame_count as f32 / elapsed;
-                    info!(fps = format!("{:.1}", current_fps), "processing");
+                    debug!(fps = format!("{:.1}", current_fps), "processing");
                     frame_count = 0;
                     fps_timer = Instant::now();
                 }

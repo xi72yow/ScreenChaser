@@ -5,7 +5,7 @@ use tokio::net::UdpSocket;
 
 const WLED_UDP_PORT: u16 = 21324;
 const DRGB_PROTOCOL: u8 = 0x02;
-const TIMEOUT_SECONDS: u8 = 2;
+const TIMEOUT_SECONDS: u8 = 255;
 
 #[derive(Error, Debug)]
 pub enum UdpError {

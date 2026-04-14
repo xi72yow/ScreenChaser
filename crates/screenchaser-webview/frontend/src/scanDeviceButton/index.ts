@@ -51,6 +51,23 @@ async function scanNetwork() {
     for (const device of found) {
       if (existingIps.has(device.ip)) continue;
       const id = device.ip.replace(/\./g, "-");
+      await daemon.updateDevice(id, {
+        ip: device.ip,
+        name: device.name,
+        enabled: true,
+        chaser: {
+          led_count_top: 0,
+          led_count_bottom: device.led_count || 1,
+          led_count_left: 0,
+          led_count_right: 0,
+          field_width: 10,
+          field_height: 10,
+          start_led: 0,
+          clockwise: true,
+          buffer_seconds: 0.5,
+          fields: null,
+        },
+      });
       createDeviceCard(id, device.ip, device.name);
     }
   } catch (error) {
