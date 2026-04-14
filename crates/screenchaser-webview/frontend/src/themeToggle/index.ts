@@ -40,7 +40,7 @@ new IconButton({
   stateTwoIcon: moonIcon,
   stateOneStrokeColor: darkIconColor,
   stateTwoStrokeColor: lightIconColor,
-  onClick: (state) => {
+  onClick: (_state) => {
     toggleTheme();
   },
 });

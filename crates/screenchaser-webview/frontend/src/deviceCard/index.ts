@@ -1,6 +1,8 @@
 import Modal from "@core/modal";
 import NumberInput from "@core/numberInput";
-import Toaster from "@core/toasts";
+import IconButton from "@core/iconButton";
+import Toaster, { ToastTypes } from "@core/toasts";
+import trashIcon from "@core/icons/trash.svg";
 import RectangleEditor from "@/ledFieldEditor/rectangle-editor";
 import { generateLedFields } from "@/biasCalculation/ledFields";
 import { daemon } from "@/ws";
@@ -173,6 +175,21 @@ class DeviceCard extends HTMLElement {
     this.bufferSeconds.onChange(() => this.saveConfig());
 
     this.modal.saveIconBtn?.iconButton?.remove();
+
+    new IconButton({
+      container: this.modal.buttonSpace,
+      stateOneIcon: trashIcon,
+      stateTwoIcon: trashIcon,
+      stateOneStrokeColor: "#ff5555",
+      stateTwoStrokeColor: "#ff5555",
+      onClick: () => {
+        if (this.deviceId) {
+          daemon.removeDevice(this.deviceId);
+          this.modal.close();
+          this.remove();
+        }
+      },
+    });
   }
 
   private connected = false;
@@ -464,7 +481,7 @@ class DeviceCard extends HTMLElement {
       console.error("failed to save config:", err);
       Toaster({
         text: `Failed to save: ${err}`,
-        type: "error",
+        type: ToastTypes.ERROR,
         duration: 3000,
       }).showToast();
     }

@@ -1,0 +1,192 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      release:
+        description: "Create a release? (yes/no)"
+        required: true
+        default: "no"
+      version:
+        description: "Version tag (e.g. v0.5.0). Leave empty to use Cargo.toml version."
+        required: false
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  build-image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build container image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Containerfile.build
+          load: true
+          tags: build-image
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Save container image
+        run: docker save build-image | zstd -T0 -o image.tar.zst
+
+      - name: Upload container image
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-image
+          path: image.tar.zst
+          retention-days: 1
+
+  test:
+    needs: build-image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download container image
+        uses: actions/download-artifact@v4
+        with:
+          name: build-image
+
+      - name: Load container image
+        run: zstd -d image.tar.zst -o image.tar && docker load < image.tar
+
+      - name: Run tests in container
+        run: |
+          docker run --rm build-image \
+            cargo test --profile dist -- --test-threads=1
+
+  audit:
+    needs: build-image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download container image
+        uses: actions/download-artifact@v4
+        with:
+          name: build-image
+
+      - name: Load container image
+        run: zstd -d image.tar.zst -o image.tar && docker load < image.tar
+
+      - name: Run cargo audit in container
+        run: docker run --rm build-image cargo audit
+
+  release:
+    needs: [test, audit]
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.release == 'yes'
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Determine version
+        id: version
+        run: |
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            BASE="${{ github.event.inputs.version }}"
+          else
+            VERSION=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
+            BASE="v${VERSION}"
+          fi
+
+          git fetch --tags
+          LATEST_TAG=$(git tag -l "${BASE}-*" --sort=-v:refname | head -1)
+          if [ -n "$LATEST_TAG" ]; then
+            CURRENT_REV=$(echo "$LATEST_TAG" | sed "s/${BASE}-//")
+            NEW_REV=$((CURRENT_REV + 1))
+          else
+            if git rev-parse "${BASE}" >/dev/null 2>&1; then
+              NEW_REV=2
+            else
+              NEW_REV=1
+            fi
+          fi
+
+          TAG="${BASE}-${NEW_REV}"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "revision=${NEW_REV}" >> "$GITHUB_OUTPUT"
+          echo "Release tag: ${TAG}"
+
+      - name: Download container image
+        uses: actions/download-artifact@v4
+        with:
+          name: build-image
+
+      - name: Load container image
+        run: zstd -d image.tar.zst -o image.tar && docker load < image.tar
+
+      - name: Extract .deb from container
+        run: |
+          mkdir -p dist
+          CONTAINER_ID=$(docker create build-image)
+          docker cp "$CONTAINER_ID:/build/target/debian/." dist/
+          docker rm "$CONTAINER_ID" > /dev/null
+
+      - name: Test .deb package
+        run: |
+          DEB=$(ls dist/*.deb | head -1)
+          echo "=== Package contents ==="
+          dpkg-deb -c "$DEB"
+          echo "=== Test install ==="
+          sudo dpkg -i "$DEB" || sudo apt-get install -f -y
+          echo "=== Verify binary ==="
+          screenchaser-daemon --help | head -5
+
+      - name: Prepare packages directory
+        run: mkdir -p packages && cp dist/*.deb packages/
+
+      - name: Import GPG key
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+        run: echo "${GPG_PRIVATE_KEY}" | gpg --batch --import
+
+      - name: Update APT repository
+        run: |
+          sudo apt-get update && sudo apt-get install -y dpkg-dev apt-utils
+          ./scripts/update-repo.sh
+
+      - name: Create tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "${{ steps.version.outputs.tag }}"
+          git push origin "${{ steps.version.outputs.tag }}"
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          files: dist/*.deb
+          generate_release_notes: true
+
+      - name: Upload repo artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: repo/
+
+  deploy-pages:
+    needs: release
+    if: needs.release.result == 'success'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

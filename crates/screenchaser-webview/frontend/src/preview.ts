@@ -12,9 +12,6 @@ class PreviewManager {
   private listeners: Set<FrameListener> = new Set();
   private currentFrame: PreviewFrame | null = null;
   private active = false;
-  private offscreenCanvas: OffscreenCanvas | null = null;
-  private offscreenCtx: OffscreenCanvasRenderingContext2D | null = null;
-
   start() {
     if (this.active) return;
     this.active = true;

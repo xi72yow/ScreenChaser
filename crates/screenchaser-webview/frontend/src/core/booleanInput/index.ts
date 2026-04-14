@@ -1,7 +1,6 @@
 import "./index.css";
 
 class BooleanInput {
-  private inputElement: HTMLInputElement;
   private container: HTMLElement | null;
 
   constructor({
@@ -54,7 +53,7 @@ class BooleanInput {
 
     this.container.appendChild(inputWrapper);
 
-    this.inputElement = booleanInput;
+    void booleanInput;
   }
 
   private handleInput() {

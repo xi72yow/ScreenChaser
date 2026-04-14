@@ -170,4 +170,5 @@ function StartToasterInstance(options: ToasterConfigurationObject): Toaster {
   return new Toaster(options);
 }
 
+export { ToastTypes };
 export default StartToasterInstance;

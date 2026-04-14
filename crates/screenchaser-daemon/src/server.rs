@@ -153,9 +153,18 @@ async fn handle_client_msg(
         }
         ClientMsg::UpdateDevice { id, config } => {
             let mut app_config = state.config.read().await.clone();
-            app_config.devices.insert(id, config);
-            state.cmd_tx.send(Command::UpdateConfig(app_config)).await?;
-            send_json(socket, &ServerMsg::ConfigUpdated).await?;
+            let duplicate = app_config.devices.iter().any(|(existing_id, dev)| {
+                *existing_id != id && dev.ip == config.ip
+            });
+            if duplicate {
+                send_json(socket, &ServerMsg::Error {
+                    message: format!("device with ip {} already exists", config.ip),
+                }).await?;
+            } else {
+                app_config.devices.insert(id, config);
+                state.cmd_tx.send(Command::UpdateConfig(app_config)).await?;
+                send_json(socket, &ServerMsg::ConfigUpdated).await?;
+            }
         }
         ClientMsg::ToggleDevice { id, enabled } => {
             let mut app_config = state.config.read().await.clone();
@@ -183,8 +192,18 @@ async fn handle_client_msg(
             .await
             .unwrap_or_default();
 
+            let existing_ips: std::collections::HashSet<_> = state
+                .config
+                .read()
+                .await
+                .devices
+                .values()
+                .map(|d| d.ip)
+                .collect();
+
             let devices: Vec<DiscoveredDeviceInfo> = discovered
                 .into_iter()
+                .filter(|d| !existing_ips.contains(&d.ip))
                 .map(|d| DiscoveredDeviceInfo {
                     ip: d.ip.to_string(),
                     name: d.name,

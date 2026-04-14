@@ -1,0 +1,62 @@
+# --- base: Rust + System-Dependencies + Cargo-Tools + Node ---
+FROM docker.io/library/rust:1.88-slim-bookworm AS base
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    pkg-config \
+    libclang-dev \
+    libpipewire-0.3-dev \
+    libspa-0.2-dev \
+    libdbus-1-dev \
+    libssl-dev \
+    libvulkan-dev \
+    mesa-vulkan-drivers \
+    libwebkit2gtk-4.1-dev \
+    libgtk-3-dev \
+    libayatana-appindicator3-dev \
+    curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && cargo install --locked cargo-auditable cargo-audit cargo-deb
+
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y --no-install-recommends nodejs \
+    && rm -rf /var/lib/apt/lists/* \
+    && npm install -g pnpm
+
+WORKDIR /build
+
+# --- build: Frontend + Rust + .deb ---
+FROM base AS build
+
+COPY Cargo.toml Cargo.lock ./
+COPY crates/screenchaser-config/Cargo.toml crates/screenchaser-config/Cargo.toml
+COPY crates/screenchaser-capture/Cargo.toml crates/screenchaser-capture/Cargo.toml
+COPY crates/screenchaser-gpu/Cargo.toml crates/screenchaser-gpu/Cargo.toml
+COPY crates/screenchaser-wled/Cargo.toml crates/screenchaser-wled/Cargo.toml
+COPY crates/screenchaser-webview/Cargo.toml crates/screenchaser-webview/Cargo.toml
+COPY crates/screenchaser-daemon/Cargo.toml crates/screenchaser-daemon/Cargo.toml
+
+RUN for crate in crates/*/; do \
+        mkdir -p "$crate/src" && echo '' > "$crate/src/lib.rs"; \
+    done \
+    && echo 'fn main() {}' > crates/screenchaser-daemon/src/main.rs \
+    && cargo auditable build --profile dist 2>/dev/null || true \
+    && rm -rf crates/*/src
+
+COPY crates/screenchaser-webview/frontend/package.json crates/screenchaser-webview/frontend/pnpm-lock.yaml* crates/screenchaser-webview/frontend/
+RUN cd crates/screenchaser-webview/frontend && pnpm install --frozen-lockfile
+
+COPY crates/ crates/
+COPY screenchaser.service screenchaser.desktop ./
+COPY assets/icon256x256.png ./assets/icon256x256.png
+
+RUN find crates -name "*.rs" -exec touch {} + \
+    && find crates -name "*.wgsl" -exec touch {} +
+
+RUN cd crates/screenchaser-webview/frontend && pnpm run build
+
+RUN cargo audit \
+    && cargo auditable build --profile dist \
+    && cargo deb -p screenchaser-daemon --profile dist --no-build
+
+# --- test: Test-Dependencies ---
+FROM build AS test

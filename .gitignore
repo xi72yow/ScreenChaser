@@ -1,5 +1,6 @@
 # rust
 /target
+/dist
 /screenchaser-daemon
 /gpu_test
 /capture_test

@@ -30,20 +30,28 @@ fn main() -> Result<()> {
         )
         .init();
 
-    let daemon_thread = std::thread::spawn(move || {
+    if cli.no_gui {
+        info!("running headless");
         let rt = tokio::runtime::Runtime::new().expect("tokio runtime");
         if let Err(e) = rt.block_on(run_daemon(cli.bind)) {
             error!("daemon error: {e}");
         }
-    });
-
-    if cli.no_gui {
-        info!("running headless");
-        daemon_thread.join().ok();
     } else {
-        screenchaser_webview::run(move |_handle| {});
-        info!("webview closed, daemon continues in background");
-        daemon_thread.join().ok();
+        let (handle_tx, handle_rx) = std::sync::mpsc::channel::<screenchaser_webview::WebviewHandle>();
+
+        std::thread::spawn(move || {
+            let rt = tokio::runtime::Runtime::new().expect("tokio runtime");
+            if let Err(e) = rt.block_on(run_daemon(cli.bind)) {
+                error!("daemon error: {e}");
+            }
+            if let Ok(handle) = handle_rx.recv() {
+                handle.close();
+            }
+        });
+
+        screenchaser_webview::run(move |handle| {
+            let _ = handle_tx.send(handle);
+        });
     }
 
     Ok(())
@@ -61,7 +69,17 @@ async fn run_daemon(bind: String) -> Result<()> {
         Some(token) => {
             info!("resuming capture with stored token");
             match screenchaser_capture::WaylandCapture::resume(token).await {
-                Ok(c) => c,
+                Ok(c) => {
+                    if let Some(new_token) = c.restore_token() {
+                        if new_token != token {
+                            info!("portal returned updated restore token");
+                            config.restore_token = Some(new_token.to_string());
+                            screenchaser_config::save_config(&config)
+                                .map_err(|e| anyhow::anyhow!("{e}"))?;
+                        }
+                    }
+                    c
+                }
                 Err(e) => {
                     warn!("resume failed ({e}), running setup");
                     let (c, new_token) =

@@ -17,7 +17,7 @@ class IconButton {
   private stateTwoIcon: string;
   private stateOneStrokeColor: string;
   private stateTwoStrokeColor: string;
-  private iconButton: HTMLButtonElement;
+  iconButton: HTMLButtonElement;
   private svg: HTMLDivElement;
   private selector: string | null;
   private container: Element | null;
@@ -143,8 +143,6 @@ class IconButton {
         }
         
         const easingFactor = Math.pow(1 - progress, 2);
-        
-        const angle = startingAngle * (1 - progress) + targetAngle * progress;
         
         const easedAngle = startingAngle * easingFactor + targetAngle * (1 - easingFactor);
         
