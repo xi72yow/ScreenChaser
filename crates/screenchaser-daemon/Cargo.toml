@@ -20,4 +20,3 @@ tracing-subscriber = { workspace = true }
 anyhow = { workspace = true }
 axum = { version = "0.8", features = ["ws"] }
 clap = { version = "4", features = ["derive"] }
-image = { version = "0.25", default-features = false, features = ["jpeg"] }

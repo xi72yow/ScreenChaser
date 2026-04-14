@@ -4,10 +4,8 @@ use std::sync::atomic::Ordering;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
-use image::codecs::jpeg::JpegEncoder;
-use image::ExtendedColorType;
 use screenchaser_capture::WaylandCapture;
-use screenchaser_config::{generate_led_fields, AppConfig, CapturedFrame, PixelFormat, RgbColor};
+use screenchaser_config::{generate_led_fields, AppConfig, RgbColor};
 use screenchaser_gpu::GpuPipeline;
 use screenchaser_wled::WledUdpSender;
 use tokio::sync::{mpsc, watch};
@@ -17,7 +15,6 @@ use crate::state::{Command, DaemonStatus, DeviceStatus, SharedState};
 
 struct PreviewSettings {
     width: u32,
-    quality: u8,
     fps_divider: u64,
 }
 
@@ -153,46 +150,17 @@ async fn process_tick(
     let _ = colors_tx.send(all_colors);
 
     if shared.preview_clients.load(Ordering::Relaxed) && *tick_count % pv.fps_divider.max(1) == 0 {
-        if let Some(jpeg) = encode_preview(&frame, pv) {
-            let _ = preview_tx.send(Some(jpeg));
+        match gpu.downscale_frame(pv.width) {
+            Ok((w, h, rgba)) => {
+                let mut msg = Vec::with_capacity(8 + rgba.len());
+                msg.extend_from_slice(&w.to_le_bytes());
+                msg.extend_from_slice(&h.to_le_bytes());
+                msg.extend_from_slice(&rgba);
+                let _ = preview_tx.send(Some(msg));
+            }
+            Err(e) => debug!("downscale failed: {e}"),
         }
     }
-}
-
-fn encode_preview(frame: &CapturedFrame, pv: &PreviewSettings) -> Option<Vec<u8>> {
-    let scale = (frame.width / pv.width.max(1)).max(1);
-    let tw = frame.width / scale;
-    let th = frame.height / scale;
-    let src_stride = (frame.width * 4) as usize;
-
-    let mut rgb = Vec::with_capacity((tw * th * 3) as usize);
-    let is_bgra = matches!(frame.format, PixelFormat::Bgra8);
-
-    for y in 0..th {
-        let src_y = (y * scale) as usize;
-        let row_start = src_y * src_stride;
-        for x in 0..tw {
-            let src_x = (x * scale) as usize;
-            let px = row_start + src_x * 4;
-            if px + 2 >= frame.data.len() {
-                break;
-            }
-            if is_bgra {
-                rgb.push(frame.data[px + 2]);
-                rgb.push(frame.data[px + 1]);
-                rgb.push(frame.data[px]);
-            } else {
-                rgb.push(frame.data[px]);
-                rgb.push(frame.data[px + 1]);
-                rgb.push(frame.data[px + 2]);
-            }
-        }
-    }
-
-    let mut buf = Vec::with_capacity(64_000);
-    let mut encoder = JpegEncoder::new_with_quality(&mut buf, pv.quality);
-    encoder.encode(&rgb, tw, th, ExtendedColorType::Rgb8).ok()?;
-    Some(buf)
 }
 
 fn preview_settings_from_config(config: &AppConfig) -> PreviewSettings {
@@ -200,7 +168,6 @@ fn preview_settings_from_config(config: &AppConfig) -> PreviewSettings {
     let preview_fps = config.capture.preview_fps.max(1);
     PreviewSettings {
         width: config.capture.preview_width.max(100),
-        quality: config.capture.preview_quality.clamp(10, 100),
         fps_divider: (target_fps / preview_fps).max(1) as u64,
     }
 }

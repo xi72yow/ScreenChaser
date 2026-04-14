@@ -1,27 +1,40 @@
 import { daemon } from "@/ws";
 
-type FrameListener = (img: HTMLImageElement) => void;
+export interface PreviewFrame {
+  width: number;
+  height: number;
+  imageData: ImageData;
+}
+
+type FrameListener = (frame: PreviewFrame) => void;
 
 class PreviewManager {
   private listeners: Set<FrameListener> = new Set();
-  private currentImage: HTMLImageElement | null = null;
-  private currentUrl: string | null = null;
+  private currentFrame: PreviewFrame | null = null;
   private active = false;
+  private offscreenCanvas: OffscreenCanvas | null = null;
+  private offscreenCtx: OffscreenCanvasRenderingContext2D | null = null;
 
   start() {
     if (this.active) return;
     this.active = true;
 
-    daemon.onBinary((blob: Blob) => {
-      if (this.currentUrl) URL.revokeObjectURL(this.currentUrl);
-      this.currentUrl = URL.createObjectURL(blob);
+    daemon.onBinary(async (blob: Blob) => {
+      const buf = await blob.arrayBuffer();
+      if (buf.byteLength < 8) return;
 
-      const img = new Image();
-      img.onload = () => {
-        this.currentImage = img;
-        this.listeners.forEach((cb) => cb(img));
-      };
-      img.src = this.currentUrl;
+      const header = new DataView(buf);
+      const width = header.getUint32(0, true);
+      const height = header.getUint32(4, true);
+
+      const expectedSize = 8 + width * height * 4;
+      if (buf.byteLength < expectedSize) return;
+
+      const rgba = new Uint8ClampedArray(buf, 8, width * height * 4);
+      const imageData = new ImageData(rgba, width, height);
+
+      this.currentFrame = { width, height, imageData };
+      this.listeners.forEach((cb) => cb(this.currentFrame!));
     });
 
     daemon.setPreview(true);
@@ -31,10 +44,6 @@ class PreviewManager {
     if (!this.active) return;
     this.active = false;
     daemon.setPreview(false);
-    if (this.currentUrl) {
-      URL.revokeObjectURL(this.currentUrl);
-      this.currentUrl = null;
-    }
   }
 
   subscribe(listener: FrameListener) {
@@ -47,8 +56,8 @@ class PreviewManager {
     if (this.listeners.size === 0) this.stop();
   }
 
-  get lastImage() {
-    return this.currentImage;
+  get lastFrame() {
+    return this.currentFrame;
   }
 }
 

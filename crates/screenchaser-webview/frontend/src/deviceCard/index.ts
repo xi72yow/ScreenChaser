@@ -4,7 +4,7 @@ import Toaster from "@core/toasts";
 import RectangleEditor from "@/ledFieldEditor/rectangle-editor";
 import { generateLedFields } from "@/biasCalculation/ledFields";
 import { daemon } from "@/ws";
-import { preview } from "@/preview";
+import { preview, type PreviewFrame } from "@/preview";
 import "./index.css";
 
 class DeviceCard extends HTMLElement {
@@ -40,9 +40,9 @@ class DeviceCard extends HTMLElement {
   private canvas: HTMLCanvasElement | null = null;
   private ledFields: any[] = [];
   private ledColors: { r: number; g: number; b: number }[] = [];
-  private frameListener: ((img: HTMLImageElement) => void) | null = null;
+  private frameListener: ((frame: PreviewFrame) => void) | null = null;
   private colorsHandler: ((msg: any) => void) | null = null;
-  private editorFrameListener: ((img: HTMLImageElement) => void) | null = null;
+  private editorFrameListener: ((frame: PreviewFrame) => void) | null = null;
   private editorSized = false;
 
   constructor() {
@@ -255,22 +255,23 @@ class DeviceCard extends HTMLElement {
     this.editorSized = false;
 
     if (this.modal.modal.style.display !== "none") {
-      this.editorFrameListener = (img: HTMLImageElement) => {
-        if (!this.editorSized && img.naturalWidth > 0 && img.naturalHeight > 0) {
-          const aspect = img.naturalWidth / img.naturalHeight;
+      this.editorFrameListener = (frame: PreviewFrame) => {
+        if (!this.editorSized && frame.width > 0 && frame.height > 0) {
+          const aspect = frame.width / frame.height;
           const maxWidth = this.editorContainer.clientWidth - 18;
           this.editor.canvas.width = Math.round(maxWidth);
           this.editor.canvas.height = Math.round(maxWidth / aspect);
           this.editorSized = true;
           this.updateEditorPreview();
         }
-        this.editor.image = img;
-        this.editor.draw();
+        createImageBitmap(frame.imageData).then((bmp) => {
+          this.editor.image = bmp;
+          this.editor.draw();
+        });
       };
       preview.subscribe(this.editorFrameListener);
 
-      // sofort das letzte Frame anzeigen falls vorhanden
-      const last = preview.lastImage;
+      const last = preview.lastFrame;
       if (last) {
         this.editorFrameListener(last);
       } else {
@@ -297,8 +298,8 @@ class DeviceCard extends HTMLElement {
   }
 
   private startLivePreview() {
-    this.frameListener = (img: HTMLImageElement) => {
-      this.drawCardPreview(img);
+    this.frameListener = (frame: PreviewFrame) => {
+      this.drawCardPreview(frame);
     };
     preview.subscribe(this.frameListener);
 
@@ -321,7 +322,7 @@ class DeviceCard extends HTMLElement {
     }
   }
 
-  private drawCardPreview(img: HTMLImageElement) {
+  private drawCardPreview(frame: PreviewFrame) {
     if (!this.canvas) return;
     const cw = this.canvas.clientWidth || 200;
     const ch = this.canvas.clientHeight || 120;
@@ -330,7 +331,15 @@ class DeviceCard extends HTMLElement {
     const ctx = this.canvas.getContext("2d");
     if (!ctx) return;
 
-    ctx.drawImage(img, 0, 0, cw, ch);
+    createImageBitmap(frame.imageData).then((bmp) => {
+      ctx.drawImage(bmp, 0, 0, cw, ch);
+      bmp.close();
+
+      this.drawLedOverlay(ctx, cw, ch);
+    });
+  }
+
+  private drawLedOverlay(ctx: CanvasRenderingContext2D, cw: number, ch: number) {
 
     for (let i = 0; i < this.ledFields.length; i++) {
       const f = this.ledFields[i];

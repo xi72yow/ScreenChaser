@@ -1,4 +1,4 @@
-import plusIcon from "@core/icons/plus.svg";
+import settingsIcon from "@core/icons/settings.svg";
 import IconButton from "@/core/iconButton";
 import Modal from "@core/modal";
 import NumberInput from "@core/numberInput";
@@ -82,10 +82,10 @@ previewFps.onChange(onChange);
 
 new IconButton({
   selector: ".footer-right",
-  stateOneIcon: plusIcon,
-  stateTwoIcon: plusIcon,
-  stateOneStrokeColor: "#888",
-  stateTwoStrokeColor: "#888",
+  stateOneIcon: settingsIcon,
+  stateTwoIcon: settingsIcon,
+  stateOneStrokeColor: "var(--FG)",
+  stateTwoStrokeColor: "var(--FG)",
   onClick: () => {
     loadSettings();
     modal.toggle();

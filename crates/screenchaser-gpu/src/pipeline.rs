@@ -50,6 +50,17 @@ struct DeviceGpuState {
     texture_generation: u64,
 }
 
+struct DownscaleState {
+    pipeline: wgpu::ComputePipeline,
+    bind_group_layout: wgpu::BindGroupLayout,
+    output_buffer: Option<wgpu::Buffer>,
+    readback_buffer: Option<wgpu::Buffer>,
+    params_buffer: wgpu::Buffer,
+    bind_group: Option<wgpu::BindGroup>,
+    current_size: (u32, u32),
+    texture_generation: u64,
+}
+
 pub struct GpuPipeline {
     device: wgpu::Device,
     queue: wgpu::Queue,
@@ -62,6 +73,7 @@ pub struct GpuPipeline {
     texture_generation: u64,
     texture_size: (u32, u32),
     texture_format: wgpu::TextureFormat,
+    downscale: DownscaleState,
 }
 
 impl GpuPipeline {
@@ -201,6 +213,70 @@ impl GpuPipeline {
                 cache: None,
             });
 
+        let downscale_shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
+            label: Some("downscale"),
+            source: wgpu::ShaderSource::Wgsl(include_str!("shaders/downscale.wgsl").into()),
+        });
+
+        let downscale_bgl =
+            device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+                label: Some("downscale_bgl"),
+                entries: &[
+                    wgpu::BindGroupLayoutEntry {
+                        binding: 0,
+                        visibility: wgpu::ShaderStages::COMPUTE,
+                        ty: wgpu::BindingType::Texture {
+                            sample_type: wgpu::TextureSampleType::Float { filterable: false },
+                            view_dimension: wgpu::TextureViewDimension::D2,
+                            multisampled: false,
+                        },
+                        count: None,
+                    },
+                    wgpu::BindGroupLayoutEntry {
+                        binding: 1,
+                        visibility: wgpu::ShaderStages::COMPUTE,
+                        ty: wgpu::BindingType::Buffer {
+                            ty: wgpu::BufferBindingType::Storage { read_only: false },
+                            has_dynamic_offset: false,
+                            min_binding_size: None,
+                        },
+                        count: None,
+                    },
+                    wgpu::BindGroupLayoutEntry {
+                        binding: 2,
+                        visibility: wgpu::ShaderStages::COMPUTE,
+                        ty: wgpu::BindingType::Buffer {
+                            ty: wgpu::BufferBindingType::Uniform,
+                            has_dynamic_offset: false,
+                            min_binding_size: None,
+                        },
+                        count: None,
+                    },
+                ],
+            });
+
+        let downscale_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+            label: Some("downscale_layout"),
+            bind_group_layouts: &[&downscale_bgl],
+            push_constant_ranges: &[],
+        });
+
+        let downscale_pipeline =
+            device.create_compute_pipeline(&wgpu::ComputePipelineDescriptor {
+                label: Some("downscale_pipeline"),
+                layout: Some(&downscale_layout),
+                module: &downscale_shader,
+                entry_point: Some("main"),
+                compilation_options: Default::default(),
+                cache: None,
+            });
+
+        let downscale_params = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            label: Some("downscale_params"),
+            contents: bytemuck::bytes_of(&[0u32, 0u32]),
+            usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
+        });
+
         Ok(Self {
             device,
             queue,
@@ -212,6 +288,16 @@ impl GpuPipeline {
             texture_view: None,
             texture_generation: 0,
             texture_size: (0, 0),
+            downscale: DownscaleState {
+                pipeline: downscale_pipeline,
+                bind_group_layout: downscale_bgl,
+                output_buffer: None,
+                readback_buffer: None,
+                params_buffer: downscale_params,
+                bind_group: None,
+                current_size: (0, 0),
+                texture_generation: 0,
+            },
             texture_format: wgpu::TextureFormat::Rgba8Unorm,
         })
     }
@@ -501,5 +587,102 @@ impl GpuPipeline {
         state.readback_buffer.unmap();
 
         Ok(colors)
+    }
+
+    pub fn downscale_frame(&mut self, target_width: u32) -> Result<(u32, u32, Vec<u8>), GpuError> {
+        let texture_view = self.texture_view.as_ref().ok_or(GpuError::NoFrame)?;
+        let (src_w, src_h) = self.texture_size;
+        if src_w == 0 || src_h == 0 {
+            return Err(GpuError::NoFrame);
+        }
+
+        let scale = (src_w / target_width.max(1)).max(1);
+        let out_w = src_w / scale;
+        let out_h = src_h / scale;
+        let buf_size = (out_w * out_h * 4) as u64;
+
+        let ds = &mut self.downscale;
+
+        if ds.current_size != (out_w, out_h) {
+            ds.output_buffer = Some(self.device.create_buffer(&wgpu::BufferDescriptor {
+                label: Some("downscale_output"),
+                size: buf_size,
+                usage: wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_SRC,
+                mapped_at_creation: false,
+            }));
+            ds.readback_buffer = Some(self.device.create_buffer(&wgpu::BufferDescriptor {
+                label: Some("downscale_readback"),
+                size: buf_size,
+                usage: wgpu::BufferUsages::COPY_DST | wgpu::BufferUsages::MAP_READ,
+                mapped_at_creation: false,
+            }));
+            ds.current_size = (out_w, out_h);
+            ds.bind_group = None;
+        }
+
+        if ds.texture_generation != self.texture_generation || ds.bind_group.is_none() {
+            ds.bind_group = Some(self.device.create_bind_group(&wgpu::BindGroupDescriptor {
+                label: Some("downscale_bg"),
+                layout: &ds.bind_group_layout,
+                entries: &[
+                    wgpu::BindGroupEntry {
+                        binding: 0,
+                        resource: wgpu::BindingResource::TextureView(texture_view),
+                    },
+                    wgpu::BindGroupEntry {
+                        binding: 1,
+                        resource: ds.output_buffer.as_ref().unwrap().as_entire_binding(),
+                    },
+                    wgpu::BindGroupEntry {
+                        binding: 2,
+                        resource: ds.params_buffer.as_entire_binding(),
+                    },
+                ],
+            }));
+            ds.texture_generation = self.texture_generation;
+        }
+
+        self.queue.write_buffer(
+            &ds.params_buffer,
+            0,
+            bytemuck::bytes_of(&[out_w, out_h]),
+        );
+
+        let mut encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
+            label: Some("downscale"),
+        });
+
+        {
+            let mut pass = encoder.begin_compute_pass(&wgpu::ComputePassDescriptor {
+                label: Some("downscale"),
+                timestamp_writes: None,
+            });
+            pass.set_pipeline(&ds.pipeline);
+            pass.set_bind_group(0, ds.bind_group.as_ref().unwrap(), &[]);
+            pass.dispatch_workgroups((out_w + 15) / 16, (out_h + 15) / 16, 1);
+        }
+
+        encoder.copy_buffer_to_buffer(
+            ds.output_buffer.as_ref().unwrap(),
+            0,
+            ds.readback_buffer.as_ref().unwrap(),
+            0,
+            buf_size,
+        );
+
+        self.queue.submit(std::iter::once(encoder.finish()));
+
+        let slice = ds.readback_buffer.as_ref().unwrap().slice(..);
+        let (tx, rx) = std::sync::mpsc::channel();
+        slice.map_async(wgpu::MapMode::Read, move |r| { tx.send(r).ok(); });
+        self.device.poll(wgpu::PollType::Wait).map_err(|_| GpuError::ReadbackFailed)?;
+        rx.recv().map_err(|_| GpuError::ReadbackFailed)?.map_err(|_| GpuError::ReadbackFailed)?;
+
+        let data = slice.get_mapped_range();
+        let result = data.to_vec();
+        drop(data);
+        ds.readback_buffer.as_ref().unwrap().unmap();
+
+        Ok((out_w, out_h, result))
     }
 }

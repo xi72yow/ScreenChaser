@@ -18,7 +18,7 @@ class IconButton {
   private stateOneStrokeColor: string;
   private stateTwoStrokeColor: string;
   private iconButton: HTMLButtonElement;
-  private svg: HTMLObjectElement;
+  private svg: HTMLDivElement;
   private selector: string | null;
   private container: Element | null;
   private state: "stateOne" | "stateTwo" = "stateOne";
@@ -45,31 +45,20 @@ class IconButton {
     this.iconButton = document.createElement("button");
     this.iconButton.classList.add(buttonClassName);
 
-    this.svg = document.createElement("object");
+    this.svg = document.createElement("div");
     this.svg.style.pointerEvents = "none";
-    this.svg.type = "image/svg+xml";
+    this.svg.style.display = "flex";
     this.svg.classList.add("icon");
     this.iconButton.appendChild(this.svg);
 
-    this.svg.addEventListener("load", () => {
-      const svgDoc = this.svg.contentDocument;
-      const svgEl = svgDoc?.querySelector("svg");
-      if (!svgEl) return;
-      if (this.state === "stateOne") {
-        svgEl.setAttribute("stroke", this.stateTwoStrokeColor);
-      } else {
-        svgEl.setAttribute("stroke", this.stateOneStrokeColor);
-      }
-    });
-
-    this.svg.data = this.stateOneIcon;
+    this.loadSvgInline(this.stateOneIcon);
 
     this.iconButton.addEventListener("click", () => {
       if (this.isDisabled) return;
       
       this.state = this.state === "stateOne" ? "stateTwo" : "stateOne";
-      this.svg.data =
-        this.state === "stateOne" ? this.stateOneIcon : this.stateTwoIcon;
+      const icon = this.state === "stateOne" ? this.stateOneIcon : this.stateTwoIcon;
+      this.loadSvgInline(icon);
       if (props.onClick) {
         props.onClick(this.state);
       }
@@ -85,6 +74,29 @@ class IconButton {
       );
     }
     this.container.appendChild(this.iconButton);
+  }
+
+  private async loadSvgInline(url: string) {
+    try {
+      const resp = await fetch(url);
+      const text = await resp.text();
+      this.svg.innerHTML = text;
+      const svgEl = this.svg.querySelector("svg");
+      if (svgEl) {
+        const raw =
+          this.state === "stateOne"
+            ? this.stateOneStrokeColor
+            : this.stateTwoStrokeColor;
+        const color = raw.startsWith("var(")
+          ? getComputedStyle(document.documentElement).getPropertyValue(
+              raw.slice(4, -1)
+            ).trim()
+          : raw;
+        svgEl.setAttribute("stroke", color);
+      }
+    } catch {
+      // fallback: show nothing
+    }
   }
 
   private animate(timestamp: number) {

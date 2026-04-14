@@ -65,8 +65,8 @@ scanButton = new IconButton({
   selector: ".footer-right",
   stateOneIcon: refreshIcon,
   stateTwoIcon: refreshIcon,
-  stateOneStrokeColor: "#888",
-  stateTwoStrokeColor: "#888",
+  stateOneStrokeColor: "var(--FG)",
+  stateTwoStrokeColor: "var(--FG)",
   onClick: scanNetwork,
 });
 
