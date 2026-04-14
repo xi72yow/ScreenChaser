@@ -118,14 +118,14 @@ class NumberInput {
     buttonSection.appendChild(button2);
 
     button2.addEventListener("click", () => {
-      if (parseInt(numberInput.value) > parseInt(numberInput.min)) {
+      if (parseFloat(numberInput.value) > parseFloat(numberInput.min)) {
         numberInput.value = (parseFloat(numberInput.value) - step).toString();
         this.handleInput();
       }
     });
 
     button1.addEventListener("click", () => {
-      if (parseInt(numberInput.value) < parseInt(numberInput.max)) {
+      if (parseFloat(numberInput.value) < parseFloat(numberInput.max)) {
         numberInput.value = (parseFloat(numberInput.value) + step).toString();
         this.handleInput();
       }
@@ -181,23 +181,22 @@ class NumberInput {
   }
 
   private handleInput() {
-    if (parseInt(this.inputElement.value) > parseInt(this.inputElement.max)) {
-      this.inputElement.value = this.inputElement.max;
-    }
-    if (parseInt(this.inputElement.value) < parseInt(this.inputElement.min)) {
-      this.inputElement.value = this.inputElement.min;
-    }
+    const val = parseFloat(this.inputElement.value);
+    const max = parseFloat(this.inputElement.max);
+    const min = parseFloat(this.inputElement.min);
+
+    if (isNaN(val)) return;
+
+    if (val > max) this.inputElement.value = max.toString();
+    if (val < min) this.inputElement.value = min.toString();
 
     if (this.float) {
-      if (isNaN(parseFloat(this.inputElement.value))) return;
       this.inputElement.value = parseFloat(this.inputElement.value).toFixed(2);
     } else {
-      if (isNaN(parseInt(this.inputElement.value))) return;
-      this.inputElement.value = parseInt(this.inputElement.value).toString();
+      this.inputElement.value = Math.round(parseFloat(this.inputElement.value)).toString();
     }
 
-    const val = this.getValue();
-    this.changeCallbacks.forEach((cb) => cb(val));
+    this.changeCallbacks.forEach((cb) => cb(this.getValue()));
   }
 
   getValue(): number {
@@ -207,15 +206,12 @@ class NumberInput {
   }
 
   setValue(value: number, silent = false): void {
-    this.inputElement.value = value.toString();
+    this.inputElement.value = this.float ? value.toFixed(2) : value.toString();
     if (silent) {
-      // Clamp without firing callbacks
-      if (parseInt(this.inputElement.value) > parseInt(this.inputElement.max)) {
-        this.inputElement.value = this.inputElement.max;
-      }
-      if (parseInt(this.inputElement.value) < parseInt(this.inputElement.min)) {
-        this.inputElement.value = this.inputElement.min;
-      }
+      const max = parseFloat(this.inputElement.max);
+      const min = parseFloat(this.inputElement.min);
+      if (value > max) this.inputElement.value = this.float ? max.toFixed(2) : max.toString();
+      if (value < min) this.inputElement.value = this.float ? min.toFixed(2) : min.toString();
     } else {
       this.handleInput();
     }

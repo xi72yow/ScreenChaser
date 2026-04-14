@@ -108,7 +108,8 @@ class DeviceCard extends HTMLElement {
       minValue: 0.01,
       maxValue: 10,
       defaultValue: 0.5,
-      step: 0.01,
+      step: 0.1,
+      float: true,
       helperText: "Set the buffer duration in seconds (0.01-10)",
       label: "Buffer Seconds",
     });
