@@ -340,7 +340,7 @@ class DeviceCard extends HTMLElement {
         this.statusDot.style.background = COLOR_ERR;
       } else if (dev.sending) {
         this.statusDot.style.background = COLOR_OK;
-      } else if (dev.enabled) {
+      } else if (!dev.enabled) {
         this.statusDot.style.background = COLOR_WARN;
       } else {
         this.statusDot.style.background = COLOR_ERR;

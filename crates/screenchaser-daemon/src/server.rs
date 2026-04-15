@@ -192,14 +192,25 @@ async fn handle_client_msg(
             .await
             .unwrap_or_default();
 
-            let existing_ips: std::collections::HashSet<_> = state
-                .config
-                .read()
-                .await
-                .devices
-                .values()
-                .map(|d| d.ip)
-                .collect();
+            let mut app_config = state.config.read().await.clone();
+            let mut name_updated = false;
+
+            for d in &discovered {
+                for dev in app_config.devices.values_mut() {
+                    if dev.ip == d.ip && dev.name != d.name {
+                        debug!(ip = %d.ip, old = %dev.name, new = %d.name, "updating device name");
+                        dev.name = d.name.clone();
+                        name_updated = true;
+                    }
+                }
+            }
+
+            if name_updated {
+                state.cmd_tx.send(Command::UpdateConfig(app_config.clone())).await?;
+            }
+
+            let existing_ips: std::collections::HashSet<_> =
+                app_config.devices.values().map(|d| d.ip).collect();
 
             let devices: Vec<DiscoveredDeviceInfo> = discovered
                 .into_iter()
@@ -213,6 +224,11 @@ async fn handle_client_msg(
 
             debug!(count = devices.len(), "scan complete");
             send_json(socket, &ServerMsg::ScanResult { devices }).await?;
+
+            if name_updated {
+                let config = state.config.read().await.clone();
+                send_json(socket, &ServerMsg::Config { config }).await?;
+            }
         }
         ClientMsg::SetPreview { enabled } => {
             *wants_preview = enabled;

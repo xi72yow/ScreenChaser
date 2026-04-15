@@ -22,6 +22,8 @@ struct DeviceRuntime {
     udp: WledUdpSender,
     enabled: bool,
     led_count: u32,
+    reachable: bool,
+    ip: std::net::Ipv4Addr,
 }
 
 pub async fn run(
@@ -46,6 +48,8 @@ pub async fn run(
     let mut fps_timer = Instant::now();
     let mut current_fps = 0.0f32;
     let mut status_interval = tokio::time::interval(Duration::from_secs(1));
+    let mut reachability_interval = tokio::time::interval(Duration::from_secs(30));
+    let mut save_deadline: Option<tokio::time::Instant> = None;
 
     info!(
         fps = target_fps,
@@ -71,6 +75,24 @@ pub async fn run(
                     fps_timer = Instant::now();
                 }
             }
+            _ = reachability_interval.tick() => {
+                let mut join_set = tokio::task::JoinSet::new();
+                for (id, dev) in devices.iter() {
+                    if dev.enabled {
+                        let id = id.clone();
+                        let ip = dev.ip;
+                        join_set.spawn(async move { (id, screenchaser_wled::is_reachable(ip).await) });
+                    }
+                }
+                for dev in devices.values_mut() {
+                    dev.reachable = false;
+                }
+                while let Some(Ok((id, reachable))) = join_set.join_next().await {
+                    if let Some(dev) = devices.get_mut(&id) {
+                        dev.reachable = reachable;
+                    }
+                }
+            }
             _ = status_interval.tick() => {
                 let status = DaemonStatus {
                     fps: current_fps,
@@ -79,17 +101,35 @@ pub async fn run(
                         (id.clone(), DeviceStatus {
                             enabled: d.enabled,
                             led_count: d.led_count,
-                            sending: d.enabled,
+                            sending: d.enabled && d.reachable,
                         })
                     }).collect(),
                 };
                 let _ = status_tx.send(status);
             }
+            _ = async {
+                tokio::time::sleep_until(save_deadline.unwrap()).await;
+            }, if save_deadline.is_some() => {
+                save_deadline = None;
+                let cfg = shared.config.read().await.clone();
+                if let Err(e) = screenchaser_config::save_config(&cfg) {
+                    error!("failed to save config: {e}");
+                }
+                debug!("config saved to disk");
+            }
             cmd = cmd_rx.recv() => {
                 match cmd {
                     Some(Command::UpdateConfig(new_config)) => {
                         info!("applying config update");
+                        let old_reachable: HashMap<String, bool> = devices.iter()
+                            .map(|(id, d)| (id.clone(), d.reachable))
+                            .collect();
                         devices = register_devices(&mut gpu, &new_config).await;
+                        for (id, dev) in devices.iter_mut() {
+                            if let Some(&r) = old_reachable.get(id) {
+                                dev.reachable = r;
+                            }
+                        }
                         target_fps = new_config.capture.target_fps.max(1);
                         preview_settings = preview_settings_from_config(&new_config);
                         interval = tokio::time::interval(Duration::from_micros(
@@ -98,11 +138,13 @@ pub async fn run(
                         interval.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
 
                         *shared.config.write().await = new_config.clone();
-                        if let Err(e) = screenchaser_config::save_config(&new_config) {
-                            error!("failed to save config: {e}");
-                        }
+                        save_deadline = Some(tokio::time::Instant::now() + Duration::from_secs(2));
                     }
                     Some(Command::Shutdown) | None => {
+                        if save_deadline.is_some() {
+                            let cfg = shared.config.read().await.clone();
+                            let _ = screenchaser_config::save_config(&cfg);
+                        }
                         info!("processing loop shutting down");
                         break;
                     }
@@ -203,6 +245,8 @@ async fn register_devices(
                         udp,
                         enabled: dev_config.enabled,
                         led_count: fields.len() as u32,
+                        reachable: false,
+                        ip: dev_config.ip,
                     },
                 );
             }

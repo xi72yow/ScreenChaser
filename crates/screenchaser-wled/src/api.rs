@@ -58,6 +58,15 @@ pub async fn fetch_wled_info(ip: Ipv4Addr) -> Result<WledDeviceData, ApiError> {
     Ok(resp)
 }
 
+pub async fn is_reachable(ip: Ipv4Addr) -> bool {
+    let url = format!("http://{}/json/info", ip);
+    let client = reqwest::Client::builder()
+        .timeout(std::time::Duration::from_secs(2))
+        .build()
+        .unwrap();
+    client.get(&url).send().await.is_ok()
+}
+
 pub async fn set_wled_state(ip: Ipv4Addr, state: &WledState) -> Result<WledDeviceData, ApiError> {
     let url = format!("http://{}/json/state", ip);
     let resp = reqwest::Client::new()

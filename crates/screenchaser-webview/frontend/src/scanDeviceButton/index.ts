@@ -81,6 +81,8 @@ async function scanNetwork() {
       });
       createDeviceCard(id, device.ip, device.name);
     }
+
+    await refreshDeviceNames();
   } catch (error) {
     console.error("scan failed:", error);
     Toaster({ text: "Network scan failed", type: ToastTypes.ERROR, duration: 3000 }).showToast();
@@ -88,6 +90,19 @@ async function scanNetwork() {
 
   scanButton.stopSpin();
   isScanning = false;
+}
+
+async function refreshDeviceNames() {
+  try {
+    const response = await daemon.getConfig();
+    const devices = response.config?.devices || {};
+    for (const [id, device] of Object.entries(devices) as [string, any][]) {
+      const card = document.querySelector(`device-card[device-id="${id}"]`);
+      if (card && device.name) {
+        card.setAttribute("name", device.name);
+      }
+    }
+  } catch (_) {}
 }
 
 scanButton = new IconButton({
