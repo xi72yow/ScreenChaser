@@ -7,11 +7,13 @@ import RectangleEditor from "@/ledFieldEditor/rectangle-editor";
 import { generateLedFields } from "@/biasCalculation/ledFields";
 import { daemon } from "@/ws";
 import { preview, type PreviewFrame } from "@/preview";
+import { COLOR_OK, COLOR_WARN, COLOR_ERR } from "@/statusIndicator";
 import "./index.css";
 
 class DeviceCard extends HTMLElement {
   static template = `
     <div class="device">
+        <span class="device-status-dot"></span>
         <canvas class="device-canvas"></canvas>
         <div class="device-details">
             <div class="head" style="margin: 10px;">
@@ -44,6 +46,8 @@ class DeviceCard extends HTMLElement {
   private ledColors: { r: number; g: number; b: number }[] = [];
   private frameListener: ((frame: PreviewFrame) => void) | null = null;
   private colorsHandler: ((msg: any) => void) | null = null;
+  private statusHandler: ((msg: any) => void) | null = null;
+  private statusDot: HTMLElement | null = null;
   private editorFrameListener: ((frame: PreviewFrame) => void) | null = null;
   private editorSized = false;
 
@@ -251,6 +255,7 @@ class DeviceCard extends HTMLElement {
       .replace("$2", this.ip);
 
     this.canvas = this.querySelector(".device-canvas") as HTMLCanvasElement;
+    this.statusDot = this.querySelector(".device-status-dot") as HTMLElement;
 
     const ipElement = this.querySelector(".ip");
     if (ipElement) {
@@ -327,6 +332,21 @@ class DeviceCard extends HTMLElement {
       }
     };
     daemon.on("led_colors", this.colorsHandler);
+
+    this.statusHandler = (msg: any) => {
+      if (!this.statusDot) return;
+      const dev = msg.devices?.[this.deviceId];
+      if (!dev) {
+        this.statusDot.style.background = COLOR_ERR;
+      } else if (dev.sending) {
+        this.statusDot.style.background = COLOR_OK;
+      } else if (dev.enabled) {
+        this.statusDot.style.background = COLOR_WARN;
+      } else {
+        this.statusDot.style.background = COLOR_ERR;
+      }
+    };
+    daemon.on("status", this.statusHandler);
   }
 
   private stopLivePreview() {
@@ -337,6 +357,10 @@ class DeviceCard extends HTMLElement {
     if (this.colorsHandler) {
       daemon.off("led_colors", this.colorsHandler);
       this.colorsHandler = null;
+    }
+    if (this.statusHandler) {
+      daemon.off("status", this.statusHandler);
+      this.statusHandler = null;
     }
   }
 

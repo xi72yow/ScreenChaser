@@ -8,3 +8,4 @@ import "@/logo";
 import "@/deviceCard";
 import "@/addDeviceBtn";
 import "@/scanDeviceButton";
+import "@/statusIndicator";

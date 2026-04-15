@@ -1,0 +1,52 @@
+.status-detail {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 12px;
+  font-size: 0.9em;
+}
+
+.status-detail .label {
+  color: var(--COMMENT);
+}
+
+.status-detail .value {
+  color: var(--FG);
+  text-align: right;
+}
+
+.status-detail .history-list {
+  grid-column: 1 / -1;
+  margin-top: 4px;
+  border-top: 1px solid var(--BORDER);
+  padding-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.status-detail .history-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-detail .history-time {
+  color: var(--COMMENT);
+  font-size: 0.85em;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.status-detail .history-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-detail .history-text {
+  color: var(--FG);
+}

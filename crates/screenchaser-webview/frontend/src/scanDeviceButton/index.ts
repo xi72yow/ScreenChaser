@@ -1,5 +1,6 @@
 import refreshIcon from "@core/icons/refresh.svg";
 import IconButton from "@/core/iconButton";
+import Toaster, { ToastTypes } from "@core/toasts";
 import { daemon } from "@/ws";
 
 let scanButton: IconButton;
@@ -48,8 +49,18 @@ async function scanNetwork() {
       if (ip) existingIps.add(ip);
     });
 
-    for (const device of found) {
-      if (existingIps.has(device.ip)) continue;
+    const newDevices = found.filter((d: any) => !existingIps.has(d.ip));
+    if (newDevices.length === 0) {
+      Toaster({ text: "No new devices found", type: ToastTypes.INFO, duration: 2000 }).showToast();
+    } else {
+      Toaster({
+        text: `Found ${newDevices.length} new device${newDevices.length > 1 ? "s" : ""}`,
+        type: ToastTypes.SUCCESS,
+        duration: 3000,
+      }).showToast();
+    }
+
+    for (const device of newDevices) {
       const id = device.ip.replace(/\./g, "-");
       await daemon.updateDevice(id, {
         ip: device.ip,
@@ -72,6 +83,7 @@ async function scanNetwork() {
     }
   } catch (error) {
     console.error("scan failed:", error);
+    Toaster({ text: "Network scan failed", type: ToastTypes.ERROR, duration: 3000 }).showToast();
   }
 
   scanButton.stopSpin();

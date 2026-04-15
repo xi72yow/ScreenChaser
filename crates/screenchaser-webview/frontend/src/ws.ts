@@ -1,3 +1,5 @@
+import Toaster, { ToastTypes } from "@core/toasts";
+
 type MessageHandler = (msg: any) => void;
 type BinaryHandler = (blob: Blob) => void;
 
@@ -32,6 +34,7 @@ class DaemonClient {
       this.socket.onopen = () => {
         console.log("[ws] connected to daemon");
         this.connectPromise = null;
+        Toaster({ text: "Connected to daemon", type: ToastTypes.SUCCESS, duration: 2000 }).showToast();
         resolve();
       };
 
@@ -51,6 +54,7 @@ class DaemonClient {
       this.socket.onclose = () => {
         console.log("[ws] disconnected, reconnecting in 2s...");
         this.connectPromise = null;
+        Toaster({ text: "Disconnected, reconnecting...", type: ToastTypes.WARNING, duration: 3000 }).showToast();
         this.scheduleReconnect();
       };
 
@@ -72,9 +76,24 @@ class DaemonClient {
     }, 2000);
   }
 
+  private wasCapturing = false;
+
   private dispatch(msg: any) {
     const type = msg.type as string;
     if (!type) return;
+
+    if (type === "status") {
+      if (msg.capturing && !this.wasCapturing) {
+        Toaster({ text: "Capture started", type: ToastTypes.SUCCESS, duration: 2000 }).showToast();
+      } else if (!msg.capturing && this.wasCapturing) {
+        Toaster({ text: "Capture stopped", type: ToastTypes.WARNING, duration: 3000 }).showToast();
+      }
+      this.wasCapturing = msg.capturing;
+    }
+
+    if (type === "error") {
+      Toaster({ text: msg.message || "Unknown error", type: ToastTypes.ERROR, duration: 5000 }).showToast();
+    }
 
     // resolve all pending requests for this type
     const pending = this.pendingRequests.get(type);

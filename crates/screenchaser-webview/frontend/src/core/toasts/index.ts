@@ -25,6 +25,14 @@ const toaster = document.createElement("div");
 toaster.className = "toaster";
 document.body.appendChild(toaster);
 
+export type ToastHistoryEntry = { text: string; type: ToastTypes; time: Date };
+const history: ToastHistoryEntry[] = [];
+const MAX_HISTORY = 50;
+
+export function getToastHistory(): readonly ToastHistoryEntry[] {
+  return history;
+}
+
 class Toaster {
   defaults: ToasterConfigurationObject = {
     text: "Toaster is awesome!",
@@ -49,6 +57,13 @@ class Toaster {
   }
 
   showToast(): Toaster {
+    history.push({
+      text: this.options.text || "",
+      type: this.options.type || ToastTypes.INFO,
+      time: new Date(),
+    });
+    if (history.length > MAX_HISTORY) history.shift();
+
     this.toastElement = this._buildToast();
 
     this._rootElement = toaster;
@@ -95,18 +110,21 @@ class Toaster {
     if (this.options.node && this.options.node.nodeType === Node.ELEMENT_NODE) {
       divElement.appendChild(this.options.node);
     } else {
-      const svg = document.createElement("object");
-      svg.style.pointerEvents = "none";
-      svg.type = "image/svg+xml";
-      svg.classList.add("icon");
-      divElement.appendChild(svg);
-      svg.addEventListener("load", () => {
-        const svgDoc = svg.contentDocument!;
-        svgDoc
-          .querySelector("svg")!
-          .setAttribute("stroke", this.getTypeColor(this.options.type!));
-      });
-      svg.data = this.options.icon!;
+      const iconWrapper = document.createElement("div");
+      iconWrapper.style.pointerEvents = "none";
+      iconWrapper.style.display = "flex";
+      iconWrapper.classList.add("icon");
+      divElement.appendChild(iconWrapper);
+      fetch(this.options.icon!)
+        .then((r) => r.text())
+        .then((text) => {
+          iconWrapper.innerHTML = text;
+          const svgEl = iconWrapper.querySelector("svg");
+          if (svgEl) {
+            svgEl.setAttribute("stroke", this.getTypeColor(this.options.type!));
+          }
+        })
+        .catch(() => {});
 
       let textElement = document.createElement("span");
       textElement.innerHTML = this.options.text!;
