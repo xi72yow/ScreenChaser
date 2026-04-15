@@ -3,6 +3,7 @@ import NumberInput from "@core/numberInput";
 import IconButton from "@core/iconButton";
 import Toaster, { ToastTypes } from "@core/toasts";
 import trashIcon from "@core/icons/trash.svg";
+import powerIcon from "@core/icons/power.svg";
 import RectangleEditor from "@/ledFieldEditor/rectangle-editor";
 import { generateLedFields } from "@/biasCalculation/ledFields";
 import { daemon } from "@/ws";
@@ -27,6 +28,7 @@ class DeviceCard extends HTMLElement {
   deviceId: string = "";
   ip: string = "";
   deviceName: string = "";
+  private enabled: boolean = true;
 
   modal: Modal;
   fieldWidth: NumberInput;
@@ -40,6 +42,7 @@ class DeviceCard extends HTMLElement {
   clockWise: NumberInput;
   editorContainer: HTMLDivElement;
   editor: any;
+  powerToggle: IconButton;
 
   private canvas: HTMLCanvasElement | null = null;
   private ledFields: any[] = [];
@@ -180,6 +183,19 @@ class DeviceCard extends HTMLElement {
 
     this.modal.saveIconBtn?.iconButton?.remove();
 
+    this.powerToggle = new IconButton({
+      container: this.modal.buttonSpace,
+      stateOneIcon: powerIcon,
+      stateTwoIcon: powerIcon,
+      stateOneStrokeColor: COLOR_OK,
+      stateTwoStrokeColor: COLOR_ERR,
+      onClick: (state) => {
+        this.enabled = state === "stateOne";
+        daemon.toggleDevice(this.deviceId, this.enabled);
+        this.applyEnabledState();
+      },
+    });
+
     new IconButton({
       container: this.modal.buttonSpace,
       stateOneIcon: trashIcon,
@@ -235,6 +251,7 @@ class DeviceCard extends HTMLElement {
         this.startLed.setValue(device.chaser.start_led || 0, true);
         this.clockWise.setValue(device.chaser.clockwise ? 1 : 0, true);
         if (device.name) this.deviceName = device.name;
+        this.enabled = device.enabled !== false;
         if (device.chaser.fields?.length) {
           this.ledFields = device.chaser.fields;
         }
@@ -257,6 +274,8 @@ class DeviceCard extends HTMLElement {
     this.canvas = this.querySelector(".device-canvas") as HTMLCanvasElement;
     this.statusDot = this.querySelector(".device-status-dot") as HTMLElement;
 
+    this.applyEnabledState();
+
     const ipElement = this.querySelector(".ip");
     if (ipElement) {
       ipElement.addEventListener("click", (event) => {
@@ -270,6 +289,23 @@ class DeviceCard extends HTMLElement {
       card.addEventListener("click", () => {
         this.openChaserSettings();
       });
+    }
+  }
+
+  private applyEnabledState() {
+    const card = this.querySelector(".device");
+    if (card) {
+      card.classList.toggle("off", !this.enabled);
+    }
+    this.syncPowerToggle();
+  }
+
+  private syncPowerToggle() {
+    if (!this.powerToggle) return;
+    const btn = this.powerToggle.iconButton;
+    const svg = btn.querySelector("svg");
+    if (svg) {
+      svg.setAttribute("stroke", this.enabled ? COLOR_OK : COLOR_ERR);
     }
   }
 
@@ -487,7 +523,7 @@ class DeviceCard extends HTMLElement {
       await daemon.updateDevice(this.deviceId, {
         ip: this.ip,
         name: this.deviceName || this.deviceId,
-        enabled: true,
+        enabled: this.enabled,
         chaser: {
           field_width: this.fieldWidth.getValue(),
           field_height: this.fieldHeight.getValue(),
