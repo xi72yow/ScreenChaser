@@ -78,9 +78,9 @@ pub struct GpuPipeline {
 
 impl GpuPipeline {
     pub async fn new() -> Result<Self, GpuError> {
-        let instance = wgpu::Instance::new(&wgpu::InstanceDescriptor {
+        let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
             backends: wgpu::Backends::VULKAN,
-            ..Default::default()
+            ..wgpu::InstanceDescriptor::new_without_display_handle()
         });
 
         let adapter = instance
@@ -183,14 +183,14 @@ impl GpuPipeline {
 
         let extract_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
             label: Some("extract_layout"),
-            bind_group_layouts: &[&extract_bind_group_layout],
-            push_constant_ranges: &[],
+            bind_group_layouts: &[Some(&extract_bind_group_layout)],
+            immediate_size: 0,
         });
 
         let average_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
             label: Some("average_layout"),
-            bind_group_layouts: &[&average_bind_group_layout],
-            push_constant_ranges: &[],
+            bind_group_layouts: &[Some(&average_bind_group_layout)],
+            immediate_size: 0,
         });
 
         let extract_pipeline =
@@ -257,8 +257,8 @@ impl GpuPipeline {
 
         let downscale_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
             label: Some("downscale_layout"),
-            bind_group_layouts: &[&downscale_bgl],
-            push_constant_ranges: &[],
+            bind_group_layouts: &[Some(&downscale_bgl)],
+            immediate_size: 0,
         });
 
         let downscale_pipeline =
@@ -566,7 +566,7 @@ impl GpuPipeline {
             tx.send(result).ok();
         });
         self.device
-            .poll(wgpu::PollType::Wait)
+            .poll(wgpu::PollType::Wait { submission_index: None, timeout: None })
             .map_err(|_| GpuError::ReadbackFailed)?;
         rx.recv()
             .map_err(|_| GpuError::ReadbackFailed)?
@@ -675,7 +675,7 @@ impl GpuPipeline {
         let slice = ds.readback_buffer.as_ref().unwrap().slice(..);
         let (tx, rx) = std::sync::mpsc::channel();
         slice.map_async(wgpu::MapMode::Read, move |r| { tx.send(r).ok(); });
-        self.device.poll(wgpu::PollType::Wait).map_err(|_| GpuError::ReadbackFailed)?;
+        self.device.poll(wgpu::PollType::Wait { submission_index: None, timeout: None }).map_err(|_| GpuError::ReadbackFailed)?;
         rx.recv().map_err(|_| GpuError::ReadbackFailed)?.map_err(|_| GpuError::ReadbackFailed)?;
 
         let data = slice.get_mapped_range();

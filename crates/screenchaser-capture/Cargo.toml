@@ -7,8 +7,8 @@ authors.workspace = true
 
 [dependencies]
 screenchaser-config = { workspace = true }
-ashpd = { version = "0.10", features = ["tokio"] }
-pipewire = "0.8"
+ashpd = { version = "0.13", features = ["tokio", "screencast"] }
+pipewire = "0.9"
 tokio = { workspace = true }
 tracing = { workspace = true }
 thiserror = { workspace = true }

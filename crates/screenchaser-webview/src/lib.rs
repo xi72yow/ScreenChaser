@@ -46,7 +46,7 @@ pub fn run(on_ready: impl FnOnce(WebviewHandle) + Send + 'static) {
 
     let mut web_context = WebContext::default();
 
-    let _webview = WebViewBuilder::with_web_context(&mut web_context)
+    let _webview = WebViewBuilder::new_with_web_context(&mut web_context)
         .with_custom_protocol("sc".into(), move |_id, request| {
             let path = request.uri().path();
             let path = if path == "/" { "index.html" } else { path };

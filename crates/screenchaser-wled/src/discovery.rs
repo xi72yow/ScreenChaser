@@ -35,11 +35,11 @@ pub async fn discover_wled_devices(
         match receiver.recv_timeout(Duration::from_millis(100)) {
             Ok(mdns_sd::ServiceEvent::ServiceResolved(info)) => {
                 if let Some(ip) = info.get_addresses_v4().into_iter().next() {
-                    match crate::api::fetch_wled_info(*ip).await {
+                    match crate::api::fetch_wled_info(ip).await {
                         Ok(data) => {
                             info!(ip = %ip, name = %data.info.name, "discovered wled device");
                             devices.push(DiscoveredDevice {
-                                ip: *ip,
+                                ip,
                                 name: data.info.name,
                                 led_count: data.info.leds.count,
                             });

@@ -1,11 +1,14 @@
 use std::sync::{Arc, Mutex};
 
 use pipewire as pw;
+use pw::context::ContextBox;
+use pw::main_loop::MainLoopBox;
+use pw::properties::PropertiesBox;
 use pw::spa::param::video::{VideoFormat, VideoInfoRaw};
 use pw::spa::pod::serialize::PodSerializer;
 use pw::spa::pod::{ChoiceValue, Object, Pod, Property, PropertyFlags, Value};
 use pw::spa::utils::{Choice, ChoiceEnum, ChoiceFlags, Direction, Id, SpaTypes};
-use pw::stream::StreamFlags;
+use pw::stream::{StreamBox, StreamFlags};
 use screenchaser_config::{CapturedFrame, PixelFormat};
 use thiserror::Error;
 
@@ -52,7 +55,10 @@ impl WaylandCapture {
 
     async fn start(restore_token: Option<&str>) -> Result<(Self, Option<String>), CaptureError> {
         use ashpd::desktop::{
-            screencast::{CursorMode, Screencast, SourceType},
+            screencast::{
+                CursorMode, OpenPipeWireRemoteOptions, Screencast, SelectSourcesOptions,
+                SourceType, StartCastOptions,
+            },
             PersistMode,
         };
 
@@ -60,24 +66,24 @@ impl WaylandCapture {
             .await
             .map_err(|e| CaptureError::Portal(e.to_string()))?;
         let session = proxy
-            .create_session()
+            .create_session(Default::default())
             .await
             .map_err(|e| CaptureError::Portal(e.to_string()))?;
 
+        let sources_opts = SelectSourcesOptions::default()
+            .set_cursor_mode(CursorMode::Hidden)
+            .set_sources(ashpd::enumflags2::BitFlags::from(SourceType::Monitor))
+            .set_multiple(false)
+            .set_persist_mode(PersistMode::ExplicitlyRevoked)
+            .set_restore_token(restore_token);
+
         proxy
-            .select_sources(
-                &session,
-                CursorMode::Hidden,
-                SourceType::Monitor.into(),
-                false,
-                restore_token,
-                PersistMode::ExplicitlyRevoked,
-            )
+            .select_sources(&session, sources_opts)
             .await
             .map_err(|e| CaptureError::Portal(e.to_string()))?;
 
         let response = proxy
-            .start(&session, None)
+            .start(&session, None, StartCastOptions::default())
             .await
             .map_err(|e| CaptureError::Portal(e.to_string()))?
             .response()
@@ -91,7 +97,7 @@ impl WaylandCapture {
         let new_token = response.restore_token().map(|s| s.to_string());
 
         let fd = proxy
-            .open_pipe_wire_remote(&session)
+            .open_pipe_wire_remote(&session, OpenPipeWireRemoteOptions::default())
             .await
             .map_err(|e| CaptureError::Portal(e.to_string()))?;
 
@@ -107,17 +113,16 @@ impl WaylandCapture {
         let state_clone = state.clone();
 
         let pw_thread = std::thread::spawn(move || {
-            pw::init();
-
-            let mainloop = pw::main_loop::MainLoop::new(None).expect("pw mainloop");
-            let context = pw::context::Context::new(&mainloop).expect("pw context");
+            let mainloop = MainLoopBox::new(None).expect("pw mainloop");
+            let context =
+                ContextBox::new(mainloop.loop_(), None).expect("pw context");
             let core = context.connect_fd(fd, None).expect("pw connect_fd");
 
-            let stream = pw::stream::Stream::new(
+            let stream = StreamBox::new(
                 &core,
                 "screenchaser",
                 {
-                    let mut props = pw::properties::Properties::new();
+                    let mut props = PropertiesBox::new();
                     props.insert(*pw::keys::MEDIA_TYPE, "Video");
                     props.insert(*pw::keys::MEDIA_CATEGORY, "Capture");
                     props.insert(*pw::keys::MEDIA_ROLE, "Screen");

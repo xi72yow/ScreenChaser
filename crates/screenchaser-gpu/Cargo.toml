@@ -7,7 +7,7 @@ authors.workspace = true
 
 [dependencies]
 screenchaser-config = { workspace = true }
-wgpu = "25"
+wgpu = "29"
 bytemuck = { version = "1", features = ["derive"] }
 tokio = { workspace = true }
 tracing = { workspace = true }

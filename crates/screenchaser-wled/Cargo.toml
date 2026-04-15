@@ -12,8 +12,8 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 tracing = { workspace = true }
 thiserror = { workspace = true }
-reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
-mdns-sd = "0.12"
+reqwest = { version = "0.13", default-features = false, features = ["json", "rustls"] }
+mdns-sd = "0.19"
 
 [dev-dependencies]
 tracing-subscriber = { workspace = true }
