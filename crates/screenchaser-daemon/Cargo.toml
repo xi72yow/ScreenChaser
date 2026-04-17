@@ -1,0 +1,33 @@
+[package]
+name = "screenchaser-daemon"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[dependencies]
+screenchaser-config = { workspace = true }
+screenchaser-capture = { workspace = true }
+screenchaser-gpu = { workspace = true }
+screenchaser-wled = { workspace = true }
+screenchaser-webview = { workspace = true }
+
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+anyhow = { workspace = true }
+axum = { version = "0.8", features = ["ws"] }
+clap = { version = "4", features = ["derive"] }
+
+[package.metadata.deb]
+maintainer = "xi72yow <xi72yow@github.com>"
+section = "utils"
+priority = "optional"
+depends = "libpipewire-0.3-0, libvulkan1, mesa-vulkan-drivers, libwebkit2gtk-4.1-0, libgtk-3-0, libayatana-appindicator3-1, libdbus-1-3, libxdo3"
+assets = [
+    ["target/dist/screenchaser-daemon", "usr/bin/", "755"],
+    ["../../screenchaser.desktop", "usr/share/applications/", "644"],
+    ["../../assets/icon256x256.png", "usr/share/icons/hicolor/256x256/apps/screenchaser.png", "644"],
+]

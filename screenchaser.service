@@ -1,0 +1,12 @@
+[Unit]
+Description=ScreenChaser Ambient Lighting Daemon
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/screenchaser-daemon
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=graphical-session.target

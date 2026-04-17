@@ -1,0 +1,18 @@
+[package]
+name = "screenchaser-capture"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[dependencies]
+screenchaser-config = { workspace = true }
+ashpd = { version = "0.13", features = ["tokio", "screencast"] }
+pipewire = "0.9"
+tokio = { workspace = true }
+tracing = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+tracing-subscriber = { workspace = true }
+

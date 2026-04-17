@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=ScreenChaser
+Comment=Ambient Lighting Daemon
+Exec=screenchaser-daemon
+Icon=screenchaser
+Terminal=false
+Categories=Utility;

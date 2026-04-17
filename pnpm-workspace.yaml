@@ -1,5 +1,0 @@
-packages:
-  - "app-src/"
-  - "core-src/"
-  - "cli-src/"
-  - "firmware-src/*"

@@ -1,0 +1,121 @@
+import refreshIcon from "@core/icons/refresh.svg";
+import IconButton from "@/core/iconButton";
+import Toaster, { ToastTypes } from "@core/toasts";
+import { daemon } from "@/ws";
+
+let scanButton: IconButton;
+let isScanning = false;
+
+function createDeviceCard(id: string, ip: string, name: string) {
+  const devicesContainer = document.querySelector(".devices");
+  if (!devicesContainer) return;
+
+  let card = document.querySelector(
+    `device-card[device-id="${id}"]`
+  ) as HTMLElement;
+  if (!card) {
+    card = document.createElement("device-card");
+    card.setAttribute("device-id", id);
+    devicesContainer.appendChild(card);
+  }
+  card.setAttribute("ip", ip);
+  card.setAttribute("name", name);
+}
+
+async function loadDevicesFromConfig() {
+  try {
+    const response = await daemon.getConfig();
+    const devices = response.config?.devices || {};
+    for (const [id, device] of Object.entries(devices) as [string, any][]) {
+      createDeviceCard(id, device.ip, device.name || id);
+    }
+  } catch (err) {
+    console.error("failed to load devices from config:", err);
+  }
+}
+
+async function scanNetwork() {
+  if (isScanning) return;
+  isScanning = true;
+  scanButton.startSpin();
+
+  try {
+    const response = await daemon.scanNetwork();
+    const found = response.devices || [];
+
+    const existingIps = new Set<string>();
+    document.querySelectorAll("device-card[ip]").forEach((card) => {
+      const ip = card.getAttribute("ip");
+      if (ip) existingIps.add(ip);
+    });
+
+    const newDevices = found.filter((d: any) => !existingIps.has(d.ip));
+    if (newDevices.length === 0) {
+      Toaster({ text: "No new devices found", type: ToastTypes.INFO, duration: 2000 }).showToast();
+    } else {
+      Toaster({
+        text: `Found ${newDevices.length} new device${newDevices.length > 1 ? "s" : ""}`,
+        type: ToastTypes.SUCCESS,
+        duration: 3000,
+      }).showToast();
+    }
+
+    for (const device of newDevices) {
+      const id = device.ip.replace(/\./g, "-");
+      await daemon.updateDevice(id, {
+        ip: device.ip,
+        name: device.name,
+        enabled: true,
+        chaser: {
+          led_count_top: 0,
+          led_count_bottom: device.led_count || 1,
+          led_count_left: 0,
+          led_count_right: 0,
+          field_width: 10,
+          field_height: 10,
+          start_led: 0,
+          clockwise: true,
+          buffer_seconds: 0.5,
+          fields: null,
+        },
+      });
+      createDeviceCard(id, device.ip, device.name);
+    }
+
+    await refreshDeviceNames();
+  } catch (error) {
+    console.error("scan failed:", error);
+    Toaster({ text: "Network scan failed", type: ToastTypes.ERROR, duration: 3000 }).showToast();
+  }
+
+  scanButton.stopSpin();
+  isScanning = false;
+}
+
+async function refreshDeviceNames() {
+  try {
+    const response = await daemon.getConfig();
+    const devices = response.config?.devices || {};
+    for (const [id, device] of Object.entries(devices) as [string, any][]) {
+      const card = document.querySelector(`device-card[device-id="${id}"]`);
+      if (card && device.name) {
+        card.setAttribute("name", device.name);
+      }
+    }
+  } catch (_) {}
+}
+
+scanButton = new IconButton({
+  selector: ".footer-right",
+  stateOneIcon: refreshIcon,
+  stateTwoIcon: refreshIcon,
+  stateOneStrokeColor: "var(--FG)",
+  stateTwoStrokeColor: "var(--FG)",
+  onClick: scanNetwork,
+});
+
+daemon.connect().then(() => {
+  loadDevicesFromConfig().then(() => {
+    setTimeout(scanNetwork, 800);
+  });
+});

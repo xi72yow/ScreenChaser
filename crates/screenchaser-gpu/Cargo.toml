@@ -1,0 +1,18 @@
+[package]
+name = "screenchaser-gpu"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[dependencies]
+screenchaser-config = { workspace = true }
+wgpu = "29"
+bytemuck = { version = "1", features = ["derive"] }
+tokio = { workspace = true }
+tracing = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+screenchaser-wled = { workspace = true }
+tokio = { workspace = true }

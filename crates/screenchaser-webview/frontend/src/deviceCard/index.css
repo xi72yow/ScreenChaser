@@ -1,0 +1,43 @@
+.device {
+  z-index: 1;
+  position: relative;
+}
+
+.ip:hover {
+  color: var(--PURPLE);
+}
+
+.off {
+  opacity: 0.3;
+}
+
+.error {
+  box-shadow: 0 0 10px var(--RED);
+}
+
+.device-canvas {
+  position: absolute;
+  width: 50%;
+  height: 100%;
+  top: 0;
+  right: 0;
+  z-index: 0;
+  border-radius: inherit;
+  mask: linear-gradient(to right, transparent 20%, #ffffff 90%);
+}
+
+.device-details {
+  position: relative;
+  z-index: 1;
+}
+
+.device-status-dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #6272a4;
+  z-index: 2;
+}

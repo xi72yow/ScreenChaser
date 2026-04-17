@@ -1,0 +1,225 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      release:
+        description: "Create a release? (yes/no)"
+        required: true
+        default: "no"
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  build-image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build container image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Containerfile.build
+          load: true
+          tags: build-image
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Save container image
+        run: docker save build-image | zstd -T0 -o image.tar.zst
+
+      - name: Upload container image
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-image
+          path: image.tar.zst
+          retention-days: 1
+
+  test:
+    needs: build-image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download container image
+        uses: actions/download-artifact@v4
+        with:
+          name: build-image
+
+      - name: Load container image
+        run: zstd -d image.tar.zst -o image.tar && docker load < image.tar
+
+      - name: Run tests in container
+        run: |
+          docker run --rm build-image \
+            cargo test --profile dist -- --test-threads=1
+
+  audit:
+    needs: build-image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download container image
+        uses: actions/download-artifact@v4
+        with:
+          name: build-image
+
+      - name: Load container image
+        run: zstd -d image.tar.zst -o image.tar && docker load < image.tar
+
+      - name: Run cargo audit in container
+        run: docker run --rm build-image cargo audit
+
+  release:
+    needs: [test, audit]
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.release == 'yes'
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
+      released: ${{ steps.version.outputs.released }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compute next version (git-cliff)
+        id: cliff_version
+        uses: orhun/git-cliff-action@v4
+        with:
+          config: cliff.toml
+          args: --bumped-version
+
+      - name: Decide release
+        id: version
+        run: |
+          CURRENT=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
+          NEXT="${{ steps.cliff_version.outputs.version }}"
+          NEXT_CLEAN="${NEXT#v}"
+          echo "Current: $CURRENT, next: $NEXT_CLEAN"
+          if [ -z "$NEXT_CLEAN" ] || [ "$CURRENT" = "$NEXT_CLEAN" ]; then
+            echo "Nothing to release"
+            echo "released=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "released=true" >> "$GITHUB_OUTPUT"
+            echo "version=$NEXT_CLEAN" >> "$GITHUB_OUTPUT"
+            echo "tag=v$NEXT_CLEAN" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install cargo-edit
+        if: steps.version.outputs.released == 'true'
+        run: cargo install --locked cargo-edit
+
+      - name: Bump workspace version
+        if: steps.version.outputs.released == 'true'
+        run: |
+          cargo set-version --workspace "${{ steps.version.outputs.version }}"
+          cargo update --workspace
+
+      - name: Generate changelog
+        if: steps.version.outputs.released == 'true'
+        uses: orhun/git-cliff-action@v4
+        with:
+          config: cliff.toml
+          args: --tag ${{ steps.version.outputs.tag }} --output CHANGELOG.md
+
+      - name: Extract release notes
+        if: steps.version.outputs.released == 'true'
+        uses: orhun/git-cliff-action@v4
+        with:
+          config: cliff.toml
+          args: --tag ${{ steps.version.outputs.tag }} --unreleased --strip all --output release-notes.md
+
+      - name: Set up Docker Buildx
+        if: steps.version.outputs.released == 'true'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build release container
+        if: steps.version.outputs.released == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Containerfile.build
+          load: true
+          tags: release-image
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Extract .deb from container
+        if: steps.version.outputs.released == 'true'
+        run: |
+          mkdir -p dist
+          CONTAINER_ID=$(docker create release-image)
+          docker cp "$CONTAINER_ID:/build/target/debian/." dist/
+          docker rm "$CONTAINER_ID" > /dev/null
+
+      - name: Test .deb package
+        if: steps.version.outputs.released == 'true'
+        run: |
+          DEB=$(ls dist/*.deb | head -1)
+          dpkg-deb -c "$DEB"
+          sudo dpkg -i "$DEB" || sudo apt-get install -f -y
+          screenchaser-daemon --help | head -5
+
+      - name: Commit, tag and push
+        if: steps.version.outputs.released == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Cargo.toml Cargo.lock CHANGELOG.md
+          git commit -m "chore(release): ${{ steps.version.outputs.tag }}"
+          git tag "${{ steps.version.outputs.tag }}"
+          git push origin HEAD:${{ github.ref_name }}
+          git push origin "${{ steps.version.outputs.tag }}"
+
+      - name: Prepare packages directory
+        if: steps.version.outputs.released == 'true'
+        run: mkdir -p packages && cp dist/*.deb packages/
+
+      - name: Import GPG key
+        if: steps.version.outputs.released == 'true'
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+        run: echo "${GPG_PRIVATE_KEY}" | gpg --batch --import
+
+      - name: Update APT repository
+        if: steps.version.outputs.released == 'true'
+        run: |
+          sudo apt-get update && sudo apt-get install -y dpkg-dev apt-utils
+          ./scripts/update-repo.sh
+
+      - name: Create Release
+        if: steps.version.outputs.released == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          files: dist/*.deb
+          body_path: release-notes.md
+
+      - name: Upload repo artifact
+        if: steps.version.outputs.released == 'true'
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: repo/
+
+  deploy-pages:
+    needs: release
+    if: needs.release.outputs.released == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

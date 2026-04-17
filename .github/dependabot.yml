@@ -1,0 +1,41 @@
+version: 2
+updates:
+  - package-ecosystem: "cargo"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    allow:
+      - dependency-name: "tokio"
+      - dependency-name: "serde"
+      - dependency-name: "serde_json"
+      - dependency-name: "toml"
+      - dependency-name: "tracing"
+      - dependency-name: "tracing-subscriber"
+      - dependency-name: "anyhow"
+      - dependency-name: "thiserror"
+      - dependency-name: "ashpd"
+      - dependency-name: "pipewire"
+      - dependency-name: "wgpu"
+      - dependency-name: "bytemuck"
+      - dependency-name: "reqwest"
+      - dependency-name: "mdns-sd"
+      - dependency-name: "tao"
+      - dependency-name: "wry"
+      - dependency-name: "rust-embed"
+      - dependency-name: "mime_guess"
+      - dependency-name: "gtk"
+      - dependency-name: "axum"
+      - dependency-name: "clap"
+      - dependency-name: "dirs"
+    groups:
+      all-cargo:
+        patterns:
+          - "*"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    groups:
+      all-actions:
+        patterns:
+          - "*"
