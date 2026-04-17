@@ -19,6 +19,12 @@ ScreenChaser is a Rust bias lighting daemon for Linux. It captures your screen t
 
 It replaces the original Electron-based ScreenChaser with a ~5 MB binary that runs natively on Wayland, pulls only the hardware frames it needs through PipeWire, and offloads all per-pixel work to the GPU.
 
+## Demo
+
+The render below illustrates the interaction of all components in a virtual room. It does not showcase every feature.
+
+https://user-images.githubusercontent.com/65042627/210893593-29b303a0-6971-4d15-9e41-3c11cf5573cd.mp4
+
 ## Background
 
 Bias lighting projects screen-derived colors behind the display to extend the image into its surroundings. The color extraction and temporal smoothing used here were developed and evaluated in my bachelor thesis, where test subjects rated video playback under different bias-light configurations and tended to prefer the bias-lit variants over the unlit reference.
