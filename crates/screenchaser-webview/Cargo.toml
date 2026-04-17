@@ -8,7 +8,9 @@ authors.workspace = true
 [dependencies]
 tao = "0.35"
 wry = "0.55"
+tray-icon = "0.22"
 rust-embed = { version = "8", features = ["debug-embed"] }
 mime_guess = "2"
+png = "0.17"
 tracing = { workspace = true }
 gtk = "0.18"

@@ -33,15 +33,18 @@ fn main() -> Result<()> {
     if cli.no_gui {
         info!("running headless");
         let rt = tokio::runtime::Runtime::new().expect("tokio runtime");
-        if let Err(e) = rt.block_on(run_daemon(cli.bind)) {
+        let (_shutdown_tx, shutdown_rx) = tokio::sync::mpsc::channel::<()>(1);
+        if let Err(e) = rt.block_on(run_daemon(cli.bind, shutdown_rx)) {
             error!("daemon error: {e}");
         }
     } else {
-        let (handle_tx, handle_rx) = std::sync::mpsc::channel::<screenchaser_webview::WebviewHandle>();
+        let (handle_tx, handle_rx) =
+            std::sync::mpsc::channel::<screenchaser_webview::WebviewHandle>();
+        let (shutdown_tx, shutdown_rx) = tokio::sync::mpsc::channel::<()>(1);
 
         std::thread::spawn(move || {
             let rt = tokio::runtime::Runtime::new().expect("tokio runtime");
-            if let Err(e) = rt.block_on(run_daemon(cli.bind)) {
+            if let Err(e) = rt.block_on(run_daemon(cli.bind, shutdown_rx)) {
                 error!("daemon error: {e}");
             }
             if let Ok(handle) = handle_rx.recv() {
@@ -49,15 +52,23 @@ fn main() -> Result<()> {
             }
         });
 
-        screenchaser_webview::run(move |handle| {
-            let _ = handle_tx.send(handle);
-        });
+        screenchaser_webview::run(
+            move |handle| {
+                let _ = handle_tx.send(handle);
+            },
+            move || {
+                let _ = shutdown_tx.blocking_send(());
+            },
+        );
     }
 
     Ok(())
 }
 
-async fn run_daemon(bind: String) -> Result<()> {
+async fn run_daemon(
+    bind: String,
+    mut shutdown_rx: tokio::sync::mpsc::Receiver<()>,
+) -> Result<()> {
     let config = screenchaser_config::load_config().unwrap_or_else(|e| {
         warn!("failed to load config, using defaults: {e}");
         screenchaser_config::AppConfig::default()
@@ -123,6 +134,10 @@ async fn run_daemon(bind: String) -> Result<()> {
         }
         _ = tokio::signal::ctrl_c() => {
             info!("ctrl+c received");
+            let _ = shared.cmd_tx.send(state::Command::Shutdown).await;
+        }
+        _ = shutdown_rx.recv() => {
+            info!("shutdown requested from webview");
             let _ = shared.cmd_tx.send(state::Command::Shutdown).await;
         }
     }
