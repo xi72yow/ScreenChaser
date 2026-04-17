@@ -93,18 +93,16 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Compute next version (git-cliff)
-        id: cliff_version
-        uses: orhun/git-cliff-action@v4
+      - name: Install git-cliff and cargo-edit
+        uses: taiki-e/install-action@v2
         with:
-          config: cliff.toml
-          args: --bumped-version
+          tool: git-cliff,cargo-edit
 
       - name: Decide release
         id: version
         run: |
           CURRENT=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
-          NEXT="${{ steps.cliff_version.outputs.version }}"
+          NEXT=$(git-cliff --config cliff.toml --bumped-version 2>/dev/null)
           NEXT_CLEAN="${NEXT#v}"
           echo "Current: $CURRENT, next: $NEXT_CLEAN"
           if [ -z "$NEXT_CLEAN" ] || [ "$CURRENT" = "$NEXT_CLEAN" ]; then
@@ -116,10 +114,6 @@ jobs:
             echo "tag=v$NEXT_CLEAN" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Install cargo-edit
-        if: steps.version.outputs.released == 'true'
-        run: cargo install --locked cargo-edit
-
       - name: Bump workspace version
         if: steps.version.outputs.released == 'true'
         run: |
@@ -128,17 +122,11 @@ jobs:
 
       - name: Generate changelog
         if: steps.version.outputs.released == 'true'
-        uses: orhun/git-cliff-action@v4
-        with:
-          config: cliff.toml
-          args: --tag ${{ steps.version.outputs.tag }} --output CHANGELOG.md
+        run: git-cliff --config cliff.toml --tag "${{ steps.version.outputs.tag }}" --output CHANGELOG.md
 
       - name: Extract release notes
         if: steps.version.outputs.released == 'true'
-        uses: orhun/git-cliff-action@v4
-        with:
-          config: cliff.toml
-          args: --tag ${{ steps.version.outputs.tag }} --unreleased --strip all --output release-notes.md
+        run: git-cliff --config cliff.toml --tag "${{ steps.version.outputs.tag }}" --unreleased --strip all --output release-notes.md
 
       - name: Set up Docker Buildx
         if: steps.version.outputs.released == 'true'
