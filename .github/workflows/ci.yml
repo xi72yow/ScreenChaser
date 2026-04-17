@@ -11,9 +11,6 @@ on:
         description: "Create a release? (yes/no)"
         required: true
         default: "no"
-      version:
-        description: "Version tag (e.g. v0.5.0). Leave empty to use Cargo.toml version."
-        required: false
 
 permissions:
   contents: write
@@ -88,100 +85,136 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       tag: ${{ steps.version.outputs.tag }}
+      released: ${{ steps.version.outputs.released }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Determine version
+      - name: Compute next version (git-cliff)
+        id: cliff_version
+        uses: orhun/git-cliff-action@v4
+        with:
+          config: cliff.toml
+          args: --bumped-version
+
+      - name: Decide release
         id: version
         run: |
-          if [ -n "${{ github.event.inputs.version }}" ]; then
-            BASE="${{ github.event.inputs.version }}"
+          CURRENT=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
+          NEXT="${{ steps.cliff_version.outputs.version }}"
+          NEXT_CLEAN="${NEXT#v}"
+          echo "Current: $CURRENT, next: $NEXT_CLEAN"
+          if [ -z "$NEXT_CLEAN" ] || [ "$CURRENT" = "$NEXT_CLEAN" ]; then
+            echo "Nothing to release"
+            echo "released=false" >> "$GITHUB_OUTPUT"
           else
-            VERSION=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
-            BASE="v${VERSION}"
+            echo "released=true" >> "$GITHUB_OUTPUT"
+            echo "version=$NEXT_CLEAN" >> "$GITHUB_OUTPUT"
+            echo "tag=v$NEXT_CLEAN" >> "$GITHUB_OUTPUT"
           fi
 
-          git fetch --tags
-          LATEST_TAG=$(git tag -l "${BASE}-*" --sort=-v:refname | head -1)
-          if [ -n "$LATEST_TAG" ]; then
-            CURRENT_REV=$(echo "$LATEST_TAG" | sed "s/${BASE}-//")
-            NEW_REV=$((CURRENT_REV + 1))
-          else
-            if git rev-parse "${BASE}" >/dev/null 2>&1; then
-              NEW_REV=2
-            else
-              NEW_REV=1
-            fi
-          fi
+      - name: Install cargo-edit
+        if: steps.version.outputs.released == 'true'
+        run: cargo install --locked cargo-edit
 
-          TAG="${BASE}-${NEW_REV}"
-          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
-          echo "revision=${NEW_REV}" >> "$GITHUB_OUTPUT"
-          echo "Release tag: ${TAG}"
+      - name: Bump workspace version
+        if: steps.version.outputs.released == 'true'
+        run: |
+          cargo set-version --workspace "${{ steps.version.outputs.version }}"
+          cargo update --workspace
 
-      - name: Download container image
-        uses: actions/download-artifact@v4
+      - name: Generate changelog
+        if: steps.version.outputs.released == 'true'
+        uses: orhun/git-cliff-action@v4
         with:
-          name: build-image
+          config: cliff.toml
+          args: --tag ${{ steps.version.outputs.tag }} --output CHANGELOG.md
 
-      - name: Load container image
-        run: zstd -d image.tar.zst -o image.tar && docker load < image.tar
+      - name: Extract release notes
+        if: steps.version.outputs.released == 'true'
+        uses: orhun/git-cliff-action@v4
+        with:
+          config: cliff.toml
+          args: --tag ${{ steps.version.outputs.tag }} --unreleased --strip all --output release-notes.md
+
+      - name: Set up Docker Buildx
+        if: steps.version.outputs.released == 'true'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build release container
+        if: steps.version.outputs.released == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Containerfile.build
+          load: true
+          tags: release-image
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Extract .deb from container
+        if: steps.version.outputs.released == 'true'
         run: |
           mkdir -p dist
-          CONTAINER_ID=$(docker create build-image)
+          CONTAINER_ID=$(docker create release-image)
           docker cp "$CONTAINER_ID:/build/target/debian/." dist/
           docker rm "$CONTAINER_ID" > /dev/null
 
       - name: Test .deb package
+        if: steps.version.outputs.released == 'true'
         run: |
           DEB=$(ls dist/*.deb | head -1)
-          echo "=== Package contents ==="
           dpkg-deb -c "$DEB"
-          echo "=== Test install ==="
           sudo dpkg -i "$DEB" || sudo apt-get install -f -y
-          echo "=== Verify binary ==="
           screenchaser-daemon --help | head -5
 
+      - name: Commit, tag and push
+        if: steps.version.outputs.released == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Cargo.toml Cargo.lock CHANGELOG.md
+          git commit -m "chore(release): ${{ steps.version.outputs.tag }}"
+          git tag "${{ steps.version.outputs.tag }}"
+          git push origin HEAD:${{ github.ref_name }}
+          git push origin "${{ steps.version.outputs.tag }}"
+
       - name: Prepare packages directory
+        if: steps.version.outputs.released == 'true'
         run: mkdir -p packages && cp dist/*.deb packages/
 
       - name: Import GPG key
+        if: steps.version.outputs.released == 'true'
         env:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
         run: echo "${GPG_PRIVATE_KEY}" | gpg --batch --import
 
       - name: Update APT repository
+        if: steps.version.outputs.released == 'true'
         run: |
           sudo apt-get update && sudo apt-get install -y dpkg-dev apt-utils
           ./scripts/update-repo.sh
 
-      - name: Create tag
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag "${{ steps.version.outputs.tag }}"
-          git push origin "${{ steps.version.outputs.tag }}"
-
       - name: Create Release
+        if: steps.version.outputs.released == 'true'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.tag }}
           files: dist/*.deb
-          generate_release_notes: true
+          body_path: release-notes.md
 
       - name: Upload repo artifact
+        if: steps.version.outputs.released == 'true'
         uses: actions/upload-pages-artifact@v4
         with:
           path: repo/
 
   deploy-pages:
     needs: release
-    if: needs.release.result == 'success'
+    if: needs.release.outputs.released == 'true'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
