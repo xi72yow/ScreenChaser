@@ -4,6 +4,16 @@ All notable changes to this project are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/) and
 [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [0.6.1] -- 2026-04-18
+
+### Bug Fixes
+
+- Export same gpg key that signs the apt release
+
+### Documentation
+
+- Replace em-dashes with neutral punctuation
+
 ## [0.6.0] -- 2026-04-18
 
 ### Bug Fixes

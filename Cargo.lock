@@ -3379,7 +3379,7 @@ checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
 
 [[package]]
 name = "screenchaser-capture"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "ashpd",
  "pipewire",
@@ -3392,7 +3392,7 @@ dependencies = [
 
 [[package]]
 name = "screenchaser-config"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "dirs",
  "serde",
@@ -3403,7 +3403,7 @@ dependencies = [
 
 [[package]]
 name = "screenchaser-daemon"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "anyhow",
  "axum",
@@ -3422,7 +3422,7 @@ dependencies = [
 
 [[package]]
 name = "screenchaser-gpu"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "bytemuck",
  "screenchaser-config",
@@ -3435,7 +3435,7 @@ dependencies = [
 
 [[package]]
 name = "screenchaser-webview"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "gtk",
  "mime_guess",
@@ -3449,7 +3449,7 @@ dependencies = [
 
 [[package]]
 name = "screenchaser-wled"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "mdns-sd",
  "reqwest",
