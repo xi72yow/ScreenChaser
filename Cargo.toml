@@ -13,7 +13,6 @@ resolver = "3"
 [workspace.package]
 version = "0.6.1"
 edition = "2024"
-license = "MIT"
 authors = ["xi72yow <x@xi72yow.de>"]
 
 [workspace.dependencies]
