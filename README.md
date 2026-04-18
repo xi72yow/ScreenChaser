@@ -17,7 +17,7 @@
 
 ScreenChaser is a Rust bias lighting daemon for Linux. It captures your screen through the Wayland XDG Desktop Portal, extracts zone colors on the GPU via wgpu compute shaders, and streams them to WLED devices over UDP. The embedded webview frontend lets you configure LED layouts, scan the network for devices, and watch a live preview, all from a single native binary.
 
-It replaces the original Electron-based ScreenChaser with a ~5 MB binary that runs natively on Wayland, pulls only the hardware frames it needs through PipeWire, and offloads all per-pixel work to the GPU.
+It replaces the original Electron-based ScreenChaser with a ~5 MB `.deb` that runs natively on Wayland, pulls only the hardware frames it needs through PipeWire, and offloads all per-pixel work to the GPU.
 
 ## Demo
 
