@@ -15,7 +15,7 @@
 
 ## What is ScreenChaser
 
-ScreenChaser is a Rust bias lighting daemon for Linux. It captures your screen through the Wayland XDG Desktop Portal, extracts zone colors on the GPU via wgpu compute shaders, and streams them to WLED devices over UDP. The embedded webview frontend lets you configure LED layouts, scan the network for devices, and watch a live preview — all from a single native binary.
+ScreenChaser is a Rust bias lighting daemon for Linux. It captures your screen through the Wayland XDG Desktop Portal, extracts zone colors on the GPU via wgpu compute shaders, and streams them to WLED devices over UDP. The embedded webview frontend lets you configure LED layouts, scan the network for devices, and watch a live preview, all from a single native binary.
 
 It replaces the original Electron-based ScreenChaser with a ~5 MB binary that runs natively on Wayland, pulls only the hardware frames it needs through PipeWire, and offloads all per-pixel work to the GPU.
 
@@ -27,18 +27,18 @@ https://user-images.githubusercontent.com/65042627/210893593-29b303a0-6971-4d15-
 
 ## Background
 
-Bias lighting projects screen-derived colors behind the display to extend the image into its surroundings. The color extraction and temporal smoothing used here were developed and evaluated in my bachelor thesis, where test subjects rated video playback under different bias-light configurations and tended to prefer the bias-lit variants over the unlit reference.
+Bias lighting projects screen-derived colors behind the display to extend the image into its surroundings. The color extraction and temporal smoothing used here were developed and evaluated in my bachelor thesis, where 23 subjects rated five videos under four lighting modes (One Pixel, Rectangular Average, Average with Decay, and disabled) on a continuous Double-Stimulus quality scale. Average with Decay ranked highest across all clips.
 
 ## Features
 
-- **Wayland-native capture** — XDG Desktop Portal + PipeWire stream, restore-token for dialog-free resume
-- **GPU color extraction** — wgpu compute shaders, three passes (extract, average, downscale), headless on Vulkan
-- **WLED UDP output** — DRGB realtime protocol on port 21324
-- **mDNS discovery** — automatic WLED device detection on the LAN, name sync from REST API
-- **Embedded frontend** — Vite + TypeScript, served from the binary through a custom `sc://` protocol
-- **Live preview** — raw RGBA frames streamed over WebSocket, rendered to canvas in the UI
-- **Tray icon** — Ayatana AppIndicator integration, window hides on close and restores on tray click
-- **Per-device config** — parametric LED fields or custom positioned zones, enable/disable toggle, debounced persistence
+- **Wayland-native capture**: XDG Desktop Portal + PipeWire stream, restore-token for dialog-free resume
+- **GPU color extraction**: wgpu compute shaders, three passes (extract, average, downscale), headless on Vulkan
+- **WLED UDP output**: DRGB realtime protocol on port 21324
+- **mDNS discovery**: automatic WLED device detection on the LAN, name sync from REST API
+- **Embedded frontend**: Vite + TypeScript, served from the binary through a custom `sc://` protocol
+- **Live preview**: raw RGBA frames streamed over WebSocket, rendered to canvas in the UI
+- **Tray icon**: Ayatana AppIndicator integration, window hides on close and restores on tray click
+- **Per-device config**: parametric LED fields or custom positioned zones, enable/disable toggle, debounced persistence
 
 ## Requirements
 
@@ -71,7 +71,7 @@ On first run you will see the Wayland portal dialog asking which screen to captu
 
 Config lives at `~/.config/screenchaser/config.toml` and is written back automatically (debounced 2 s) whenever you change settings in the UI.
 
-The webview window hides on close — the daemon keeps capturing and streaming. Bring it back via the tray icon or the "Quit ScreenChaser" menu item to shut down cleanly.
+The webview window hides on close. The daemon keeps capturing and streaming. Bring it back via the tray icon or the "Quit ScreenChaser" menu item to shut down cleanly.
 
 ### Screenshots
 
