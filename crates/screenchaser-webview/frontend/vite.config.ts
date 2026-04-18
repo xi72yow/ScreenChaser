@@ -1,8 +1,12 @@
 import path from "node:path";
 import { resolve } from "node:path";
 import { defineConfig } from "vite";
+import pkg from "./package.json" with { type: "json" };
 
 export default defineConfig({
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version),
+  },
   resolve: {
     alias: [
       { find: "@", replacement: path.resolve(__dirname, "src") },
